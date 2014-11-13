@@ -12,13 +12,15 @@ projectham.AppView = Backbone.View.extend({
     },
     
     events: {
-        //'click #save': 'saveData',
+        'click #save': 'saveCommand'
     },
     
-    saveCommand: function(command) {
+    saveCommand: function() {
+        console.log('In');
+
         this.commands.create({
             time:       new Date().toLocaleTimeString(),
-            command:    command
+            command:    'foo'
         });
         
         console.log(this.commands);

@@ -5,9 +5,11 @@
 var projectham = projectham || {};
 
 projectham.Command = Backbone.Model.extend({
-    defaults: {                             // every object that is created has these two attributes
-        time: '',
-        command: ''
+    defaults: function() {                             // every object that is created has these two attributes
+        return {
+            content: '',
+            time: new Date().toLocaleTimeString()
+        }
     },
 
     initialize: function() {

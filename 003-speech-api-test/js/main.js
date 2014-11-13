@@ -20,6 +20,8 @@ projectham.module = (function($) {
         listening.css('background-color', 'green');
         
         if (annyang) {
+            console.log('foo');
+
             // Let's define a command.
             var commands = {
                 'move :direction :value': movebox
@@ -44,7 +46,7 @@ projectham.module = (function($) {
             transform: 'translate(' + moveTo.x + 'px,' + moveTo.y + 'px)'
         });
 
-        projectham.AppView.saveCommand('Move ' + direction + ' ' + value);
+        $("#save").trigger('custom');//projectham.AppView.saveCommand('Move ' + direction + ' ' + value);
     };
 
     init = function() {
