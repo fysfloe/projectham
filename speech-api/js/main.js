@@ -8,11 +8,16 @@ projectham.module = (function($) {
 
     var box,
         listening,
-        appView;
+        appView,
+        speechRecognition;
 
     var listen,
         movebox,
-        init;
+        init,
+        start,
+        result,
+        resultMatch,
+        resultNoMatch;
 
     listen = function() {
         console.log('listening');
@@ -59,8 +64,6 @@ projectham.module = (function($) {
         listening = $('#listening');
 
         if (annyang) {
-            console.log('annyang started');
-
             // Let's define a command.
             var commands = {
                 'ok ham': listen
@@ -74,6 +77,33 @@ projectham.module = (function($) {
 
             console.log(annyang);
         }
+
+        annyang.addCallback('start', start);
+        annyang.addCallback('result', result);
+        annyang.addCallback('resultMatch', resultMatch);
+        annyang.addCallback('resultNoMatch', resultNoMatch);
+
+        annyang.debug(true);
+
+        event.currentTarget.onsoundstart = 'foo';
+    };
+
+    start = function() {
+        $('#annyang-message').text('Annyang started!');
+        console.log(event);
+    };
+
+    result = function() {
+        //console.log(event.results.item(0));
+        $('#annyang-message').text('You spoke!');
+    };
+
+    resultMatch = function() {
+        $('#annyang-message').text('You said something cool!');
+    };
+
+    resultNoMatch = function() {
+        $('#annyang-message').text('You said something not so cool...');
     };
 
     $(document).ready(init);
