@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <title>Speech API Test</title>
     <meta charset="utf-8">
@@ -15,6 +15,60 @@
     <script type="text/template" id="commandTemplate">
         <em><%= time %></em>: <span class="view"><%= command %></span>
     </script>
+
+    <style>
+        #info {
+            font-size: 20px;
+        }
+        #div_start {
+            float: right;
+        }
+        #headline {
+            text-decoration: none
+        }
+        #results {
+            font-size: 14px;
+            font-weight: bold;
+            border: 1px solid #ddd;
+            padding: 15px;
+            text-align: left;
+            min-height: 150px;
+        }
+        #start_button {
+            border: 0;
+            background-color:transparent;
+            padding: 0;
+        }
+        .interim {
+            color: gray;
+        }
+        .final {
+            color: black;
+            padding-right: 3px;
+        }
+        .button {
+            display: none;
+        }
+        .marquee {
+            margin: 20px auto;
+        }
+
+        #buttons {
+            margin: 10px 0;
+            position: relative;
+            top: -50px;
+        }
+
+        #copy {
+            margin-top: 20px;
+        }
+
+        #copy > div {
+            display: none;
+            margin: 0 70px;
+        }
+    </style>
+
 </head>
 <body>
 <header></header>
@@ -25,8 +79,17 @@
     <ul id="commands"></ul>
     <button id="save">Save Command</button>
     <button id="clear">Delete All Commands</button>
+
+    <div id="results">
+        <span class="final" id="final_span"></span>
+        <span class="interim" id="interim_span"></span>
+    </div>
 </main>
 <footer></footer>
+
+<script type="text/javascript">
+
+</script>
 
 <script src="js/command.js"></script>
 <script src="js/commandList.js"></script>
