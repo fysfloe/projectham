@@ -9,11 +9,23 @@ projectham.module = (function($) {
     var box,
         listening,
         appView,
-        speechRecognition;
+        speechRecognition,
+        audioContext,
+        BUFF_SIZE,
+        audioInput = null,
+        microphone_stream = null,
+        gain_node = null,
+        script_processor_node = null,
+        script_processor_fft_node = null,
+        analyserNode = null,
+        ctx,
+        gradient;
 
     var listen,
         movebox,
         init,
+        initAnnyang,
+        initAudioContext,
         start,
         result,
         resultMatch,
@@ -55,14 +67,16 @@ projectham.module = (function($) {
     };
 
     init = function() {
+        initAnnyang();
+        initAudioContext();
 
         appView = new projectham.AppView();
 
-        console.log(appView);
-
         box = $('.move');
         listening = $('#listening');
+    };
 
+    initAnnyang = function() {
         if (annyang) {
             // Let's define a command.
             var commands = {
@@ -85,26 +99,121 @@ projectham.module = (function($) {
 
         annyang.debug(true);
 
-        event.currentTarget.onsoundstart = 'foo';
+        function start() {
+            $('#annyang-message').text('Annyang started!');
+            $('#current-message').text('Listening');
+            console.log(event);
+        }
+
+        function result() {
+            //console.log(event.results.item(0));
+            $('#annyang-message').text('You spoke!');
+            $('#current-message').text('Updating data');
+        }
+
+        function resultMatch() {
+            $('#annyang-message').text('You said something cool!');
+            //$('#current-message').text('Finished updating');
+        }
+
+        function resultNoMatch() {
+            $('#annyang-message').text('You said something not so cool...');
+            //$('#current-message').text('Finished updating');
+        }
     };
 
-    start = function() {
-        $('#annyang-message').text('Annyang started!');
-        console.log(event);
+    initAudioContext = function() {
+        audioContext = new AudioContext();
+
+        console.log("audio is starting up ...");
+
+        BUFF_SIZE = 16384;
+
+        // get the context from the canvas to draw on
+        ctx = $("#canvas").get()[0].getContext("2d");
+
+        // create a gradient for the fill. Note the strange
+        // offset, since the gradient is calculated based on
+        // the canvas, not the specific element we draw
+        gradient = ctx.createLinearGradient(0,0,0,300);
+        gradient.addColorStop(1,'#000000');
+        gradient.addColorStop(0.75,'#ff0000');
+        gradient.addColorStop(0.25,'#ffff00');
+        gradient.addColorStop(0,'#ffffff');
+
+        if (!navigator.getUserMedia)
+            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
+            navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+        if (navigator.getUserMedia){
+
+            navigator.getUserMedia({audio:true},
+                function(stream) {
+                    start_microphone(stream);
+                },
+                function(e) {
+                    alert('Error capturing audio.');
+                }
+            );
+
+        } else { alert('getUserMedia not supported in this browser.'); };
     };
 
-    result = function() {
-        //console.log(event.results.item(0));
-        $('#annyang-message').text('You spoke!');
-    };
+    function process_microphone_buffer(event) {  // PCM audio data in time domain
+        var i, N, inp, microphone_output_buffer;
 
-    resultMatch = function() {
-        $('#annyang-message').text('You said something cool!');
-    };
+        microphone_output_buffer = event.inputBuffer.getChannelData(0); // just mono - 1 channel for now
+    }
 
-    resultNoMatch = function() {
-        $('#annyang-message').text('You said something not so cool...');
-    };
+    function start_microphone(stream){
+        gain_node = audioContext.createGain();
+        gain_node.connect( audioContext.destination );
+
+        microphone_stream = audioContext.createMediaStreamSource(stream);
+        microphone_stream.connect(gain_node); // comment out to disconnect output speakers
+                                              // ... everything else will work OK this
+                                              // eliminates possibility of feedback squealing
+                                              // or leave it in and turn down the volume
+
+        script_processor_node = audioContext.createScriptProcessor(BUFF_SIZE, 1, 1);
+        script_processor_node.onaudioprocess = process_microphone_buffer; // callback
+
+        microphone_stream.connect(script_processor_node);
+
+        // --- setup FFT
+
+        script_processor_fft_node = audioContext.createScriptProcessor(2048, 1, 1);
+        script_processor_fft_node.connect(gain_node);
+
+        analyserNode = audioContext.createAnalyser();
+        analyserNode.smoothingTimeConstant = 0;
+        analyserNode.fftSize = 2048;
+
+        microphone_stream.connect(analyserNode);
+
+        analyserNode.connect(script_processor_fft_node);
+
+        script_processor_fft_node.onaudioprocess = function() { // FFT in frequency domain
+            // get the average for the first channel
+            var fft_array = new Uint8Array(analyserNode.frequencyBinCount);
+            analyserNode.getByteFrequencyData(fft_array);
+
+            // clear the current state
+            ctx.clearRect(0, 0, 1000, 325);
+
+            // set the fill style
+            ctx.fillStyle=gradient;
+            drawSpectrum(fft_array);
+        }
+    }
+
+    function drawSpectrum(array) {
+        for ( var i = 0; i < (array.length); i++ ){
+            var value = array[i] * 0.8;
+
+            ctx.fillRect(i*5,325-value,3,325);
+        }
+    }
 
     $(document).ready(init);
 

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title></title>
+    <meta charset="utf-8">
+
+    <script src="speech-api/lib/jquery-2.1.0.min.js"></script>
+</head>
+<body>
+<h1>Audio play</h1>
+<canvas id="canvas" width="1000" height="325" style="display: block;"></canvas>
+<script type="text/javascript">
+
+    navigator.webkitGetUserMedia({audio:true}, success, error);
+
+
+    // create the audio context (chrome only for now)
+    // create the audio context (chrome only for now)
+    if (! window.AudioContext) {
+        if (! window.webkitAudioContext) {
+            alert('no audiocontext found');
+        }
+        window.AudioContext = window.webkitAudioContext;
+    }
+    //var context = new AudioContext();
+    var audioBuffer;
+    var sourceNode;
+    var analyser;
+    var javascriptNode;
+    var mediaStreamSource;
+
+    // get the context from the canvas to draw on
+    var ctx = $("#canvas").get()[0].getContext("2d");
+
+    // create a gradient for the fill. Note the strange
+    // offset, since the gradient is calculated based on
+    // the canvas, not the specific element we draw
+    var gradient = ctx.createLinearGradient(0,0,0,300);
+    gradient.addColorStop(1,'#000000');
+    gradient.addColorStop(0.75,'#ff0000');
+    gradient.addColorStop(0.25,'#ffff00');
+    gradient.addColorStop(0,'#ffffff');
+
+
+    setupAudioNodes();
+
+    function success(stream) {
+        context = new AudioContext();
+        mediaStreamSource = context.createMediaStreamSource(stream);
+    }
+
+    function error(e) {
+        console.log(e);
+    }
+
+    function setupAudioNodes() {
+
+        // setup a javascript node
+        javascriptNode = context.createScriptProcessor(2048, 1, 1);
+        // connect to destination, else it isn't called
+        javascriptNode.connect(context.destination);
+
+
+        // setup a analyzer
+        analyser = context.createAnalyser();
+        analyser.smoothingTimeConstant = 0.3;
+        analyser.fftSize = 512;
+
+        // create a buffer source node
+        sourceNode = context.createBufferSource();
+        sourceNode.connect(analyser);
+        analyser.connect(javascriptNode);
+
+        sourceNode.connect(context.destination);
+
+
+    }
+
+    // load the specified sound
+    function loadSound(url) {
+        var request = new XMLHttpRequest();
+        request.open('GET', url, true);
+        request.responseType = 'arraybuffer';
+
+        // When loaded decode the data
+        request.onload = function() {
+
+            // decode the data
+            context.decodeAudioData(request.response, function(buffer) {
+                // when the audio is decoded play the sound
+                playSound(buffer);
+            }, onError);
+        };
+        request.send();
+    }
+
+    // when the javascript node is called
+    // we use information from the analyzer node
+    // to draw the volume
+    javascriptNode.onaudioprocess = function() {
+
+        // get the average for the first channel
+        var array =  new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(array);
+
+        // clear the current state
+        ctx.clearRect(0, 0, 1000, 325);
+
+        // set the fill style
+        ctx.fillStyle=gradient;
+        drawSpectrum(array);
+
+    };
+
+</script>
+</body>
+</html>
