@@ -13,11 +13,11 @@ $(function(){
         mapSrc: 'img/water_4k_inv.png',
         enableTrackball: true
     }).el);
-    $.get('data3.csv', function(data){
+    /*$.get('Global_Routes.csv', function(data){
         gv.displayLineData(data);
-    });
-   /* $.get('data2.csv', function(data){
-        gv.displayData(data);
     });*/
+   $.get('data1.csv', function(data){
+        gv.displayData(data);
+    });
 
 });

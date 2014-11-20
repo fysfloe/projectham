@@ -44,7 +44,7 @@ dataGlobe.GlobeView = Backbone.View.extend({
            // map: THREE.ImageUtils.loadTexture(this.mapSrc),
             // specularMap: THREE.ImageUtils.loadTexture(this.specularMapSrc),
             // specular: new THREE.Color(this.specularColor),
-            alphaMap: THREE.ImageUtils.loadTexture('img/Spec_map_10k_grey.png'),
+            alphaMap: THREE.ImageUtils.loadTexture('img/water_4k_inv_light_grey.png'),
             //shininess: 4
             transparent: true,
             opacity: 1,
@@ -62,7 +62,7 @@ dataGlobe.GlobeView = Backbone.View.extend({
             //map: THREE.ImageUtils.loadTexture(this.mapSrc),
             // specularMap: THREE.ImageUtils.loadTexture(this.specularMapSrc),
             // specular: new THREE.Color(this.specularColor),
-            alphaMap: THREE.ImageUtils.loadTexture('img/Spec_map_10k_grey.png'),
+            alphaMap: THREE.ImageUtils.loadTexture('img/water_4k_inv_grey.png'),
             //shininess: 4
             transparent: true,
             opacity: 1,
@@ -76,6 +76,21 @@ dataGlobe.GlobeView = Backbone.View.extend({
             this.globeMaterialBack
         );
 
+
+
+        var customMaterial = new THREE.ShaderMaterial(
+            {
+                uniforms: {  },
+                vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+                fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+                side: THREE.BackSide,
+                blending: THREE.AdditiveBlending,
+                transparent: true
+            }   );
+
+        var ballGeometry = new THREE.SphereGeometry( 5.9, 32, 16 );
+        var ball = new THREE.Mesh( ballGeometry, customMaterial );
+        this.scene.add( ball );
         this.scene.add(this.globeFront);
 
         this.scene.add(this.globeBack);
@@ -193,6 +208,7 @@ dataGlobe.GlobeView = Backbone.View.extend({
             var x = parseFloat(entry[1]);
             var y = parseFloat(entry[2]);
             var value = (parseInt(entry[0]) / highestValue < 0.1 ? 0.1 : parseInt(entry[0]) / highestValue) * 2;
+            //var value = 0.2
             // calculate the position where we need to start the cube
             var position = this.latLongToVector3(x, y, value / 2);
             // create the cube
@@ -227,6 +243,8 @@ dataGlobe.GlobeView = Backbone.View.extend({
 
         var arrayData = this.CSVToArray(this.data);
         var geom = new THREE.Geometry();
+        var geom2 = new THREE.Geometry();
+        var geom3 = new THREE.Geometry();
 
         var lineMaterial = new THREE.LineBasicMaterial({
             color: 0x3fbaf3,
@@ -235,31 +253,94 @@ dataGlobe.GlobeView = Backbone.View.extend({
             linewidth: 1
         });
 
-        for (var i = 0; i < 20000; i++) {
+        var lineMaterial2 = new THREE.LineBasicMaterial({
+            color: 0xFF0000,
+            transparent: true,
+            opacity: 0.2,
+            linewidth: 1
+        });
+
+        var lineMaterial3 = new THREE.LineBasicMaterial({
+            color: 0xFF8900,
+            transparent: true,
+            opacity: 0.2,
+            linewidth: 1
+        });
+
+
+
+
+
+        for (var i = 0; i < 10; i++) {
             var x = parseFloat(arrayData[i][0]);
             var y = parseFloat(arrayData[i][1]);
 
             var x2 = parseFloat(arrayData[i][2]);
             var y2 = parseFloat(arrayData[i][3]);
 
+            var x3 = (x+x2)/2;
+            var y3 = (y+y2)/2;
 
 
-            var position1 = this.latLongToVector3(x, y, 0);
-            var position2 = this.latLongToVector3(x2, y2, 0);
-            var position3 = this.calculateMidPoint(x,y,x2,y2,1);
+            var position1 = this.latLongToVector3(x, y, 0.1);
+            var position2 = this.latLongToVector3(x2, y2, 0.1);
+            var position3 = this.latLongToVector3(x3, y3, 1);
+            //var position3 = this.calculateMidPoint(x,y,x2,y2,2);
 
-            var cp = new THREE.CurvePath();
-            cp.add(new THREE.QuadraticBezierCurve3(position1, position3, position2));
+           /* var cp = new THREE.CurvePath();
+            cp.add(new THREE.CQuadraticBezierCurve3(position1, position3, position2));
 
             var lineMesh = new THREE.Mesh(cp.createPointsGeometry(100), lineMaterial);
-            geom.merge(lineMesh.geometry, lineMesh.matrix);
+            geom.merge(lineMesh.geometry, lineMesh.matrix);*/
+
+            var cube = new THREE.Mesh(new THREE.BoxGeometry(.01, .01, 0.2, 1, 1, 1), lineMaterial);
+            var cube2 = new THREE.Mesh(new THREE.BoxGeometry(.01, .02, 0.2, 1, 1, 1), lineMaterial2);
+            var cube3 = new THREE.Mesh(new THREE.BoxGeometry(.01, .02, 0.2, 1, 1, 1), lineMaterial3);
+
+
+            // position the cube correctly
+            cube.translateX(position1.x);
+            cube.translateY(position1.y);
+            cube.translateZ(position1.z);
+
+            // position the cube correctly
+            cube2.translateX(position2.x);
+            cube2.translateY(position2.y);
+            cube2.translateZ(position2.z);
+
+            // position the cube correctly
+            cube3.translateX(position3.x);
+            cube3.translateY(position3.y);
+            cube3.translateZ(position3.z);
+
+            cube.lookAt(new THREE.Vector3(0, 0, 0));
+            cube2.lookAt(new THREE.Vector3(0, 0, 0));
+            cube3.lookAt(new THREE.Vector3(0, 0, 0));
+
+
+            // merge with main model
+            cube.updateMatrix();
+            cube2.updateMatrix();
+            cube3.updateMatrix();
+
+            geom.merge(cube.geometry, cube.matrix);
+            geom2.merge(cube2.geometry, cube2.matrix);
+            geom3.merge(cube3.geometry, cube3.matrix);
+
 
 
         }
 
-        console.log(geom);
+      /*  console.log(geom);
         var total = new THREE.Line(geom, lineMaterial);
+        this.scene.add(total);*/
+
+        var total = new THREE.Mesh(geom, lineMaterial);
+        var total2 = new THREE.Mesh(geom2, lineMaterial2);
+        var total3 = new THREE.Mesh(geom3, lineMaterial3);
         this.scene.add(total);
+        this.scene.add(total2);
+        this.scene.add(total3);
     },
 
     latLongToVector3: function (lat, lon, heigth) {
@@ -293,9 +374,9 @@ dataGlobe.GlobeView = Backbone.View.extend({
         var y = (y1 + y2) / 2;
         var z = (z1 + z2) / 2;
 
-        var lon = Math.atan2(y,x);
+        var lon = Math.atan2(x,y);
         var hyp = Math.sqrt(x*x+y*y);
-        var lat = Math.atan2(z,hyp);
+        var lat = Math.atan2(hyp,z);
 
         var LAT = lat * (180/Math.PI);
         var LON = lon * (180/Math.PI);
