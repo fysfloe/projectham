@@ -19,7 +19,12 @@ projectham.module = (function($) {
         script_processor_fft_node = null,
         analyserNode = null,
         ctx,
-        gradient;
+        gradient,
+        audioviz,
+        initialPoints,
+        final_array,
+        stopMic,
+        startMic;
 
     var listen,
         movebox,
@@ -67,13 +72,27 @@ projectham.module = (function($) {
     };
 
     init = function() {
-        initAnnyang();
+        console.log('foo');
+
+
+        //initAnnyang();
         initAudioContext();
+        stopMic = $('#stopmic');
+        stopMic.on('click', stop_microphone);
+
+        startMic = $('#startmic');
+        startMic.on('click', initAudioContext);
 
         appView = new projectham.AppView();
 
         box = $('.move');
         listening = $('#listening');
+        var points = audioviz.attr("points");
+        final_array = getPointsArray(points);
+        for(var i = 0; i < final_array.length; i++) {
+            final_array[i] = final_array[i].split(",");
+        }
+        console.log(final_array);
     };
 
     initAnnyang = function() {
@@ -124,22 +143,12 @@ projectham.module = (function($) {
 
     initAudioContext = function() {
         audioContext = new AudioContext();
+        audioviz = $("#audioviz");
+        initialPoints = audioviz.attr("points");
 
         console.log("audio is starting up ...");
 
         BUFF_SIZE = 16384;
-
-        // get the context from the canvas to draw on
-        ctx = $("#canvas").get()[0].getContext("2d");
-
-        // create a gradient for the fill. Note the strange
-        // offset, since the gradient is calculated based on
-        // the canvas, not the specific element we draw
-        gradient = ctx.createLinearGradient(0,0,0,300);
-        gradient.addColorStop(1,'#000000');
-        gradient.addColorStop(0.75,'#ff0000');
-        gradient.addColorStop(0.25,'#ffff00');
-        gradient.addColorStop(0,'#ffffff');
 
         if (!navigator.getUserMedia)
             navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
@@ -170,7 +179,7 @@ projectham.module = (function($) {
         gain_node.connect( audioContext.destination );
 
         microphone_stream = audioContext.createMediaStreamSource(stream);
-        microphone_stream.connect(gain_node); // comment out to disconnect output speakers
+        //microphone_stream.connect(gain_node); // comment out to disconnect output speakers
                                               // ... everything else will work OK this
                                               // eliminates possibility of feedback squealing
                                               // or leave it in and turn down the volume
@@ -198,21 +207,68 @@ projectham.module = (function($) {
             var fft_array = new Uint8Array(analyserNode.frequencyBinCount);
             analyserNode.getByteFrequencyData(fft_array);
 
-            // clear the current state
-            ctx.clearRect(0, 0, 1000, 325);
-
-            // set the fill style
-            ctx.fillStyle=gradient;
             drawSpectrum(fft_array);
         }
     }
 
-    function drawSpectrum(array) {
-        for ( var i = 0; i < (array.length); i++ ){
-            var value = array[i] * 0.8;
+    function stop_microphone() {
+        script_processor_fft_node.onaudioprocess = function() {}
+    }
 
-            ctx.fillRect(i*5,325-value,3,325);
+    function getPointsArray(string) {
+        var array = string.split(" ");
+        /*for(var j = 0; j < array.length; j++) {
+            array[j] = array[j].split(",");
+        }*/
+
+        return array;
+    }
+
+    function getPointsString(array) {
+        for(var k = 0; k < array.length; k++) {
+            array[k] = array[k] ? array[k].toString() : "";
         }
+
+        return array.join(" ");
+    }
+
+    function redrawSVG() {
+        audioviz.attr("points", initialPoints);
+    }
+
+    function drawSpectrum(array) {
+        var cur_array = new Array(final_array.length);
+        var accuracy = 7;
+
+        for ( var i = 0; i < (cur_array.length); i++ ){
+            var value = array[i] / 6 > 12 ? array[i] / 6 : 0;
+
+            if(i % accuracy == 0) {
+                if (final_array[i * accuracy]) {
+                    cur_array[i] = new Array(2);
+
+                    if (i < (cur_array.length * 0.25 / accuracy)) {
+                        cur_array[i][0] = Number(final_array[i * accuracy][0]) - value;
+                        cur_array[i][1] = Number(final_array[i * accuracy][1]) + value;
+                    } else if (i < (cur_array.length * 0.5 / accuracy )) {
+                        cur_array[i][0] = Number(final_array[i * accuracy][0]) - value;
+                        cur_array[i][1] = Number(final_array[i * accuracy][1]) - value;
+                    } else if (i < (cur_array.length * 0.75 / accuracy )) {
+                        cur_array[i][0] = Number(final_array[i * accuracy][0]) + value;
+                        cur_array[i][1] = Number(final_array[i * accuracy][1]) - value;
+                    } else if (i < (cur_array.length / accuracy)) {
+                        cur_array[i][0] = Number(final_array[i * accuracy][0]) + value;
+                        cur_array[i][1] = Number(final_array[i * accuracy][1]) + value;
+                    }
+
+                }
+            }
+        }
+
+        audioviz.attr("points", getPointsString(cur_array));
+
+
+        //redrawSVG();
     }
 
     $(document).ready(init);
