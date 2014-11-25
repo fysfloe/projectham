@@ -23,6 +23,7 @@ projectham.module = (function($) {
         audioviz,
         initialPoints,
         final_array,
+        mic,
         stopMic,
         startMic;
 
@@ -38,6 +39,10 @@ projectham.module = (function($) {
 
     listen = function() {
         console.log('listening');
+
+        mic.each(function() {
+            $(this).attr('fill', 'green');
+        });
 
         listening.css('background-color', 'green');
         
@@ -75,7 +80,7 @@ projectham.module = (function($) {
         console.log('foo');
 
 
-        //initAnnyang();
+        initAnnyang();
         initAudioContext();
         stopMic = $('#stopmic');
         stopMic.on('click', stop_microphone);
@@ -86,6 +91,7 @@ projectham.module = (function($) {
         appView = new projectham.AppView();
 
         box = $('.move');
+        mic = $('.mic_fill');
         listening = $('#listening');
         var points = audioviz.attr("points");
         final_array = getPointsArray(points);
