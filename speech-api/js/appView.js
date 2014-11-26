@@ -12,13 +12,23 @@ projectham.AppView = Backbone.View.extend({
     },
     
     events: {
-        //'click #save': 'saveCommand'
+        //'click #save': 'saveCommand',
+        'click #clear': 'clearCommands'
     },
     
     saveCommand: function(command) {
         this.commands.create({
             command:    command
         });
+    },
+
+    clearCommands: function() {
+        console.log('clear');
+        var model;
+
+        while(model = this.commands.at(0)) {
+            model.destroy();
+        }
     },
     
     printCommand: function(command) {

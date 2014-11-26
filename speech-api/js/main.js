@@ -10,20 +10,31 @@ projectham.module = (function($) {
         listening,
         appView,
         ignore_onend,
+
         commands,
-        keywords,
-        appStarted;
+        single_keywords,
+        double_keywords,
+
+        app_started;
 
     var movebox,
         init,
         initRecognition,
         matchCommand,
-        listen;
+        listen,
+        executeCommand,
+
+        startApp,
+        move,
+        rotate,
+        goTo,
+        reset,
+        zoom;
 
     initRecognition = function() {
         var final_transcript = '';
         var recognizing = false;
-        var ignore_onend;
+        var ignore_onend = true;
         var start_timestamp;
         var recognition = new webkitSpeechRecognition();
         recognition.continuous = true;
@@ -54,10 +65,17 @@ projectham.module = (function($) {
         };
 
         recognition.onend = function() {
+            console.log('ended');
+
+            app_started = false;
+
+            recognition.start();
+
             recognizing = false;
             if (ignore_onend) {
                 return;
             }
+
             if (!final_transcript) {
                 console.log('speak now');
                 return;
@@ -79,6 +97,7 @@ projectham.module = (function($) {
                 upgrade();
                 return;
             }
+
             for (var i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
                     final_transcript = (event.results[i][0].transcript).trim();
@@ -86,17 +105,41 @@ projectham.module = (function($) {
                     interim_transcript = event.results[i][0].transcript;
                 }
             }
+
             //final_transcript = capitalize(final_transcript);
             final_span.innerHTML = final_transcript;
             interim_span.innerHTML = interim_transcript;
 
             if(final_transcript) {
-                var matchedCommand = hasCommand(final_transcript);
+                var matched_command = matchCommand(final_transcript);
 
-                console.log(matchedCommand);
+                console.log('matched command: ' + matched_command);
 
-                if(matchedCommand) {
-                    appView.saveCommand(matchedCommand);
+                if(matched_command) {
+                    if(matched_command.string_array) {
+                        var combined_command = matched_command.correct + " ";
+                        for(var k = matched_command.num_keywords; k < matched_command.string_array.length; k++) {
+                            if (!matched_command.string_array.hasOwnProperty(k)) continue;
+
+                            combined_command += matched_command.string_array[k] + " ";
+                        }
+
+                        appView.saveCommand(combined_command);
+
+                    } else {
+                        appView.saveCommand(matched_command.correct);
+                    }
+
+                    if(matched_command.has_parameters) {
+                        matched_command.parameters = {};
+                        for(var j = matched_command.num_keywords; j < matched_command.string_array.length; j++) {
+                            matched_command.parameters[j] = matched_command.string_array[j];
+                        }
+                        executeCommand(matched_command, matched_command.parameters);
+                    } else {
+                        executeCommand(matched_command);
+                    }
+
                 } else {
                     appView.saveCommand(final_transcript);
                 }
@@ -115,16 +158,61 @@ projectham.module = (function($) {
             final_span.innerHTML = '';
             interim_span.innerHTML = '';
         }
-
-        listening.css('background-color', 'green');
     };
 
-    movebox = function(direction, value) {
+    executeCommand = function(command, parameters) {
+        command.function(parameters);
+    };
+
+    matchCommand = function(command) {
+        // if app has been started via command "ok ham", the commands will be devided into a keyword (first position of array) and parameters
+        // the keyword has to be within the commands object
+        if(app_started) {
+
+            var string_array = command.split(' ');
+            var keyword = string_array[0];
+
+            console.log(string_array);
+
+            var obj = hasCommand(keyword);
+
+            if(!obj) {
+                console.log(keyword + " " + string_array[1]);
+                obj = hasCommand(keyword + " " + string_array[1]);
+                obj.num_keywords = 2;
+            } else {
+                obj.num_keywords = 1;
+            }
+
+            obj.string_array = string_array;
+
+            //obj.string_array[0] = obj.correct;
+
+            return obj;
+        }
+        // otherwise we are looking for the whole string in the commands array
+        else {
+            return hasCommand(command);
+        }
+    };
+
+    startApp = function() {
+        app_started = true;
+
+        listening.css('background-color', 'green');
+
+        console.log('app started');
+    };
+
+    move = function(parameters) {
+        var direction = parameters[1];
+        var value = parameters[2];
+
         console.log('foo');
 
         var moveTo = {
             'x': direction == 'left' ? value * (-1) : (direction == 'right' ? value : 0),
-            'y': direction == 'top' ? value * (-1) : (direction == 'bottom' ? value : 0),
+            'y': direction == 'top' ? value * (-1) : (direction == 'bottom' ? value : 0)
         };
 
         console.log('transform: translate(' + moveTo.x + ',' + moveTo.y + ')');
@@ -132,8 +220,72 @@ projectham.module = (function($) {
         box.css({
             transform: 'translate(' + moveTo.x + 'px,' + moveTo.y + 'px)'
         });
+    };
 
-        appView.saveCommand('Move ' + direction + ' ' + value);
+    rotate = function(parameters) {
+        var direction = parameters[1];
+        var rotation;
+
+        switch(direction) {
+            case 'left':
+                rotation = 'rotateY(45deg)';
+                break;
+            case 'right':
+                rotation = 'rotateY(-45deg)';
+                break;
+            case 'top':
+                rotation = 'rotateX(45deg)';
+                break;
+            case 'bottom':
+                rotation = 'rotateX(-45deg)';
+                break;
+            default:
+                break;
+        }
+
+        box.css({
+            transform: rotation
+        })
+    };
+
+    goTo = function(parameters) {
+        var destination = '';
+
+        for(var i in parameters) {
+            if (!parameters.hasOwnProperty(i)) continue;
+            destination += parameters[i] + " ";
+        }
+
+        destination = destination.trim();
+
+        $('#goto').html(destination.toUpperCase());
+    };
+
+    reset = function() {
+        // call reset globe function here
+
+        box.css({
+            transform: 'none'
+        });
+
+        $('#goto').html('reset');
+    };
+
+    zoom = function(parameters) {
+        var direction = parameters[1];
+        var scale;
+
+        if(direction == "in") {
+            scale = 'scale(1.5)';
+        } else if(direction == "out") {
+            scale = 'scale(0.5)';
+        }
+
+        box.css({
+            transform: scale
+        });
+
+        $('#goto').html('zoom' + parameters[1]);
     };
 
     init = function() {
@@ -149,34 +301,26 @@ projectham.module = (function($) {
         initRecognition();
     };
 
-    matchCommand = function(command) {
-        console.log(hasCommand(command));
-
-        return(hasCommand(command));
-    };
-
-    listen = function() {
-        appStarted = true;
-    };
-
-    keywords = ['move'];
-
     function hasCommand(value) {
         for(var i in commands) {
-
-            console.log(commands[i]);
-
             if (!commands.hasOwnProperty(i)) continue;
             for(var j in commands[i]) {
-
-                console.log("value "+value);
-
                 if (!commands[i].hasOwnProperty(j)) continue;
-                if(commands[i][j] == value) {
-                    console.log('FOUNDFOUND');
 
-                    return commands[i].correct;
+                for(var k in commands[i].possibilities) {
+                    if (!commands[i].possibilities.hasOwnProperty(k)) continue;
+
+                    if(commands[i].possibilities[k] == value.toLowerCase()) {
+                        console.log('FOUNDFOUND');
+
+                        return {
+                            'correct': commands[i].correct,
+                            'function': commands[i].function,
+                            'has_parameters': commands[i].has_parameters
+                        };
+                    }
                 }
+
             }
         }
 
@@ -186,19 +330,70 @@ projectham.module = (function($) {
     commands = {
         'start_app': {
             'correct': 'ok ham',
-            0: 'okay ham',
-            1: 'ok hand',
-            2: 'okay hand',
-            3: 'ok m',
-            4: 'okay m',
-            5: 'okay have',
-            6: 'ok have'
+            'function': startApp,
+            'has_parameters': false,
+            'possibilities': {
+                0: 'ok ham',
+                1: 'okay ham',
+                2: 'ok hand',
+                3: 'okay hand',
+                4: 'ok m',
+                5: 'okay m',
+                6: 'okay have',
+                7: 'ok have'
+            }
         },
+
         'move': {
-            'correct': 'move right',
-            0: ''
+            'correct': 'move',
+            'function': move,
+            'has_parameters': true,
+            'possibilities': {
+                0: 'move',
+                1: 'mu',
+                2: ''
+            }
         },
-        'foo': 'foo'
+
+        'rotate': {
+            'correct': 'rotate',
+            'function': rotate,
+            'has_parameters': true,
+            'possibilities': {
+                0: 'rotate',
+                1: 'rot',
+                2: ''
+            }
+        },
+
+        'go_to': {
+            'correct': 'go to',
+            'function': goTo,
+            'has_parameters': true,
+            'possibilities': {
+                0: 'go to',
+                1: 'show me',
+                2: 'jump to'
+            }
+        },
+
+        'reset': {
+            'correct': 'reset',
+            'function': reset,
+            'has_parameters': false,
+            'possibilities': {
+                0: 'reset'
+            }
+        },
+
+        'zoom': {
+            'correct': 'zoom',
+            'function': zoom,
+            'has_parameters': true,
+            'possibilities': {
+                0: 'zoom'
+            }
+        }
     };
 
     $(document).ready(init);
