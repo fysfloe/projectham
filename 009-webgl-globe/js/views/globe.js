@@ -24,6 +24,8 @@ dataGlobe.GlobeView = Backbone.View.extend({
     render: function (options) {
         this.width = options.width || 500;
         this.height = options.height || 500;
+
+        this.middle = {x: parseInt(this.width / 2), y: parseInt(this.height / 2)};
         this.distance = options.distance || 15;
         this.mapSrc = options.mapSrc || 'img/5_night_8k.jpg';
         this.bgSrc = options.bgSrc || 'img/galaxy_starfield.png';
@@ -40,7 +42,6 @@ dataGlobe.GlobeView = Backbone.View.extend({
         };
 
         this.scene = new THREE.Scene();
-        this.scene1 = new THREE.Scene();
 
         this.camera = new THREE.PerspectiveCamera(50, this.width / this.height, 0.1, 1000);
         this.camera.position.z = this.distance;
@@ -476,6 +477,7 @@ dataGlobe.GlobeView = Backbone.View.extend({
     _rotateToPlace: function (target) {
         var _this = this;
 
+
         this.isTween = true;
         var position = {
             x: parseFloat(this.camera.position.x),
@@ -506,28 +508,39 @@ dataGlobe.GlobeView = Backbone.View.extend({
     },
 
     rotateCameraAtValue: function (dir) {
-        var vector = this.controls.target.clone();
-        var l = (new THREE.Vector3()).subVectors(this.camera.position, vector).length();
-        var up = this.camera.up.clone();
-        var quaternion = new THREE.Quaternion();
-        var _this = this;
-        var length;
+        var length = 60,
+            _this = this,
+            offsetX,
+            offsetY;
+        console.log(this.width + " || " + this.height);
 
-        if(dir.toLowerCase() == 'right'){
-            length = 0.01;
-        }else if(dir.toLowerCase() == 'left'){
-            length = -0.01;
+
+        if (dir.toLowerCase() == 'right') {
+            offsetX = -length;
+            offsetY = 0;
+        } else if (dir.toLowerCase() == 'left') {
+            offsetX = length;
+            offsetY = 0;
+        } else if (dir.toLowerCase() == 'up') {
+            offsetY = length;
+            offsetX = 0;
+        } else if (dir.toLowerCase() == 'down') {
+            offsetY = -length;
+            offsetX = 0;
         }
 
-        var rotationAnim = new TWEEN.Tween(length).to(length, 750);
+        var position = {x: parseInt(this.width / 2), y: parseInt(this.height / 2)};
+        console.log(position);
 
+        var target = {x: parseInt(position.x + offsetX), y: parseInt(position.y + offsetY)};
+
+        var rotationAnim = new TWEEN.Tween(position).to(target, 750);
+        _this.controls.setRotateStart(position);
         rotationAnim.onUpdate(function () {
-            up = _this.camera.up.clone();
-            quaternion.setFromAxisAngle(up, length);
-            _this.camera.position.applyQuaternion(quaternion);
+            _this.controls.rotate(position);
         });
 
-        rotationAnim.onComplete(function(){
+        rotationAnim.onComplete(function () {
             TWEEN.remove(this);
         });
 
@@ -769,9 +782,9 @@ dataGlobe.ControlView = Backbone.View.extend({
         var val;
 
         if (dir instanceof Object) {
-            val = "right";
+            val = "down";
         } else {
-            val = dir ? dir : "right";
+            val = dir ? dir : "down";
         }
 
         eventBus.trigger('rotate', val);
@@ -784,7 +797,14 @@ dataGlobe.ControlView = Backbone.View.extend({
     },
 
     goToPlace: function (placeName) {
-        var val = (placeName ? placeName : $(this.el).find('#searchField').val());
+
+        var val;
+        if (placeName instanceof Object) {
+            val = $(this.el).find('#searchField').val();
+        } else {
+            val = (placeName ? placeName : $(this.el).find('#searchField').val());
+        }
+
         eventBus.trigger('goTo', val);
     },
 

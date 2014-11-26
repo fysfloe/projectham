@@ -37,7 +37,7 @@ THREE.TrackballControls = function (object, domElement, viewObject) {
 
     // internals
 
-    this.target = new THREE.Vector3(0.0,0);
+    this.target = new THREE.Vector3(0.0, 0);
 
     var lastPosition = new THREE.Vector3();
 
@@ -305,15 +305,25 @@ THREE.TrackballControls = function (object, domElement, viewObject) {
 
     };
 
-    this.zoom= function(direction, level){
-        if(direction.toLowerCase() == 'in'){
+    this.zoom = function (direction, level) {
+        if (direction.toLowerCase() == 'in') {
             _zoomStart.y += 3 * level;
-        }else if(direction.toLowerCase() == 'out'){
+        } else if (direction.toLowerCase() == 'out') {
             _zoomStart.y -= 3 * level;
-        }else{
+        } else {
             console.log("No direction given");
-            return;
         }
+    };
+
+    this.setRotateStart = function(start){
+        _rotateStart = _this.getMouseProjectionOnBall(start.x, start.y);
+        console.log("Start: " + start.x + " || " + start.y);
+    };
+
+    this.rotate = function (end) {
+
+            _rotateEnd = _this.getMouseProjectionOnBall(end.x, end.y);
+        console.log(end.x + " || " + end.y);
     };
 
     // listeners
@@ -373,6 +383,7 @@ THREE.TrackballControls = function (object, domElement, viewObject) {
 
             _rotateStart = _rotateEnd = _this.getMouseProjectionOnBall(event.clientX, event.clientY);
 
+
         } else if (_state === STATE.ZOOM && !_this.noZoom) {
 
             _zoomStart = _zoomEnd = _this.getMouseOnScreen(event.clientX, event.clientY);
@@ -389,7 +400,7 @@ THREE.TrackballControls = function (object, domElement, viewObject) {
     }
 
     function mousemove(event) {
-
+        
         if (_this.enabled === false) return;
 
         event.preventDefault();
@@ -399,6 +410,7 @@ THREE.TrackballControls = function (object, domElement, viewObject) {
         if (_state === STATE.ROTATE && !_this.noRotate) {
 
             _rotateEnd = _this.getMouseProjectionOnBall(event.clientX, event.clientY);
+
 
         } else if (_state === STATE.ZOOM && !_this.noZoom) {
 
@@ -438,9 +450,6 @@ THREE.TrackballControls = function (object, domElement, viewObject) {
         if (event.wheelDelta) { // WebKit / Opera / Explorer 9
 
             delta = event.wheelDelta / 40;
-            console.log(event.wheelDelta);
-            console.log(delta);
-            console.log(eventBus);
 
         } else if (event.detail) { // Firefox
 
