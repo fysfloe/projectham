@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Speech API Test</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="style.css" type="text/css">
+
+    <script src="lib/underscore-min.js"></script>
+    <script src="lib/jquery-2.1.0.min.js"></script>
+    <script src="lib/backbone-min.js"></script>
+    <script src="lib/backbone.localStorage.js"></script>
+
+    <script src="lib/three.min.js"></script>
+
+    <script src="lib/TrackballControls.js"></script>
+    <script src='lib/tween.js'></script>
+
+    <script type="text/template" id="commandTemplate">
+        <em><%= time %></em>: <span class="view"><%= command %></span>
+    </script>
+</head>
+<body>
+<header></header>
+<main>
+    <div id="globe"></div>
+
+    <!--<div id="controls">
+        <button id="reset" style="position:absolute; bottom: 10px; right: 10px;">Reset Control</button>
+        <button id="rotate" style="position:absolute; bottom: 10px; right: 110px;">Rotate</button>
+        <div style=" position: absolute; bottom: 38px; right: 10px; z-index: 1000">
+            <input type="text" id="searchField" name="hallo "value=""/>
+        </div>
+    </div>-->
+    <div id="listening"></div>
+    <ul id="commands"></ul>
+    <button id="clear">Delete All Commands</button>
+
+    <div id="results">
+        <span class="final" id="final_span"></span>
+        <span class="interim" id="interim_span"></span>
+    </div>
+
+
+
+</main>
+
+<script type="text/javascript">
+    var eventBus = _.extend({}, Backbone.Events);
+</script>
+
+<script src="js/views/globeView.js"></script>
+<script src="js/views/controlView.js"></script>
+<script src="js/models/command.js"></script>
+<script src="js/collections/commandList.js"></script>
+<script src="js/views/commandView.js"></script>
+<script src="js/views/appView.js"></script>
+<script src="js/main.js"></script>
+
+<script id="vertexShader" type="x-shader/x-vertex">
+                varying vec3 vNormal;
+                void main()
+                {
+                    vNormal = normalize( normalMatrix * normal );
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+                }
+
+
+    </script>
+
+<!-- fragment shader a.k.a. pixel shader -->
+<script id="fragmentShader" type="x-shader/x-vertex">
+                varying vec3 vNormal;
+                void main()
+                {
+                    float intensity = pow( 0.7 - dot( vNormal, vec3( 0.0, 0.0, 1.0 ) ), 4.0 );
+                    gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 ) * intensity;
+                }
+
+
+    </script>
+
+</body>
+</html>
