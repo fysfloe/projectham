@@ -13,8 +13,6 @@ projectham.Command = Backbone.Model.extend({
     },
 
     initialize: function() {
-        this.on('change', function() {
-            console.log('Model has changed');
-        })
+        this.on('change', function() {})
     }
 });

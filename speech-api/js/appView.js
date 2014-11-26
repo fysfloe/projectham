@@ -16,13 +16,9 @@ projectham.AppView = Backbone.View.extend({
     },
     
     saveCommand: function(command) {
-        console.log('In');
-
         this.commands.create({
             command:    command
         });
-        
-        console.log(this.commands);
     },
     
     printCommand: function(command) {

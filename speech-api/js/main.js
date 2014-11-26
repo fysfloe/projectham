@@ -9,16 +9,16 @@ projectham.module = (function($) {
     var box,
         listening,
         appView,
-        recognition,
-        recognizing,
-        ignore_onend;
+        ignore_onend,
+        commands,
+        keywords,
+        appStarted;
 
     var movebox,
         init,
         initRecognition,
-        startRecognition,
-        stopRecognition,
-        toggleRecognition;
+        matchCommand,
+        listen;
 
     initRecognition = function() {
         var final_transcript = '';
@@ -81,26 +81,29 @@ projectham.module = (function($) {
             }
             for (var i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
-                    final_transcript += event.results[i][0].transcript;
+                    final_transcript = (event.results[i][0].transcript).trim();
                 } else {
-                    interim_transcript += event.results[i][0].transcript;
+                    interim_transcript = event.results[i][0].transcript;
                 }
             }
-            final_transcript = capitalize(final_transcript);
-            final_span.innerHTML = linebreak(final_transcript);
-            interim_span.innerHTML = linebreak(interim_transcript);
+            //final_transcript = capitalize(final_transcript);
+            final_span.innerHTML = final_transcript;
+            interim_span.innerHTML = interim_transcript;
+
+            if(final_transcript) {
+                var matchedCommand = hasCommand(final_transcript);
+
+                console.log(matchedCommand);
+
+                if(matchedCommand) {
+                    appView.saveCommand(matchedCommand);
+                } else {
+                    appView.saveCommand(final_transcript);
+                }
+
+                final_transcript = '';
+            }
         };
-
-        var two_line = /\n\n/g;
-        var one_line = /\n/g;
-        function linebreak(s) {
-            return s.replace(two_line, '<p></p>').replace(one_line, '<br>');
-        }
-
-        var first_char = /\S/;
-        function capitalize(s) {
-            return s.replace(first_char, function(m) { return m.toUpperCase(); });
-        }
 
         if (recognizing) {
             recognition.stop();
@@ -134,102 +137,7 @@ projectham.module = (function($) {
     };
 
     init = function() {
-
-        var final_transcript = '';
-        var recognizing = false;
-        var ignore_onend;
-        var start_timestamp;
-        var recognition = new webkitSpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-
-        recognition.onstart = function() {
-            recognizing = true;
-            console.log('speak now');
-        };
-
-        recognition.onerror = function(event) {
-            if (event.error == 'no-speech') {
-                console.log('no speech');
-                ignore_onend = true;
-            }
-            if (event.error == 'audio-capture') {
-                console.log('no microphone');
-                ignore_onend = true;
-            }
-            if (event.error == 'not-allowed') {
-                if (event.timeStamp - start_timestamp < 100) {
-                    console.log('info blocked');
-                } else {
-                    console.log('info denied');
-                }
-                ignore_onend = true;
-            }
-        };
-
-        recognition.onend = function() {
-            recognizing = false;
-            if (ignore_onend) {
-                return;
-            }
-            if (!final_transcript) {
-                console.log('speak now');
-                return;
-            }
-
-            if (window.getSelection) {
-                window.getSelection().removeAllRanges();
-                var range = document.createRange();
-                range.selectNode(document.getElementById('final_span'));
-                window.getSelection().addRange(range);
-            }
-        };
-
-        recognition.onresult = function(event) {
-            var interim_transcript = '';
-            if (typeof(event.results) == 'undefined') {
-                recognition.onend = null;
-                recognition.stop();
-                upgrade();
-                return;
-            }
-            for (var i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    final_transcript += event.results[i][0].transcript;
-                } else {
-                    interim_transcript += event.results[i][0].transcript;
-                }
-            }
-            final_transcript = capitalize(final_transcript);
-            final_span.innerHTML = linebreak(final_transcript);
-            interim_span.innerHTML = linebreak(interim_transcript);
-        };
-
-        var two_line = /\n\n/g;
-        var one_line = /\n/g;
-        function linebreak(s) {
-            return s.replace(two_line, '<p></p>').replace(one_line, '<br>');
-        }
-
-        var first_char = /\S/;
-        function capitalize(s) {
-            return s.replace(first_char, function(m) { return m.toUpperCase(); });
-        }
-
-        if (recognizing) {
-            recognition.stop();
-        } else {
-            final_transcript = '';
-            recognition.lang = 'en';
-            recognition.start();
-            ignore_onend = false;
-            final_span.innerHTML = '';
-            interim_span.innerHTML = '';
-        }
-
-        listening.css('background-color', 'green');
-
-        /*
+        appStarted = false;
 
         appView = new projectham.AppView();
 
@@ -238,24 +146,59 @@ projectham.module = (function($) {
         box = $('.move');
         listening = $('#listening');
 
-        if (annyang) {
-            console.log('annyang started');
+        initRecognition();
+    };
 
-            // Let's define a command.
-            var commands = {
-                'ok ham': initRecognition
-            };
+    matchCommand = function(command) {
+        console.log(hasCommand(command));
 
-            // Add our commands to annyang
-            annyang.addCommands(commands);
+        return(hasCommand(command));
+    };
 
-            // Start listening.
-            annyang.start();
+    listen = function() {
+        appStarted = true;
+    };
 
-            console.log(annyang);
+    keywords = ['move'];
+
+    function hasCommand(value) {
+        for(var i in commands) {
+
+            console.log(commands[i]);
+
+            if (!commands.hasOwnProperty(i)) continue;
+            for(var j in commands[i]) {
+
+                console.log("value "+value);
+
+                if (!commands[i].hasOwnProperty(j)) continue;
+                if(commands[i][j] == value) {
+                    console.log('FOUNDFOUND');
+
+                    return commands[i].correct;
+                }
+            }
         }
 
-        */
+        return false;
+    }
+
+    commands = {
+        'start_app': {
+            'correct': 'ok ham',
+            0: 'okay ham',
+            1: 'ok hand',
+            2: 'okay hand',
+            3: 'ok m',
+            4: 'okay m',
+            5: 'okay have',
+            6: 'ok have'
+        },
+        'move': {
+            'correct': 'move right',
+            0: ''
+        },
+        'foo': 'foo'
     };
 
     $(document).ready(init);
