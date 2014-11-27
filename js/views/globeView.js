@@ -434,6 +434,7 @@ projectham.GlobeView = Backbone.View.extend({
         });
 
         eventBus.on("rotate", function (dir) {
+            _this.pauseCameraRotation();
             _this.rotateCameraAtValue(dir);
         });
 
@@ -522,6 +523,9 @@ projectham.GlobeView = Backbone.View.extend({
         } else if (dir.toLowerCase() == 'down') {
             offsetY = -length;
             offsetX = 0;
+        }else{
+            offsetX = -length;
+            offsetY = 0;
         }
 
         var position = {x: parseInt(this.width / 2), y: parseInt(this.height / 2)};
