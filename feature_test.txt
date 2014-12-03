@@ -1,8 +1,0 @@
-testfile
-immer noch testfile
-sooo kompliziert
-<<<<<<< HEAD
-uhh jetz wird eng
-=======
-schau ma mal
->>>>>>> 3f0b67392b56a4cb25f8ad83496a629e59898257

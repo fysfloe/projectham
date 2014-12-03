@@ -1,0 +1,23 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+div.locations, div.hashtags, div.trends {
+	float:left;
+	width: 10%;
+	margin: 0 3%;
+}
+
+div.tweets {
+    float: left;
+	width: 40%;
+}
+
+h4 {
+    margin-bottom: 0;
+}
