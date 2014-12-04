@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Speech API Test</title>
+    <title>Project Ham | A Twitter Live Stream Web Experience</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="style.css" type="text/css">
 
@@ -16,33 +16,89 @@
     <script src='lib/tween.js'></script>
 
     <script type="text/template" id="commandTemplate">
-        <em><%= time %></em>: <span class="view"><%= command %></span>
+        <span class="view"><%= command %></span>
     </script>
 </head>
 <body>
-<header></header>
+<header>
+    <h1>Project Ham <span>A Twitter Live Stream Web Experience</span></h1>
+</header>
 <main>
+    <div id="filter-box" class="main-box">
+        <img src="img/ui/hashtag.png" alt="Hastag" class="ui-img">
+        <h2>Filter By</h2>
+
+        <div class="on-stream-started filters table">
+            <div class="table-row filter-names">
+                <div class="table-cell" id="filter-name-1">Obama</div>
+                <div class="table-cell" id="filter-name-2">Putin</div>
+                <div class="table-cell add-filter" id="filter-name-3">Add Filter</div>
+            </div>
+            <div class="table-row filter-colors">
+                <div class="table-cell" id="filter-color-1"><img src="img/ui/colors/green.png" alt="Green"></div>
+                <div class="table-cell" id="filter-color-2"><img src="img/ui/colors/orange.png" alt="Orange"></div>
+                <div class="table-cell add-filter" id="filter-color-3"><img src="img/ui/plus.png" alt="Plus"></div>
+            </div>
+        </div>
+
+        <input type="text" name="i-add-filter" id="i-add-filter" placeholder='Type your filter or say "filter by"'><button id="b-add-filter"><img src="img/ui/plus_circle.png" alt="+" class="on-stream-started"></button>
+        <button id="start-stream" class="ui-bg-color on-stream-not-started">Start Stream</button>
+
+        <div id="counts" class="table">
+            <div class="table-cell">
+                <figure>
+                    <span>712</span>
+                    <figcaption>Total</figcaption>
+                </figure>
+            </div>
+            <div class="table-cell">
+                <figure>
+                    <span>536</span>
+                    <figcaption>Tweets</figcaption>
+                </figure>
+            </div>
+            <div class="table-cell">
+                <figure>
+                    <span>176</span>
+                    <figcaption>Retweets</figcaption>
+                </figure>
+            </div>
+        </div>
+
+        <div class="more-info">
+            <p>This Web Experience uses a Twitter Stream.</p>
+            <p><a href="#" id="open-twitter-info-box">Learn more</a></p>
+        </div>
+    </div>
     <div id="globe"></div>
 
-    <!--<div id="controls">
-        <button id="reset" style="position:absolute; bottom: 10px; right: 10px;">Reset Control</button>
-        <button id="rotate" style="position:absolute; bottom: 10px; right: 110px;">Rotate</button>
-        <div style=" position: absolute; bottom: 38px; right: 10px; z-index: 1000">
-            <input type="text" id="searchField" name="hallo "value=""/>
+    <div id="web-speech-box" class="main-box">
+        <div id="results">
+            <span class="final" id="final_span"></span>
+            <span class="interim" id="interim_span"></span>
         </div>
-    </div>-->
-    <div id="listening"></div>
-    <ul id="commands"></ul>
-    <button id="clear">Delete All Commands</button>
+        <img src="img/ui/mic.png" alt="Mic" class="ui-img">
+        <h2>That's what you said</h2>
+        <!--<div id="listening"></div>-->
+        <ul id="commands"></ul>
 
-    <div id="results">
-        <span class="final" id="final_span"></span>
-        <span class="interim" id="interim_span"></span>
+        <div class="more-info">
+            <p>This Web Experience uses Speech Recognition.</p>
+            <p><a href="#" id="open-web-speech-info-box">Learn more</a></p>
+        </div>
     </div>
 
-
-
 </main>
+
+<footer>
+    <div class="more-info">
+        <p>This Web Experience uses GeoNames.</p>
+        <p><a href="#" id="open-geo-info-box">Learn more</a></p>
+    </div>
+    <div>
+        &copy; 2015, Project Ham | <a href="#" id="open-imprint">Imprint</a>
+    </div>
+</footer>
 
 <script type="text/javascript">
     var eventBus = _.extend({}, Backbone.Events);

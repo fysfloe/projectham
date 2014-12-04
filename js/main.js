@@ -9,6 +9,7 @@ projectham.module = (function($) {
     var listening,
         appView,
         ignore_onend,
+        restart,
 
         commands,
         app_started,
@@ -57,6 +58,7 @@ projectham.module = (function($) {
                     console.log('info blocked');
                 } else {
                     console.log('info denied');
+                    restart = false;
                 }
                 ignore_onend = true;
             }
@@ -67,7 +69,7 @@ projectham.module = (function($) {
 
             app_started = false;
 
-            recognition.start();
+            if(restart) recognition.start();
 
             recognizing = false;
             if (ignore_onend) {
@@ -141,6 +143,8 @@ projectham.module = (function($) {
                 } else {
                     appView.saveCommand(final_transcript);
                 }
+
+                final_span.innerHTML = '';
 
                 final_transcript = '';
             }
@@ -233,6 +237,7 @@ projectham.module = (function($) {
 
     init = function() {
         appStarted = false;
+        restart = true;
 
         appView = new projectham.AppView();
 
@@ -297,6 +302,15 @@ projectham.module = (function($) {
 
         return false;
     }
+
+    /*
+    command_sort = [
+        {
+            'reference': 'start_app',
+            'possibility': 'ok ham'
+        }
+    ];
+    */
 
     commands = {
         'start_app': {

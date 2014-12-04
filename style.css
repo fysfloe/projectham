@@ -1,3 +1,238 @@
+/*************************************************
+    ui-color: #0084b4
+ *************************************************/
+
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('fonts/BebasNeueRegular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('fonts/BebasNeueBold.otf') format('opentype');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('fonts/BebasNeueBook.otf') format('opentype');
+    font-weight: 300;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('fonts/BebasNeueLight.otf') format('opentype');
+    font-weight: 200;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('fonts/BebasNeueThin.otf') format('opentype');
+    font-weight: 100;
+    font-style: normal;
+}
+
+/*************************************************
+    general
+ *************************************************/
+
+body, html, main {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: "BebasNeue", "Helvetica Neue", Arial, sans-serif;
+    color: white;
+    background: black;
+}
+
+.bold {
+    font-weight: 600;
+}
+
+.ui-color {
+    color: #0084b4;
+}
+
+.ui-bg-color {
+    background-color: #0084b4;
+    color: white;
+}
+
+.table {
+    display: table;
+}
+
+.table-row {
+    display: table-row;
+}
+
+.table-cell {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+button, input, textarea {
+    font-family: "BebasNeue", "Helvetica Neue", Arial, sans-serif;
+}
+
+div {
+    position: relative;
+}
+
+button:hover {
+    cursor: pointer;
+}
+
+a {
+    color: #0084b4;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+p {
+    margin: 0 0 0.5em 0;
+    padding: 0;
+}
+
+/*************************************************
+    header
+ *************************************************/
+
+header {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    z-index: 1;
+    padding: 0.6em 0;
+}
+
+header > h1 {
+    font-size: 2.3em;
+    font-weight: 600;
+}
+
+header > h1 span {
+    color: #0084b4;
+    font-weight: 300;
+}
+
+/*************************************************
+    main-box
+ *************************************************/
+
+.main-box {
+    position: absolute;
+    width: 15em;
+    z-index: 2;
+    top: 36%;
+    padding: 0 3em;
+}
+
+.main-box h2 {
+    font-size: 1.4em;
+}
+
+.ui-img {
+    width: 3.5em;
+}
+
+.more-info {
+    margin-top: 3em;
+}
+
+/*************************************************
+    filter-box
+ *************************************************/
+
+#filter-box {
+    left: 0;
+}
+
+.filters {
+    margin: 2em 0;
+}
+
+.filter-names {
+    font-weight: 300;
+}
+
+.filters.table .table-cell {
+    text-align: center;
+    padding: 0.3em;
+}
+
+.filter-colors img {
+    width: 100%;
+}
+
+.add-filter {
+    opacity: 0.2;
+}
+
+#counts figure {
+    margin: 0 1.6em 0 0;
+}
+
+#counts figure span {
+    color: #0084b4;
+    font-size: 2.5em;
+}
+
+#counts figure figcaption {
+    font-weight: 200;
+}
+
+input#i-add-filter {
+    padding: 0.5em 0;
+    border: 0;
+    border-bottom: 1px solid white;
+    background: none;
+    font-family: "BebasNeue", "Helvetica Neue", sans-serif;
+    min-width: 12em;
+    font-size: 1em;
+    float: left;
+    color: white;
+}
+
+button#b-add-filter {
+    background: none;
+    border: none;
+    width: 4em;
+    display: block;
+    float: right;
+}
+
+button#b-add-filter img {
+    width: 100%;
+}
+
+button#start-stream {
+    display: block;
+    border: none;
+    background: #0084b4;
+    color: white;
+    width: 12em;
+    margin: 3em 0;
+    padding: 0.5em 0;
+    font-size: 1em;
+    clear: both;
+}
+
+/*************************************************
+    web-speech-box
+ *************************************************/
+
+#web-speech-box {
+    right: 0;
+    text-align: right;
+}
+
 #listening {
     margin: 30px 0;
     width: 20px;
@@ -7,8 +242,8 @@
 }
 
 #results {
-    padding: 15px;
-    text-align: left;
+    margin-right: 1em;
+    display: inline-block;
 }
 
 .interim {
@@ -16,6 +251,33 @@
 }
 
 .final {
-    color: black;
     padding-right: 3px;
+}
+
+#commands {
+    list-style: none;
+    padding-left: 2em;
+}
+
+#commands li:nth-child(2) {
+    opacity: 0.5 !important;
+}
+
+#commands li:nth-child(3) {
+    opacity: 0.25 !important;
+}
+
+/*************************************************
+    footer
+ *************************************************/
+
+footer {
+    position: absolute;
+    bottom: 3em;
+    text-align: center;
+    width: 100%;
+}
+
+footer .more-info {
+    margin-bottom: 2em;
 }

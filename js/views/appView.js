@@ -2,6 +2,7 @@ var projectham = projectham || {};
 
 projectham.AppView = Backbone.View.extend({
     el: $('main'),
+    viewCommands: 3,
     
     initialize: function() {
         this.commands = new projectham.CommandList();
@@ -35,6 +36,32 @@ projectham.AppView = Backbone.View.extend({
         var commandView;
         
         commandView = new projectham.CommandView({ model: command });
-        this.$('#commands').append(commandView.render().el);
+        //this.$('#commands').prepend(commandView.render().el);
+
+        var listItems = $("#commands li");
+
+        for(var i = 3; i < listItems.length; i++) {
+            listItems[i].remove();
+        }
+
+        this.prependListItem('commands', commandView.render().el);
+
+        if(listItems.length >= this.viewCommands) {
+            this.$('#commands li:last-child').animate({
+                'opacity': 0
+            }, 500, function() {
+                console.log('foo');
+                this.remove();
+            });
+        }
+    },
+
+    prependListItem: function(listName, listItemHTML) {
+        $(listItemHTML)
+            .hide()
+            .css('opacity',0.0)
+            .prependTo('#' + listName)
+            .slideDown(500)
+            .animate({opacity: 1.0})
     }
 });
