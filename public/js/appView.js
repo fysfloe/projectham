@@ -8,10 +8,13 @@ projectham.AppView = Backbone.View.extend({
 		this.tweets = new projectham.TweetList();
 		this.connections = new projectham.ConnectionList();
         this.hashtags = new projectham.HashtagList();
+        this.users = new projectham.UserList();
 
 		this.listenTo(this.tweets, 'add', this.printTweets);
 		this.listenTo(this.connections, 'add', this.printConnections);
 		this.listenTo(this.hashtags, 'change', this.printHashtags);
+
+        this.users.fetch();
 
         var _this = this;
         var socket;
@@ -27,6 +30,7 @@ projectham.AppView = Backbone.View.extend({
 
                 $('#stopStream').click(function(e) {
                     socket.emit('close');
+                    e.preventDefault();
                 });
 
                 var filterArray = filter.val().trim().split(',');
@@ -101,7 +105,9 @@ projectham.AppView = Backbone.View.extend({
                 });
 
                socket.on('error', function(error) {
-                   alert("Sorry buddy, an error has occured: " + error);
+                   alert("Sorry buddy, an error has occured!");
+                   console.trace('Module A'); // [1]
+                   console.error(error.stack); // [2]
                 });
 
                e.preventDefault();
