@@ -113,9 +113,20 @@ projectham.AppView = Backbone.View.extend({
 
         this.$("#tweets").empty();
 
+        // LATER HANDLING
+        /*var tweetView;
+        var tweet = this.tweets.last();
+
+        console.log(tweet);
+
+        tweetView = new projectham.TweetView({model: tweet});
+        this.$("#tweets").append(tweetView.render().el);
+
+        */
+
         tweets.collection.each(function(tweet) {
-            
             var tweetView;
+
             tweetView = new projectham.TweetView({model: tweet});
             this.$("#tweets").append(tweetView.render().el);
         });
@@ -155,24 +166,24 @@ projectham.AppView = Backbone.View.extend({
         var parent_tweet = this.tweets.get(connection.parent_id);
         var child_tweet = this.tweets.get(connection.child_id);
 
-        /*console.log('parent ' + connection.parent_id);
+        console.log('parent ' + connection.parent_id);
         console.log('child ' + connection.child_id);
         console.log(parent_tweet);
-        console.log(child_tweet);*/
+        console.log(child_tweet);
 
         if(parent_tweet && child_tweet) {
             if(parent_tweet.attributes.location && child_tweet.attributes.location) {
                 this.connections.create({
                     parent_id: connection.parent_id,
-                    child_id: connection.child_id,
-                    parent: {
+                    child_id: connection.child_id
+                    /*parent: {
                         lat: parent_tweet.attributes.location.lat,
                         lng: parent_tweet.attributes.location.lng
                     },
                     child: {
                         lat: child_tweet.attributes.location.lat,
                         lng: child_tweet.attributes.location.lng
-                    }
+                    }*/
                 });
             }
         }

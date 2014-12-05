@@ -17,7 +17,11 @@ projectham.Tweet = Backbone.Model.extend({
                 followers: null,
                 lang: ''
             },
-            hashtags: null
+            hashtags: null,
+            filter: {
+                text: '',
+                id: null
+            }
 		}
 	},
 	

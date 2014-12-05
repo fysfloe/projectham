@@ -22,6 +22,8 @@ var overallCount = 0,
     replyToParentCount = 0,
     sendCount = 0;
 
+var unsuccessGeoCount = 0;
+
 var tweet_ids = [];
 
 var connectionToSend, tweetToSend;
@@ -77,6 +79,16 @@ exports.index = function (req, res) {
     res.render('index', { title: 'Project Ham' });
 };
 
+var resetCounters = function() {
+    overallCount = 0;
+    retweetCount = 0;
+    locationCount = 0;
+    locationByUserCount = 0;
+    replyCount = 0;
+    replyToParentCount = 0;
+    sendCount = 0;
+};
+
 var destroyStream = function() {
     if(currentStream) {
         currentStream.destroy();
@@ -85,19 +97,20 @@ var destroyStream = function() {
 };
 
 var getClientSocketId = function(tweet) {
-    var clientIDs = [];
+    var clientIDs = [], keywords = [];
     for (var id in filters) {
         if(filters.hasOwnProperty(id)){
-            filters[id].forEach(function(key) {
-                //console.log(key);
+            filters[id].forEach(function(keyword, index) {
+                //console.log(keyword);
                 //console.log(tweet);
-                if(tweet.contains(key)) {
+                if(tweet.contains(keyword)) {
                     clientIDs.push(id);
+                    keywords.push([keyword, index]);
                 }
             });
         }
     }
-    return clientIDs;
+    return [clientIDs, keywords];
 };
 
 var getClientSocket = function(id) {
@@ -129,17 +142,25 @@ var sendTweet = function(tweet, parent_id, type, lat, lng, locationType) {
         "hashtags": tweet.entities.hashtags
     };
 
-    var clientIDs = getClientSocketId(tweet.text);
+    var clientAndKeyword = getClientSocketId(tweet.text);
 
-    console.log("\nClient:");
-    console.log(clientIDs);
-    console.log("now sending tweet " + tweet.id + " / Count: " + sendCount++);
+    console.log("\nClients:");
+    console.log(clientAndKeyword);
 
-    if(clientIDs) {
-        clientIDs.forEach(function(id) {
+    if(clientAndKeyword[0]) {
+        var i = 0;
+        clientAndKeyword[0].forEach(function(id) {
             var socket = getClientSocket(id);
 
             if(socket) {
+
+                console.log("now sending tweet " + tweet.id + " / Count: " + sendCount++ + " / Overall: " + overallCount);
+
+                tweetToSend.filter = {
+                    "text": clientAndKeyword[1][i][0],
+                    "id": clientAndKeyword[1][i][1]
+                };
+
                 socket.emit('newTwitt', tweetToSend);
 
                 if(parent_id) {
@@ -151,6 +172,8 @@ var sendTweet = function(tweet, parent_id, type, lat, lng, locationType) {
                     console.log(connectionToSend);
                     socket.emit('newConn', connectionToSend);
                 }
+
+                i++;
             }
         });
 
@@ -162,7 +185,7 @@ var sendTweet = function(tweet, parent_id, type, lat, lng, locationType) {
     tweetToSend = null;
 };
 
-var addNewTweet = function(tweet, parent_id, type, callback) {
+var addNewTweet = function(tweet, parent_id, type, callback, retweet) {
 
     var lat = null,
         lng = null,
@@ -181,72 +204,76 @@ var addNewTweet = function(tweet, parent_id, type, callback) {
 
         locationCount++;
 
-        callback && callback(true); // if callback
+        callback && callback(true, tweet.id, retweet); // if callback
 
-    } else if(tweet.user.location) {
+    } else if(tweet.user) {
+		if(tweet.user.location) {
 
-        // reserve id of tweet
-        tweet_ids[tweet.id] = 0;
+			// reserve id of tweet
+			tweet_ids[tweet.id] = 0;
 
-        // GEOCODER MODULE
-        geocoder.geocode(tweet.user.location, function(err, res) {
-            if(!err && res[0]) {
-                if(res[0].latitude && res[0].longitude) {
-                    lat = res[0].latitude;
-                    lng = res[0].longitude;
-                    locationType = 'user_geo';
+			// GEOCODER MODULE
+			geocoder.geocode(tweet.user.location, function(err, res) {
+				if(!err && res[0]) {
+					if(res[0].latitude && res[0].longitude) {
+						lat = res[0].latitude;
+						lng = res[0].longitude;
+						locationType = 'user_geo';
 
-                    locationByUserCount++;
+						locationByUserCount++;
 
-                    sendTweet(tweet, parent_id, type, lat, lng, locationType); // problem: duplicate tweets due to callback
+						sendTweet(tweet, parent_id, type, lat, lng, locationType); // problem: duplicate tweets due to callback
 
-                    tweet_ids[tweet.id] = 1;
+						tweet_ids[tweet.id] = 1;
 
-                    callback && callback(true); // if callback
-                } else {
-                    tweet_ids[tweet.id] = -1; // geocoding failed = -1
+						callback && callback(true, tweet.id, retweet); // if callback
+					} else {
+						tweet_ids[tweet.id] = -1; // geocoding failed = -1
 
-                    callback && callback(false); // if callback
-                }
-            } else {
-                tweet_ids[tweet.id] = -1; // geocoding failed = -1
+						callback && callback(false, tweet.id, retweet); // if callback
+					}
+				} else {
+					tweet_ids[tweet.id] = -1; // geocoding failed = -1
 
-                callback && callback(false); // if callback
-            }
-        });
+					callback && callback(false, tweet.id, retweet); // if callback
+				}
+			});
 
-        // GEONAMES
-        /*request("http://api.geonames.org/searchJSON?q=" + encodeURI(tweet.user.location) + "&maxRows=1&username=project_ham", function(error, response, body) {
+			// GEONAMES
+			/*request("http://api.geonames.org/searchJSON?q=" + encodeURI(tweet.user.location) + "&maxRows=1&username=project_ham", function(error, response, body) {
 
-            if(!error) {
-                var data = JSON.parse(body);
+				if(!error) {
+					var data = JSON.parse(body);
 
-                if(data.totalResultsCount > 0) {
+					if(data.totalResultsCount > 0) {
 
-                    lat = data.geonames[0].lat;
-                    lng = data.geonames[0].lng;
-                    locationType = 'user_geo';
+						lat = data.geonames[0].lat;
+						lng = data.geonames[0].lng;
+						locationType = 'user_geo';
 
-                    locationByUserCount++;
+						locationByUserCount++;
 
-                    sendTweet(tweet, parent_id, type, lat, lng, locationType); // problem: duplicate tweets due to callback
+						sendTweet(tweet, parent_id, type, lat, lng, locationType); // problem: duplicate tweets due to callback
 
-                    tweet_ids[tweet.id] = 1;
+						tweet_ids[tweet.id] = 1;
 
-                    callback && callback(true); // if callback
+						callback && callback(true, tweet.id, retweet); // if callback
 
-                } else {
-                    tweet_ids[tweet.id] = -1; // geocoding failed = -1
+					} else {
+						tweet_ids[tweet.id] = -1; // geocoding failed = -1
 
-                    callback && callback(false); // if callback
-                }
-            } else {
-                tweet_ids[tweet.id] = -1; // geocoding failed = -1
-                console.log(error);
+						callback && callback(false, tweet.id, retweet); // if callback
+					}
+				} else {
+					tweet_ids[tweet.id] = -1; // geocoding failed = -1
+					console.log(error);
 
-                callback && callback(false); // if callback
-            }
-        });*/
+					callback && callback(false, tweet.id, retweet); // if callback
+				}
+			});*/
+		} else {
+            callback && callback(false, tweet.id, retweet); // if callback
+        }
     }
 };
 
@@ -288,6 +315,21 @@ var InitStream = function() {
 
                 currentStream = stream;
 
+                if(overallCount > 1000000) {
+                    resetCounters();
+
+                    var size = 0, key;
+                    for (key in tweet_ids) {
+                        if (tweet_ids.hasOwnProperty(key)) {
+                            console.log(key);
+                            ++size;
+                            if(size < 200000) {
+                                delete tweet_ids[key];
+                            }
+                        }
+                    }
+                }
+
                 // tweets come in
                 overallCount++;
                 parent_id = null;
@@ -299,18 +341,18 @@ var InitStream = function() {
 
                     // add original tweet if it does not exist; bei backbone evtl.auf binäre suche in externer liste mit IDs
                     if(tweet_ids[parent_id] === undefined) {
-                        addNewTweet(parent_tweet, null, 'tweet', function(success) {
+                        addNewTweet(parent_tweet, null, 'tweet', function(success, parent_id, retweet) {
 
-                            if(success) {
+                            if(success === true) {
                                 // now add the retweet
-                                addNewTweet(item, parent_id, 'retweet');
+                                addNewTweet(retweet, parent_id, 'retweet');
 
                                 retweetCount++;
                             } else {
-                                addNewTweet(item, null, 'retweet');
+                                addNewTweet(retweet, null, 'retweet');
                             }
 
-                        });
+                        }, item);
 
                     } else if(tweet_ids[parent_id] == (-1)) { // geocoding failed on the parent tweet
                         console.log("failed geocoded retweet");
