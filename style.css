@@ -48,6 +48,10 @@ body, html, main {
     background: black;
 }
 
+.clear {
+    clear: both;
+}
+
 .bold {
     font-weight: 600;
 }
@@ -154,21 +158,24 @@ header > h1 span {
     left: 0;
 }
 
-.filters {
-    margin: 2em 0;
-}
-
 .filter-names {
     font-weight: 300;
 }
 
-.filters.table .table-cell {
-    text-align: center;
-    padding: 0.3em;
+#filters figure {
+    margin: 0;
 }
 
-.filter-colors img {
+#filters img {
     width: 100%;
+}
+
+#filters figcaption {
+    text-align: center;
+}
+
+.on-stream-started {
+    display: none;
 }
 
 .add-filter {
@@ -212,16 +219,24 @@ button#b-add-filter img {
     width: 100%;
 }
 
-button#start-stream {
+button#start-stream, button#stop-stream  {
     display: block;
     border: none;
     background: #0084b4;
     color: white;
     width: 12em;
-    margin: 3em 0;
+    margin: 1em 0;
     padding: 0.5em 0;
     font-size: 1em;
     clear: both;
+}
+
+div#counts {
+    margin-top: 3em;
+}
+
+button#stop-stream {
+    display: none;
 }
 
 /*************************************************

@@ -246,7 +246,7 @@ projectham.module = (function($) {
         box = $('.move');
         listening = $('#listening');
 
-        initRecognition();
+        //initRecognition();
 
         //------- benni starts here --------
         gv = new projectham.GlobeView();

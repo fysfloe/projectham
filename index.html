@@ -18,6 +18,14 @@
     <script type="text/template" id="commandTemplate">
         <span class="view"><%= command %></span>
     </script>
+
+    <script type="text/template" id="filterTemplate">
+        <figure>
+            <figcaption><%= filter %></figcaption>
+            <img src="img/ui/colors/<%= src %>" alt="<%= alt %>">
+        </figure>
+    </script>
+
 </head>
 <body>
 <header>
@@ -28,23 +36,20 @@
         <img src="img/ui/hashtag.png" alt="Hastag" class="ui-img">
         <h2>Filter By</h2>
 
-        <div class="on-stream-started filters table">
-            <div class="table-row filter-names">
-                <div class="table-cell" id="filter-name-1">Obama</div>
-                <div class="table-cell" id="filter-name-2">Putin</div>
-                <div class="table-cell add-filter" id="filter-name-3">Add Filter</div>
-            </div>
-            <div class="table-row filter-colors">
-                <div class="table-cell" id="filter-color-1"><img src="img/ui/colors/green.png" alt="Green"></div>
-                <div class="table-cell" id="filter-color-2"><img src="img/ui/colors/orange.png" alt="Orange"></div>
-                <div class="table-cell add-filter" id="filter-color-3"><img src="img/ui/plus.png" alt="Plus"></div>
-            </div>
+        <div id="filters" class="on-stream-started table">
+
         </div>
 
-        <input type="text" name="i-add-filter" id="i-add-filter" placeholder='Type your filter or say "filter by"'><button id="b-add-filter"><img src="img/ui/plus_circle.png" alt="+" class="on-stream-started"></button>
-        <button id="start-stream" class="ui-bg-color on-stream-not-started">Start Stream</button>
+        <div id="filter-input-div">
+            <input type="text" name="i-add-filter" id="i-add-filter" placeholder='Type your filter or say "filter by"'>
+            <button id="b-add-filter"><img src="img/ui/plus_circle.png" alt="+" class="on-stream-started"></button>
+        </div>
 
-        <div id="counts" class="table">
+        <div class="clear"></div>
+
+        <button id="start-stream" class="ui-bg-color">Start Stream</button>
+
+        <div id="counts" class="table on-stream-started">
             <div class="table-cell">
                 <figure>
                     <span>712</span>
@@ -64,6 +69,8 @@
                 </figure>
             </div>
         </div>
+
+        <button id="stop-stream" class="ui-bg-color on-stream-started">Stop Stream</button>
 
         <div class="more-info">
             <p>This Web Experience uses a Twitter Stream.</p>
@@ -109,6 +116,9 @@
 <script src="js/models/command.js"></script>
 <script src="js/collections/commandList.js"></script>
 <script src="js/views/commandView.js"></script>
+<script src="js/models/filter.js"></script>
+<script src="js/collections/filterList.js"></script>
+<script src="js/views/filterView.js"></script>
 <script src="js/views/appView.js"></script>
 <script src="js/main.js"></script>
 
