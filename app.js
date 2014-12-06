@@ -17,13 +17,13 @@ var path = require('path');
 var monk = require('monk');
 var db = monk('localhost:27017/userdb');
 
+// Routes
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
 
 // all environments
-//app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/views');
 app.set('origins', 'http://localhost:*');
 app.set('view engine', 'jade');
