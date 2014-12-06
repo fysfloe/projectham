@@ -30,16 +30,18 @@ projectham.AppView = Backbone.View.extend({
 
                 $('#stopStream').click(function(e) {
                     socket.emit('close');
+                    socket = null;
                     e.preventDefault();
                 });
 
                 var filterArray = filter.val().trim().split(',');
-                socket.emit('start_filtering', filterArray);
+                socket.emit('filter', filterArray);
 
                 window.onbeforeunload = function() {
                     socket.emit('close');
                     //socket.onclose = function () {}; // disable onclose handler first
                     //socket.close();
+                    socket = null;
                 };
 
                 var overallCount = 0,
@@ -60,12 +62,12 @@ projectham.AppView = Backbone.View.extend({
                     DOM_connections = $('#connections'),
                     DOM_hashtags = $('#hashtags');
 
-                socket.on('newConn', function (conn) {
+                socket.on('conn', function (conn) {
                     DOM_connections.text(++connectionCount);
                     _this.saveConnection(conn);
                 });
 
-                socket.on('newTwitt', function (tweet) {
+                socket.on('tweet', function (tweet) {
                     DOM_overall.text(++overallCount);
                     if(tweet.type == 'retweet') {
                         DOM_retweets.text(++retweetCount);
@@ -104,11 +106,11 @@ projectham.AppView = Backbone.View.extend({
                     _this.saveTweet(tweet);
                 });
 
-               socket.on('error', function(error) {
-                   alert("Sorry buddy, an error has occured!");
+               socket.on('err', function(error) {
+                   alert("Sorry buddy, an error has occured:\n" + error);
                    console.trace('Module A'); // [1]
                    console.error(error.stack); // [2]
-                });
+               });
 
                e.preventDefault();
             }

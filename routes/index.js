@@ -64,22 +64,32 @@ io.sockets.on('connection', function (socket) {
 
     console.log("Number of Clients: " + clients.length);
 
-    socket.on('start_filtering', function(msg) {
+    socket.on('filter', function(msg) {
+
+        msg.forEach(function(item, index) {
+            msg[index] = escapeString(item);
+        });
 
         filters[socket.id] = (msg); // assign new filters of current client
 
-        console.log("Filtersize: " + Object.size(filters));
-        console.log(filters);
+        console.log("Filters:", filters);
 
         // 1. make string from filter object (filterToString)
         // 2. convert to array (split)
         // 3. delete duplicates (uniqueArray)
-        // 4. convert to string again
-        console.log(uniqueArray(filterToString(filters).split(',')).join(','));
+        // (4. convert to string again)
+        var currentFilter = uniqueArray(filterToString(filters).split(','));
 
-        if(filterToString(filters).split(',').length > 400) {
+        console.log("Minimized for Twitter:", currentFilter);
+
+        if(currentFilter.length > 350) {
             console.log("Sending Error to Client");
-            socket.send('error', 'Twitter stream is currently too busy.');
+
+            try {
+                socket.emit('err', 'Twitter stream is currently too busy.');
+            } catch(err) {
+                console.log("Error: ", err);
+            }
         } else {
             InitStream();
         }
@@ -90,21 +100,23 @@ io.sockets.on('connection', function (socket) {
         var index = clients.indexOf(socket);
 
         if(index >= 0) { // item found
-            console.log(index);
             clients.splice(index, 1);
             delete filters[socket.id];
 
             console.log("Number of Clients: " + clients.length);
-            console.log("Filtersize: " + Object.size(filters));
+            console.log("Filters: ", filters);
 
             if(clients.length <= 0) {
                 destroyStream();
                 resetCounters();
                 tweet_ids = [];
+                filters = [];
 
             } else {
                 InitStream();
             }
+
+            socket.disconnect();
         }
     })
 });
@@ -192,7 +204,7 @@ var sendTweet = function(tweet, parent_id, type, lat, lng, locationType) {
                     "id": clientAndKeyword[1][i][1]
                 };
 
-                socket.emit('newTwitt', tweetToSend);
+                socket.emit('tweet', tweetToSend);
 
                 if(parent_id) {
                     connectionToSend = {
@@ -201,7 +213,7 @@ var sendTweet = function(tweet, parent_id, type, lat, lng, locationType) {
                     };
 
                     console.log(connectionToSend);
-                    socket.emit('newConn', connectionToSend);
+                    socket.emit('conn', connectionToSend);
                 }
 
                 i++;
@@ -415,17 +427,17 @@ var InitStream = function() {
             });
 
             stream.on('end', function () {
-                console.log('End stream');
+                console.log('\nEnd stream\n');
 
             });
 
             stream.on('error', function(e) {
-                console.log('Error from Twitter stream', e);
-                io.sockets.emit('error', e);
+                console.log('\nError from Twitter stream\n', e);
+                io.sockets.emit('err', JSON.stringify(e));
             });
 
             stream.on('destroy', function () {
-                console.log('Destroy stream');
+                console.log('\nDestroy stream\n');
             });
         }
     );
@@ -481,6 +493,15 @@ var uniqueArray = function(a) {
     return a.filter(function(item) {
         return seen.hasOwnProperty(item) ? false : (seen[item] = true);
     });
+};
+
+var escapeString = function(html) {
+    return String(html)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
 };
 
 module.exports = router;

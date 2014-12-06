@@ -12,40 +12,14 @@ html
     body
         block content
 
-        input#chooseFilter
-        button#letsGo Start
-        button#stopStream Stop
-
-        .content
-            h2 Total Tweets:
-                span#overall
-            h4(style='color:green') Retweets:
-                span#retweets
-            h4(style='color:blue') Replies:
-                span#replies
-            h4(style='color:blue') Replies to live tweets:
-                span#repliesToParent
-            h4 Locations (Geo enabled):
-                span#locationsTweet
-            h4 Locations (User geocoded via geonames):
-                span#locationsUser
-            h4 Connections:
-                span#connections
-            h4 Hashtags:
-                span#hashtags
-        div#twitterStream
-            ul#hashtagList
-            ul#connectionList
-            ul#tweets
-
-        script(src='/js/tweet.js',type='text/javascript')
-        script(src='/js/tweetList.js',type='text/javascript')
-        script(src='/js/tweetView.js',type='text/javascript')
-        script(src='/js/connection.js',type='text/javascript')
-        script(src='/js/connectionList.js',type='text/javascript')
-        script(src='/js/hashtag.js',type='text/javascript')
-        script(src='/js/hashtagList.js',type='text/javascript')
-        script(src='/js/user.js',type='text/javascript')
-        script(src='/js/userList.js',type='text/javascript')
-        script(src='/js/appView.js',type='text/javascript')
-        script(src='/js/main.js',type='text/javascript')
+    script(src='/js/tweet.js',type='text/javascript')
+    script(src='/js/tweetList.js',type='text/javascript')
+    script(src='/js/tweetView.js',type='text/javascript')
+    script(src='/js/connection.js',type='text/javascript')
+    script(src='/js/connectionList.js',type='text/javascript')
+    script(src='/js/hashtag.js',type='text/javascript')
+    script(src='/js/hashtagList.js',type='text/javascript')
+    script(src='/js/user.js',type='text/javascript')
+    script(src='/js/userList.js',type='text/javascript')
+    script(src='/js/appView.js',type='text/javascript')
+    script(src='/js/main.js',type='text/javascript')
