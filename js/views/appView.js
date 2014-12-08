@@ -57,6 +57,8 @@ projectham.AppView = Backbone.View.extend({
         this.preFilterList.html('');
         this.preFilterList.show();
 
+        this.errMsg('');
+
         console.log('initialized');
     },
     
@@ -65,7 +67,7 @@ projectham.AppView = Backbone.View.extend({
         'click #b-add-filter1': 'addPreFilter',
         'click #start-stream': 'startStream',
         'click .add-filter': function() {
-            this.filterErrMsg.html('');
+            this.errMsg('');
             this.filterInputDiv.show();
         },
         'click #stop-stream': 'initialize',
@@ -168,7 +170,7 @@ projectham.AppView = Backbone.View.extend({
             var preparedFilter = this.filterInput.val().trim();
 
             if(preparedFilter) {
-                this.filterErrMsg.html('');
+                this.errMsg('');
 
                 this.prependListItem('preFilterList', '<li>'+preparedFilter+'</li>', 'append');
                 //this.preFilterList.append('<li>'+preparedFilter+'</li>');
