@@ -22,6 +22,7 @@ projectham.AppView = Backbone.View.extend({
     
     initialize: function() {
         this.filterCount = 0;
+        this.state = 0;
 
         $('.on-stream-started').hide();
         $('#start-stream').show();
@@ -29,6 +30,10 @@ projectham.AppView = Backbone.View.extend({
         localStorage.clear();
 
         this.filterDiv = $('#filters');
+        this.preFilterList = $('#preFilterList');
+        this.addPreFilterButton = $('#b-add-filter1');
+        this.filterErrMsg = $('#err-msg');
+        this.preFilters = [];
 
         this.filterDiv.html("");
 
@@ -48,17 +53,23 @@ projectham.AppView = Backbone.View.extend({
         this.filterInputDiv = $("#filter-input-div");
 
         this.filterInputDiv.show();
+        this.addPreFilterButton.show();
+        this.preFilterList.html('');
+        this.preFilterList.show();
 
         console.log('initialized');
     },
     
     events: {
-        'click #b-add-filter': 'addFilter',
-        'click #start-stream': 'showExtendedInfo',
+        'click #b-add-filter2': 'addFilter',
+        'click #b-add-filter1': 'addPreFilter',
+        'click #start-stream': 'startStream',
         'click .add-filter': function() {
+            this.filterErrMsg.html('');
             this.filterInputDiv.show();
         },
-        'click #stop-stream': 'initialize'
+        'click #stop-stream': 'initialize',
+        'keyup #i-add-filter': 'checkEnter'
     },
     
     saveCommand: function(command) {
@@ -88,7 +99,7 @@ projectham.AppView = Backbone.View.extend({
             listItems[i].remove();
         }
 
-        this.prependListItem('commands', commandView.render().el);
+        this.prependListItem('commands', commandView.render().el, 'prepend');
 
         if(listItems.length >= this.viewCommands) {
             this.$('#commands li:last-child').animate({
@@ -99,31 +110,96 @@ projectham.AppView = Backbone.View.extend({
         }
     },
 
-    prependListItem: function(listName, listItemHTML) {
-        $(listItemHTML)
-            .hide()
-            .css('opacity',0.0)
-            .prependTo('#' + listName)
-            .slideDown(500)
-            .animate({opacity: 1.0})
+    prependListItem: function(listName, listItemHTML, preApp) {
+        if(preApp == 'prepend') {
+            $(listItemHTML)
+                .hide()
+                .css('opacity',0.0)
+                .prependTo('#' + listName)
+                .slideDown(500)
+                .animate({opacity: 1.0})
+        } else {
+            $(listItemHTML)
+                .hide()
+                .css('opacity', 0.0)
+                .appendTo('#' + listName)
+                .slideDown(500)
+                .animate({opacity: 1.0})
+        }
+    },
+
+    startStream: function() {
+        if(this.preFilters.length == 0 && !this.filterInput.val()) {
+            console.log('type a filter first!');
+
+            this.errMsg('Please type a filter first.');
+        } else {
+            this.showExtendedInfo();
+            this.state = 1;
+
+            if(this.filterInput.val()) {
+                this.addPreFilter();
+            }
+
+            for(var i = 0; i < this.preFilters.length; i++) {
+                this.addFilter(this.preFilters[i]);
+            }
+
+            this.preFilterList.hide();
+            this.addPreFilterButton.hide();
+
+            // start streaming here
+        }
+    },
+
+    errMsg: function(e) {
+        this.filterErrMsg.html(e);
     },
 
     showExtendedInfo: function() {
-        this.addFilter();
         $('.on-stream-started').show();
         $('#start-stream').hide();
     },
 
-    addFilter: function() {
+    addPreFilter: function() {
+        if(this.preFilters.length >= 3) {
+            console.log('maximum filter number reached');
+        } else {
+            var preparedFilter = this.filterInput.val().trim();
+
+            if(preparedFilter) {
+                this.filterErrMsg.html('');
+
+                this.prependListItem('preFilterList', '<li>'+preparedFilter+'</li>', 'append');
+                //this.preFilterList.append('<li>'+preparedFilter+'</li>');
+                this.preFilters.push(preparedFilter);
+            } else {
+                this.errMsg('Please type a filter.');
+            }
+
+            this.filterInput.val("");
+            if(this.preFilters.length == 3) {
+                this.filterInputDiv.hide();
+            }
+        }
+    },
+
+    addFilter: function(filter) {
         if(this.filters.length >= 3) {
             console.log('maximum filter number reached');
         } else {
-            this.filters.create({
-                filter: this.filterInput.val()
-            });
+            var saveFilter = typeof filter === 'string' ? filter : this.filterInput.val();
 
-            this.filterInput.val("");
-            this.filterInputDiv.hide();
+            if(saveFilter) {
+                this.filters.create({
+                    filter: saveFilter
+                });
+
+                this.filterInput.val("");
+                this.filterInputDiv.hide();
+            } else {
+                this.errMsg('Please type a filter.');
+            }
         }
     },
 
@@ -131,11 +207,19 @@ projectham.AppView = Backbone.View.extend({
         var filterView;
 
         filterView = new projectham.FilterView({ model: filter });
-
         this.$('#filters div:nth-child('+(this.filterCount + 1)+')').before(filterView.render(this.image[this.filterCount]).el);
-
         this.filterCount++;
 
         this.$('#filters .add-filter:last-child').remove();
+    },
+
+    checkEnter: function(event) {
+        if(event.keyCode == 13) {
+            if(this.state == 0) {
+                this.$("#b-add-filter1").click();
+            } else if(this.state == 1) {
+                this.$("#b-add-filter2").click();
+            }
+        }
     }
 });

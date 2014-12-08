@@ -207,7 +207,7 @@ input#i-add-filter {
     color: white;
 }
 
-button#b-add-filter {
+button#b-add-filter1, button#b-add-filter2 {
     background: none;
     border: none;
     width: 4em;
@@ -215,8 +215,14 @@ button#b-add-filter {
     float: right;
 }
 
-button#b-add-filter img {
+button#b-add-filter1 img, button#b-add-filter2 img {
     width: 100%;
+}
+
+div#err-msg {
+    font-size: 0.8em;
+    color: red;
+    margin-top: 1em;
 }
 
 button#start-stream, button#stop-stream  {
