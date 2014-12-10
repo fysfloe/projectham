@@ -12,9 +12,11 @@
     <script src="lib/backbone.localStorage.js"></script>
 
     <script src="lib/three.min.js"></script>
+    <script src="lib/THREEx.WindowResize.js"></script>
 
     <script src="lib/TrackballControls.js"></script>
-    <script src='lib/tween.js'></script>
+    <script src="lib/tween.js"></script>
+    <script src="lib/tweetFilter.js"></script>
 
     <script type="text/template" id="commandTemplate">
         <span class="view"><%= command %></span>

@@ -180,6 +180,8 @@ projectham.AppView = Backbone.View.extend({
                 window.socket = this.socket;
             }
 
+            eventBus.trigger('startStream', this.filters);
+
             this.socket.emit('filter', this.preFilters);
 
             var overallCount = 0,
@@ -195,11 +197,11 @@ projectham.AppView = Backbone.View.extend({
             var DOM_overall = $('#overall'),
                 DOM_retweets = $('#retweets'),
                 DOM_replies = $('#replies');
-                //DOM_locationsUser = $('#locationsUser'),
-                //DOM_locationsTweet = $('#locationsTweet'),
-                //DOM_repliesToParent = $('#repliesToParent'),
-                //DOM_connections = $('#connections'),
-                //DOM_hashtags = $('#hashtags');
+            //DOM_locationsUser = $('#locationsUser'),
+            //DOM_locationsTweet = $('#locationsTweet'),
+            //DOM_repliesToParent = $('#repliesToParent'),
+            //DOM_connections = $('#connections'),
+            //DOM_hashtags = $('#hashtags');
 
             this.socket.on('conn', function (conn) {
                 ///DOM_connections.text(++connectionCount);
@@ -213,15 +215,15 @@ projectham.AppView = Backbone.View.extend({
                 } else if (tweet.type == 'reply') {
                     DOM_replies.text(++replyCount);
                     /*if (tweet.parent_id) {
-                        DOM_repliesToParent.text(++replyToParentCount);
-                    }*/
+                     DOM_repliesToParent.text(++replyToParentCount);
+                     }*/
                 }
 
                 /*if (tweet.location.type == 'user_geo') {
-                    DOM_locationsUser.text(++locationByUserCount);
-                } else if (tweet.location.type == 'tweet_geo') {
-                    DOM_locationsTweet.text(++locationByTweetCount);
-                }*/
+                 DOM_locationsUser.text(++locationByUserCount);
+                 } else if (tweet.location.type == 'tweet_geo') {
+                 DOM_locationsTweet.text(++locationByTweetCount);
+                 }*/
 
                 if (!$.isEmptyObject(tweet.hashtags)) {
                     $.each(tweet.hashtags, function () {
@@ -302,9 +304,26 @@ projectham.AppView = Backbone.View.extend({
         } else {
             var saveFilter = typeof filter === 'string' ? filter : this.htmlEntities(this.filterInput.val());
 
+            var color;
+
+            switch(this.filters.length) {
+                case 0:
+                    color = 0x4099FF;
+                    break;
+                case 1:
+                    color = 0xE28C10;
+                    break;
+                case 2:
+                    color = 0x81D056;
+                    break;
+                default:
+                    break;
+            }
+
             if(saveFilter) {
                 this.filters.create({
-                    filter: saveFilter
+                    filter: saveFilter,
+                    color: color
                 });
 
                 this.filterInput.val("");
@@ -342,26 +361,8 @@ projectham.AppView = Backbone.View.extend({
     // ------------------ Julian
 
     displayTweets: function(tweets) {
-
-        this.$("#tweets").empty();
-
-        // LATER HANDLING
-        /*var tweetView;
-         var tweet = this.tweets.last();
-
-         console.log(tweet);
-
-         tweetView = new projectham.TweetView({model: tweet});
-         this.$("#tweets").append(tweetView.render().el);
-
-         */
-
-        tweets.collection.each(function(tweet) {
-            var tweetView;
-
-            tweetView = new projectham.TweetView({model: tweet});
-            this.$("#tweets").append(tweetView.render().el);
-        });
+        var tweet = this.tweets.last();
+        eventBus.trigger('newTweet', tweet);
     },
 
     displayConnections: function(connections) {
@@ -399,9 +400,9 @@ projectham.AppView = Backbone.View.extend({
         var child_tweet = this.tweets.get(connection.child_id);
 
         /*console.log('parent ' + connection.parent_id);
-        console.log('child ' + connection.child_id);
-        console.log(parent_tweet);
-        console.log(child_tweet);*/
+         console.log('child ' + connection.child_id);
+         console.log(parent_tweet);
+         console.log(child_tweet);*/
 
         if(parent_tweet && child_tweet) {
             if(parent_tweet.attributes.location && child_tweet.attributes.location) {

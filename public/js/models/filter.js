@@ -7,7 +7,8 @@ var projectham = projectham || {};
 projectham.Filter = Backbone.Model.extend({
     defaults: function() {
         return {
-            filter: ''
+            filter: '',
+            color: null
         }
     },
 

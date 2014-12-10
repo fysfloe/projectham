@@ -9,9 +9,10 @@ projectham.GlobeView = Backbone.View.extend({
      INIT
      */
     initialize: function () {
-        this.isTween = false;
-        _.bindAll(this, 'render', '_updateScene', 'latLongToVector3', 'buildAxes', 'displayData');
-
+        this.isLineAnim = false;
+        this.lineVar = 3;
+        _.bindAll(this, 'render', '_updateScene', 'latLongToVector3', 'buildAxes', 'displayTweet');
+        this.filters = {};
     },
 
 
@@ -20,6 +21,7 @@ projectham.GlobeView = Backbone.View.extend({
      */
 
     render: function (options) {
+        var _this = this;
         this.width = options.width || 500;
         this.height = options.height || 500;
         this.distance = options.distance || 15;
@@ -28,7 +30,6 @@ projectham.GlobeView = Backbone.View.extend({
         this.specularMapSrc = options.specularMapSrc || 'img/water_4k.png';
         this.specularColor = options.specularColor || 'white';
         this.shininessInt = options.shininessInt || 4;
-        this.total = null;
 
         this.manager = new THREE.LoadingManager();
         this.manager.onProgress = function (item, loaded, total) {
@@ -48,47 +49,54 @@ projectham.GlobeView = Backbone.View.extend({
         this.ambientLight = new THREE.AmbientLight(0x333333);
         this.scene.add(this.ambientLight);
 
-        this.spotLight = new THREE.SpotLight(0xffffff, 1.5);
+        this.spotLight = new THREE.SpotLight(0xffffff, 10);
         this.scene.add(this.spotLight);
 
-        this.scene.add(new THREE.DirectionalLight(0xffffff, 1));
+        //this.scene.add(new THREE.DirectionalLight(0xffffff, 1));
 
-        this.globeMaterialFront = new THREE.MeshLambertMaterial({
-            // color: 0x111111,
+        this.globeMaterialWire = new THREE.MeshLambertMaterial({
+            color: 0x181f2b,
             map: THREE.ImageUtils.loadTexture(this.mapSrc),
             // specularMap: THREE.ImageUtils.loadTexture(this.specularMapSrc),
             // specular: new THREE.Color(this.specularColor),
-            //alphaMap: THREE.ImageUtils.loadTexture('img/water_4k_inv_light_light_grey.png'),
+            //alphaMap: THREE.ImageUtils.loadTexture('img/world_map_alpha.png'),
             //shininess: 4
-            transparent: false,
+            transparent: true,
+            opacity: .4,
+            side: THREE.FrontSide,
+            wireframe: true,
+            depthWrite: false
+        });
+
+        this.globeMaterialFront = new THREE.MeshLambertMaterial({
+            color: 0x070c14,
+            //map: THREE.ImageUtils.loadTexture(this.mapSrc),
+            // specularMap: THREE.ImageUtils.loadTexture(this.specularMapSrc),
+            // specular: new THREE.Color(this.specularColor),
+            alphaMap: THREE.ImageUtils.loadTexture('img/world_map_alpha_stroke.png'),
+            //shininess: 4
+            transparent: true,
             opacity: 1,
-            side: THREE.DoubleSide
-        })
+            side: THREE.FrontSide,
+            wireframe: false,
+            depthTest: false
+        });
 
         //Initialize Globe
-        this.globeFront = new THREE.Mesh(
+        this.globeWire = new THREE.Mesh(
             new THREE.SphereGeometry(5, 50, 50),
+            this.globeMaterialWire
+        );
+
+        this.globeFront = new THREE.Mesh(
+            new THREE.SphereGeometry(5.01, 50, 50),
             this.globeMaterialFront
         );
 
 
-        var customMaterial = new THREE.ShaderMaterial(
-            {
-                uniforms: {},
-                vertexShader: document.getElementById('vertexShader').textContent,
-                fragmentShader: document.getElementById('fragmentShader').textContent,
-                side: THREE.BackSide,
-                blending: THREE.AdditiveBlending,
-                transparent: true,
-                opacity: 0.1
-            });
-
-        var ballGeometry = new THREE.SphereGeometry(5.9, 32, 16);
-        var ball = new THREE.Mesh(ballGeometry, customMaterial);
-        this.scene.add(ball);
         this.scene.add(this.globeFront);
+        this.scene.add(this.globeWire);
 
-        //this.scene.add(this.globeBack);
 
         //Initialize Background ("Space")
         this.BGtexture = THREE.ImageUtils.loadTexture(this.bgSrc);
@@ -98,10 +106,11 @@ projectham.GlobeView = Backbone.View.extend({
         this.spaceSphere = new THREE.Mesh(
             new THREE.SphereGeometry(900, 64, 64),
             new THREE.MeshBasicMaterial({
-                map: this.BGtexture,
+                color: 0x000000,
+                // map: this.BGtexture,
                 side: THREE.BackSide,
-                transparent: true,
-                opacity: 0.1
+                transparent: false,
+                opacity: 1
             })
         );
         this.scene.add(this.spaceSphere);
@@ -126,33 +135,13 @@ projectham.GlobeView = Backbone.View.extend({
         // Enable Trackball
         this.controls = options.enableTrackball ? new THREE.TrackballControls(this.camera, this.renderer.domElement, this) : null;
 
-
-        /* var renderModel = new THREE.RenderPass(this.scene, this.camera);
-         var effectBloom = new THREE.BloomPass(5);
-         var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
-         var renderMask = new THREE.MaskPass(this.scene, this.camera);
-         var renderMaskInv = new THREE.MaskPass(this.scene, this.camera);
-         renderMaskInv.inverse = true
-         var effectFXAA = new THREE.ShaderPass(THREE.FXAAShader);
-
-         var width = window.innerWidth || 2;
-         var height = window.innerHeight || 2;
-
-         effectFXAA.uniforms['resolution'].value.set(1 / width, 1 / height);
-
-         effectCopy.renderToScreen = true;
-
-         this.composer = new THREE.EffectComposer(this.renderer);
-
-         this.composer.addPass(renderMaskInv);
-         this.composer.addPass(renderModel);
+        //Add empty total meshes of filters
+        $.each(this.filters, function(key,value){
+            _this.scene.add(value.total);
+        });
 
 
-         this.composer.addPass(effectFXAA);
-         this.composer.addPass(effectBloom);
-
-         this.composer.addPass(effectCopy);*/
-
+        var windowResize = THREEx.WindowResize(this.renderer, this.camera);
         this._updateScene();
         this._eventHandler();
 
@@ -164,132 +153,106 @@ projectham.GlobeView = Backbone.View.extend({
 
         var updateScene = this._updateScene;
         requestAnimationFrame(updateScene);
-
-
         TWEEN.update();
+        /* if (this.isLineAnim) {
+         if(this.lineVar == 2){
+         this.scene.add(this.lines);
+         }
 
+         this.lines.geometry.verticesNeedUpdate = true;
+         this.lines.geometry.vertices.push(this.lineVertices[this.lineVar]);
+         this.lines.geometry.verticesNeedUpdate = true;
+         console.log(this.lines);
 
+         this.lineVar++;
+         if (this.lineVar >= 100) {
+         this.lineVar = 2;
+         this.isLineAnim = false;
+         }
+         }*/
         this.controls ? this.controls.update() : null;
-
         var controls = this.controls;
-
-
         this.spotLight.position.copy(this.camera.position);
         this.renderer.render(this.scene, this.camera);
         //this.composer.render();
 
     },
 
-    displayData: function (data, material) {
-        this.geom = new THREE.Geometry();
-        var color = 0x3a7aa2;
-        var blending = THREE.AdditiveBlending;
-        var materials = [
-            new THREE.MeshPhongMaterial({
-                transparent: true,
-                color: color,
-                opacity: 1,
-                blending: blending
-                // alphaMap: THREE.ImageUtils.loadTexture('img/alpha_map_cube.png'),
-                //side: THREE.DoubleSide
-            }),
-            new THREE.MeshPhongMaterial({
-                transparent: true,
-                color: color,
-                opacity: 1,
-                blending: blending,
-                // alphaMap: THREE.ImageUtils.loadTexture('img/alpha_map_cube.png'),
-                side: THREE.FrontSide
-            }),
-            new THREE.MeshPhongMaterial({
-                transparent: true,
-                color: color,
-                opacity: 1,
-                blending: blending,
-                //alphaMap: THREE.ImageUtils.loadTexture('img/alpha_map_cube.png'),
-                side: THREE.FrontSide
-            }),
-            new THREE.MeshPhongMaterial({
-                transparent: true,
-                color: color,
-                opacity: 1,
-                blending: blending,
-                //alphaMap: THREE.ImageUtils.loadTexture('img/alpha_map_cube.png'),
-                side: THREE.FrontSide
-            }),
-            new THREE.MeshPhongMaterial({
-                transparent: true,
-                color: color,
-                opacity: 1,
-                blending: blending,
-                //alphaMap: THREE.ImageUtils.loadTexture('img/alpha_map_cube.png'),
-                side: THREE.FrontSide
-            }),
-            new THREE.MeshPhongMaterial({
-                transparent: true,
-                color: color,
-                opacity: 1,
-                blending: blending,
-                //alphaMap: THREE.ImageUtils.loadTexture('img/alpha_map_cube.png'),
-                side: THREE.FrontSide
-            }),
-        ];
-        this.data = data || null;
+    initFilters: function (filter1,filter2,filter3){
+        this.filters = {
+            _0: filter1,
+            _1: filter2,
+            _2: filter3
+        };
+    },
 
-        var arrayData = this.CSVToArray(this.data);
+    displayTweet: function (tweet) {
 
-        var highestValue = 0;
-        arrayData.forEach(function (entry) {
-            if (parseInt(entry[0]) > highestValue) {
-                highestValue = entry[0];
-            }
-        });
         var _this = this,
-            entry,
-            x,
-            y,
-            value,
+            filter,
             position,
+            mesh,
             cube;
 
+        filter = this.getFilter(tweet.filter.id);
 
-        setTimeout((function () {
-            for (var i = 0, len = arrayData.length; i < len; i++) {
-                entry = arrayData[i];
-
-                x = parseFloat(entry[1]);
-                y = parseFloat(entry[2]);
-                value = (parseInt(entry[0]) / highestValue < 0.1 ? 0.1 : parseInt(entry[0]) / highestValue) * 2;
-                //var value = 0.2
-                // calculate the position where we need to start the cube
-                position = _this.latLongToVector3(x, y, value / 2);
-                // create the cube
-                cube = new THREE.Mesh(new THREE.BoxGeometry(.01, .01, value, 1, 1, 1));
+        if (tweet.type == "tweet") {
+            mesh = filter.tweets;
+        } else if (tweet.type == "retweet") {
+            mesh = filter.retweets;
+        } else if (tweet.type == "reply") {
+            mesh = filter.replies;
+        } else {
+            return;
+        }
 
 
-                //cube.applyMatrix(new THREE.Matrix4().makeTranslation(0, value / 2, 0));
-
-                // position the cube correctly
-                cube.translateX(position.x);
-                cube.translateY(position.y);
-                cube.translateZ(position.z);
-
-                cube.lookAt(new THREE.Vector3(0, 0, 0));
+        filter.name = (filter.name == "") ? tweet.filter.text : filter.name;
 
 
-                // merge with main model
-                cube.updateMatrix();
-                _this.geom.merge(cube.geometry, cube.matrix);
-            }
+        var value = 1;
+        position = _this.latLongToVector3(tweet.location.lat, tweet.location.lng, value / 2);
 
-            _this.total = new THREE.Mesh(_this.geom, new THREE.MeshFaceMaterial(materials));
-            console.log(_this.total);
-            //this.total.scale.x = 0.1;
+        //cylinder
+        cube = new THREE.Mesh(new THREE.CylinderGeometry(.01, .01, value, 8, 1, true), filter.material);
+        cube.geometry.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI / 2));
 
-            // and add the total mesh to the scene
-            _this.scene.add(_this.total);
+        //position the cube correctly
+        cube.translateX(position.x);
+        cube.translateY(position.y);
+        cube.translateZ(position.z);
 
-        }), 0);
+        cube.lookAt(new THREE.Vector3(0, 0, 0));
+
+        cube.scale.set(1, 1, 0.1);
+        this.scene.add(cube);
+
+        var start = {i: 0.1};
+        var target = {i: 1};
+        var scaleTween = new TWEEN.Tween(start).to(target, 200).onUpdate(function () {
+            cube.scale.z = start.i;
+        });
+
+        scaleTween.onComplete(function () {
+            //cube.scale.z = target.i;
+
+            cube.updateMatrix();
+            filter.geom.merge(cube.geometry, cube.matrix);
+
+            _this.scene.remove(cube);
+
+            _this.scene.remove(filter.total);
+            //_this.renderer.deallocateObject(_this.total);
+
+            var geom = new THREE.Geometry();
+            geom.merge(filter.geom);
+
+            filter.total = new THREE.Mesh(geom, filter.material);
+            _this.scene.add(filter.total);
+            TWEEN.remove(this);
+        });
+        scaleTween.start();
+
 
     },
 
@@ -297,11 +260,10 @@ projectham.GlobeView = Backbone.View.extend({
         this.data = data || null;
 
         var arrayData = this.CSVToArray(this.data);
-        var geom = new THREE.Geometry();
-        var geom2 = new THREE.Geometry();
-        var geom3 = new THREE.Geometry();
-        var lineGeom = new THREE.Geometry();
+        var lineRes = 100;
 
+
+        this.lineVertices = [];
 
         var lineMaterial = new THREE.LineBasicMaterial({
             blending: THREE.AdditiveBlending,
@@ -327,9 +289,7 @@ projectham.GlobeView = Backbone.View.extend({
         });
 
 
-        var cp = new THREE.CurvePath();
-
-        for (var i = 0, len = 10000; i < len; i++) {
+        for (var i = 0, len = 1; i < len; i++) {
             var x = parseFloat(arrayData[i][0]);
             var y = parseFloat(arrayData[i][1]);
 
@@ -339,6 +299,9 @@ projectham.GlobeView = Backbone.View.extend({
             var length = Math.sqrt(Math.pow((x - x2), 2) + Math.pow((y - y2), 2));
 
             if (length < 150) {
+
+                var cp = new THREE.CurvePath();
+                cp.autoClose = false;
 
                 var cPHeight = length < 25 ? length / 30 : (length < 50 ? length / 45 : length / 60);
                 var x3 = (x + x2) / 2;
@@ -353,68 +316,30 @@ projectham.GlobeView = Backbone.View.extend({
                 var position1 = this.latLongToVector3(x, y, -0.02);
                 var position2 = this.latLongToVector3(x2, y2, -0.02);
                 //var position3 = this.calculateMidPoint(x,y,x2,y2,2);
+                var cubicLine = new THREE.CubicBezierCurve3(position1, cP1, cP2, position2);
 
+                cubicLine.autoClose = false;
+                cp.add(cubicLine);
 
-                cp.add(new THREE.CubicBezierCurve3(position1, cP1, cP2, position2));
+                var curveGeo = cp.createPointsGeometry(lineRes);
+                var curvedLine = new THREE.Line();
+                curvedLine.name = "line_" + i;
+                curvedLine.geometry.verticesNeedUpdate = true;
+                curvedLine.material = lineMaterial;
+                curvedLine.geometry.vertices.push(curveGeo.vertices[0], curveGeo.vertices[1]);
+                curvedLine.geometry.verticesNeedUpdate = true;
 
+                curvedLine.lookAt(new THREE.Vector3(0, 0, 0));
+                this.lines = curvedLine;
+                this.lineVertices = curveGeo.vertices;
 
-                var lineMesh = new THREE.Mesh(curvedLine, lineMaterial);
-                lineGeom.merge(lineMesh.geometry, lineMesh.matrix);
-
-                /*var cube = new THREE.Mesh(new THREE.BoxGeometry(.01, .01, 0.2, 1, 1, 1), lineMaterial);
-                 var cube2 = new THREE.Mesh(new THREE.BoxGeometry(.01, .02, 0.2, 1, 1, 1), lineMaterial2);
-                 var cube3 = new THREE.Mesh(new THREE.BoxGeometry(.01, .02, 0.2, 1, 1, 1), lineMaterial3);
-
-
-                 // position the cube correctly
-                 cube.translateX(position1.x);
-                 cube.translateY(position1.y);
-                 cube.translateZ(position1.z);
-
-                 // position the cube correctly
-                 cube2.translateX(position2.x);
-                 cube2.translateY(position2.y);
-                 cube2.translateZ(position2.z);
-
-                 // position the cube correctly
-                 cube3.translateX(position3.x);
-                 cube3.translateY(position3.y);
-                 cube3.translateZ(position3.z);
-
-                 cube.lookAt(new THREE.Vector3(0, 0, 0));
-                 cube2.lookAt(new THREE.Vector3(0, 0, 0));
-                 cube3.lookAt(new THREE.Vector3(0, 0, 0));
-
-
-                 // merge with main model
-                 cube.updateMatrix();
-                 cube2.updateMatrix();
-                 cube3.updateMatrix();
-
-                 geom.merge(cube.geometry, cube.matrix);
-                 geom2.merge(cube2.geometry, cube2.matrix);
-                 geom3.merge(cube3.geometry, cube3.matrix);*/
+                //this.scene.add(this.lines);
 
 
             }
         }
-        var curvedLine = new THREE.Line(cp.createPointsGeometry(1000000), lineMaterial);
-        curvedLine.lookAt(new THREE.Vector3(0, 0, 0));
-        this.scene.add(curvedLine);
-        /*
-         console.log(lineGeom);
-         var total = new THREE.Line(lineGeom, lineMaterial, THREE.LineStrip);
-         this.scene.add(curvedLine);
-         var total = new THREE.Mesh(lineGeom, lineMaterial);
 
-         var total = new THREE.Mesh(geom, lineMaterial);
-         var total2 = new THREE.Mesh(geom2, lineMaterial2);
-         var total3 = new THREE.Mesh(geom3, lineMaterial3);
 
-         this.scene.add(total2);
-         this.scene.add(total3);
-
-         this.scene.add(total);*/
     },
 
 
@@ -446,6 +371,140 @@ projectham.GlobeView = Backbone.View.extend({
         eventBus.on("zoom", function (dir) {
             _this.controls.zoom(dir, 0.03);
         });
+
+        eventBus.on("scale", function () {
+            var tweet1 = {
+                id: 12125512,
+                text: 'Project Ham is the yellow from the egg #obama',
+                parent_id: null,
+                type: 'reply',
+                location: {
+                    lat: 48.3669367,
+                    lng: 14.5172742,
+                    type: 'user_location'
+                },
+                user: {
+                    name: 'hans',
+                    followers: 200550,
+                    lang: 'de'
+                },
+                hashtags: null,
+                filter: {
+                    text: 'obama',
+                    id: 0
+                }
+            };
+
+            var tweet2 = {
+                id: 12125512,
+                text: 'Project Ham is NOT the yellow from the egg #putin',
+                parent_id: null,
+                type: 'retweet',
+                location: {
+                    lat: 45.3669367,
+                    lng: 14.5172742,
+                    type: 'user_location'
+                },
+                user: {
+                    name: 'hans',
+                    followers: 200550,
+                    lang: 'de'
+                },
+                hashtags: null,
+                filter: {
+                    text: 'merkel',
+                    id: 1
+                }
+            };
+
+            _this.displayTweet(tweet1);
+            _this.displayTweet(tweet2);
+            _this.fadeOutFilter(0);
+
+        });
+
+        eventBus.on("draw", function () {
+           /* if (_this.lineVar == 3) {
+                _this.scene.add(_this.lines);
+            }
+            _this.scene.remove(_this.lines);
+            _this.lines.geometry.verticesNeedUpdate = true;
+            _this.lines.geometry.vertices.push(_this.lineVertices[_this.lineVar], _this.lineVertices[_this.lineVar + 1]);
+            _this.lines.geometry.verticesNeedUpdate = true;
+            var lines = _this.lines;
+            _this.scene.add(lines);
+
+            console.log(_this.scene);
+            console.log(_this.lines.geometry.verticesNeedUpdate);
+
+            _this.lineVar++;
+            if (_this.lineVar >= 100) {
+                _this.lineVar = 3;
+                _this.isLineAnim = false;
+            }*/
+
+            var tweet1 = {
+                id: 12125512,
+                text: 'Project Ham is the yellow from the egg #obama',
+                parent_id: null,
+                type: 'retweet',
+                location: {
+                    lat: 48.3669367,
+                    lng: 40.5172742,
+                    type: 'user_location'
+                },
+                user: {
+                    name: 'hans',
+                    followers: 200550,
+                    lang: 'de'
+                },
+                hashtags: null,
+                filter: {
+                    text: 'obama',
+                    id: 0
+                }
+            };
+
+            var tweet2 = {
+                id: 12125512,
+                text: 'Project Ham is NOT the yellow from the egg #putin',
+                parent_id: null,
+                type: 'tweet',
+                location: {
+                    lat: 45.3669367,
+                    lng: 20.5172742,
+                    type: 'user_location'
+                },
+                user: {
+                    name: 'hans',
+                    followers: 200550,
+                    lang: 'de'
+                },
+                hashtags: null,
+                filter: {
+                    text: 'putin',
+                    id: 2
+                }
+            };
+
+            _this.displayTweet(tweet1);
+            _this.displayTweet(tweet2);
+            _this.fadeInFilter(0);
+        });
+
+        eventBus.on("startStream", function (e) {
+            _this.initFilters(
+                new projectham.GlobeFilter(e.models[0].get('filter'), e.models[0].get('color')),
+                e.models[1] ? new projectham.GlobeFilter(e.models[1].get('filter'), e.models[1].get('color')) : undefined,
+                e.models[2] ? new projectham.GlobeFilter(e.models[2].get('filter'), e.models[2].get('color')) : undefined
+            );
+        });
+
+        eventBus.on("newTweet", function(e) {
+            console.log(e.attributes);
+
+            _this.displayTweet(e.attributes);
+        });
     },
 
 
@@ -458,7 +517,6 @@ projectham.GlobeView = Backbone.View.extend({
             zoomlevel = 4,
             target;
         var reqUrl = "http://api.geonames.org/searchJSON?formatted=true&q=" + encodeURIComponent(name) + "&maxRows=1&lang=en&username=project_ham&style=full";
-        console.log(name);
         $.getJSON(reqUrl, function (data) {
             if (data.totalResultsCount) {
                 var pV = _this.latLongToVector3(data.geonames[0].lat, data.geonames[0].lng, zoomlevel);
@@ -474,7 +532,6 @@ projectham.GlobeView = Backbone.View.extend({
     _rotateToPlace: function (target) {
         var _this = this;
 
-        this.isTween = true;
         var position = {
             x: parseFloat(this.camera.position.x),
             y: parseFloat(this.camera.position.y),
@@ -494,7 +551,6 @@ projectham.GlobeView = Backbone.View.extend({
         tween.onComplete(function () {
             _this.camera.position.set(target.x, target.y, target.z);
             _this.camera.up.set(target._x, target._y, target._z);
-            console.log(_this.camera.rotation);
             _this.isTween = false;
             TWEEN.remove(this);
         });
@@ -508,7 +564,6 @@ projectham.GlobeView = Backbone.View.extend({
             _this = this,
             offsetX,
             offsetY;
-        console.log(this.width + " || " + this.height);
 
 
         if (dir.toLowerCase() == 'right') {
@@ -523,13 +578,12 @@ projectham.GlobeView = Backbone.View.extend({
         } else if (dir.toLowerCase() == 'down') {
             offsetY = -length;
             offsetX = 0;
-        }else{
+        } else {
             offsetX = -length;
             offsetY = 0;
         }
 
         var position = {x: parseInt(this.width / 2), y: parseInt(this.height / 2)};
-        console.log(position);
 
         var target = {x: parseInt(position.x + offsetX), y: parseInt(position.y + offsetY)};
 
@@ -538,8 +592,6 @@ projectham.GlobeView = Backbone.View.extend({
 
         rotationAnim.onUpdate(function () {
             _this.controls.rotate(position);
-
-
         });
 
         rotationAnim.onComplete(function () {
@@ -567,6 +619,59 @@ projectham.GlobeView = Backbone.View.extend({
         this.rotationTween.chain(this.rotationTween);
     },
 
+    animateCube: function (cube, filter) {
+        this.scene.add(cube);
+
+        var _this = this;
+        var position = {i: 0.1};
+        var target = {i: 1};
+        var cubeGeom = new THREE.Geometry();
+        var scaleTween = new TWEEN.Tween(position).to(target, 200).onUpdate(function () {
+            cube.scale.z = position.i;
+        });
+
+        scaleTween.onComplete(function () {
+            //cube.scale.z = target.i;
+
+
+            cube.updateMatrix();
+            _this.geom.merge(cube.geometry, cube.matrix);
+
+
+            _this.scene.remove(cube);
+
+            _this.scene.remove(_this.total);
+            //_this.renderer.deallocateObject(_this.total);
+
+            var geom = new THREE.Geometry();
+            geom.merge(_this.geom);
+
+            _this.total = new THREE.Mesh(geom, _this.material);
+            _this.scene.add(_this.total);
+            TWEEN.remove(this);
+
+
+            if (filter == 1) {
+                _this.cc++;
+                _this.cubes.children[_this.cc] && _this.animateCube(_this.cubes.children[_this.cc], 1);
+            } else if (filter == 2) {
+                _this.cc2++;
+                _this.cubes2.children[_this.cc2] && _this.animateCube(_this.cubes2.children[_this.cc2], 2);
+            }
+        });
+        scaleTween.start();
+    },
+
+    animateLine: function (line, vertices, runVar) {
+
+        var vert = vertices[runVar];
+        line.geometry.verticesNeedUpdate = true;
+        line.geometry.vertices.push(vert);
+        line.geometry.verticesNeedUpdate = true;
+
+
+    },
+
     startCameraRotation: function () {
         this.isTween = true;
         (!(this.rotationTween.isPlaying())) ? this.rotationTween.start() : ((this.rotationTween.isPaused())) ? this.rotationTween.play() : null;
@@ -576,6 +681,42 @@ projectham.GlobeView = Backbone.View.extend({
         this.isTween = false;
         (this.rotationTween.isPlaying()) ? this.rotationTween.pause() : null;
 
+    },
+
+    fadeOutFilter: function(filterID) {
+        var filter = this.getFilter(filterID);
+        var position = { o: filter.material.opacity};
+        var target = { o: 0};
+
+        var fadeOutTween = new TWEEN.Tween(position).to(target, 200);
+
+        fadeOutTween.onUpdate(function(){
+            filter.setOpacity(position.o);
+        });
+
+        fadeOutTween.onComplete(function(){
+            TWEEN.remove(this);
+        });
+
+        fadeOutTween.start();
+    },
+
+    fadeInFilter: function(filterID) {
+        var filter = this.getFilter(filterID);
+        var position = { o: filter.material.opacity};
+        var target = { o: 1};
+
+        var fadeOutTween = new TWEEN.Tween(position).to(target, 200);
+
+        fadeOutTween.onUpdate(function(){
+            filter.setOpacity(position.o);
+        });
+
+        fadeOutTween.onComplete(function(){
+            TWEEN.remove(this);
+        });
+
+        fadeOutTween.start();
     },
 
 
@@ -668,6 +809,23 @@ projectham.GlobeView = Backbone.View.extend({
         yC = (y1 + yC) / 2;
 
         return [xC, yC];
+    },
+
+    getFilter: function(filterID){
+        switch (filterID) {
+            case 0:
+                return this.filters._0;
+                break;
+            case 1:
+                return this.filters._1;
+                break;
+            case 2:
+                return this.filters._2;
+                break;
+            default:
+                return null;
+                break;
+        }
     },
 
     CSVToArray: function (strData, strDelimiter) {

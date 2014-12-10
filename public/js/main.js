@@ -262,6 +262,12 @@ projectham.module = (function($) {
 
     startStream = function() {
         appView.startStream();
+
+        console.log('foo');
+
+        console.log(appView.filters);
+
+        //gv.initFilters()
     };
 
     stopStream = function() {
@@ -310,10 +316,10 @@ projectham.module = (function($) {
         gv.startCameraRotation();
         /*$.get('Global_Routes.csv', function(data){
          gv.displayLineData(data);
-         });*/
+         });
         $.get('data/data2.csv', function(data){
             gv.displayData(data);
-        });
+        });*/
 
 
     };
