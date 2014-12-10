@@ -46,40 +46,42 @@ projectham.GlobeView = Backbone.View.extend({
         this.camera.position.set(10.443329520636075, 10.010497358953545, -4.0173981090580995);
 
 
-        this.ambientLight = new THREE.AmbientLight(0x333333);
+        this.ambientLight = new THREE.AmbientLight(0x090c10);
+        //this.ambientLight = new THREE.AmbientLight(0x333333);
         this.scene.add(this.ambientLight);
 
-        this.spotLight = new THREE.SpotLight(0xffffff, 10);
+        this.spotLight = new THREE.SpotLight(0xffffff, 7);
         this.scene.add(this.spotLight);
 
         //this.scene.add(new THREE.DirectionalLight(0xffffff, 1));
 
         this.globeMaterialWire = new THREE.MeshLambertMaterial({
-            color: 0x181f2b,
-            map: THREE.ImageUtils.loadTexture(this.mapSrc),
+            color: 0xff0000,
+            //map: THREE.ImageUtils.loadTexture(this.mapSrc),
             // specularMap: THREE.ImageUtils.loadTexture(this.specularMapSrc),
             // specular: new THREE.Color(this.specularColor),
             //alphaMap: THREE.ImageUtils.loadTexture('img/world_map_alpha.png'),
             //shininess: 4
             transparent: true,
             opacity: .4,
-            side: THREE.FrontSide,
-            wireframe: true,
-            depthWrite: false
+            side: THREE.DoubleSide,
+            wireframe: false
         });
 
-        this.globeMaterialFront = new THREE.MeshLambertMaterial({
-            color: 0x070c14,
+        this.globeMaterialFront = new THREE.MeshPhongMaterial({
+            color: 0x000407,
+            //color: 0x222222,
+            map: THREE.ImageUtils.loadTexture('img/world_map_semi.png'),
             //map: THREE.ImageUtils.loadTexture(this.mapSrc),
-            // specularMap: THREE.ImageUtils.loadTexture(this.specularMapSrc),
-            // specular: new THREE.Color(this.specularColor),
-            alphaMap: THREE.ImageUtils.loadTexture('img/world_map_alpha_stroke.png'),
-            //shininess: 4
-            transparent: true,
-            opacity: 1,
+            bumpMap: THREE.ImageUtils.loadTexture('img/world_map_alpha.png'),
+            bumpScale:.03,
+            //alphaMap: THREE.ImageUtils.loadTexture('img/world_map_semi.png'),
+            specular:  0x00050a,
+            shininess:  2,
+            transparent: false,
+            opacity:1,
             side: THREE.FrontSide,
-            wireframe: false,
-            depthTest: false
+            wireframe: false
         });
 
         //Initialize Globe
@@ -93,10 +95,8 @@ projectham.GlobeView = Backbone.View.extend({
             this.globeMaterialFront
         );
 
-
         this.scene.add(this.globeFront);
-        this.scene.add(this.globeWire);
-
+        //this.scene.add(this.globeWire);
 
         //Initialize Background ("Space")
         this.BGtexture = THREE.ImageUtils.loadTexture(this.bgSrc);
@@ -123,7 +123,7 @@ projectham.GlobeView = Backbone.View.extend({
         if (window.WebGlRenderingContext || document.createElement('canvas').getContext('experimental-webgl')) {
             this.renderer = new THREE.WebGLRenderer({
                 antialias: true,
-                preserveDrawingBuffer: false
+                sortObjects: true
             });
         } else {
             this.renderer = new THREE.CanvasRenderer();
@@ -192,7 +192,8 @@ projectham.GlobeView = Backbone.View.extend({
             filter,
             position,
             mesh,
-            cube;
+            cube,
+            value;
 
         filter = this.getFilter(tweet.filter.id);
 
@@ -209,12 +210,18 @@ projectham.GlobeView = Backbone.View.extend({
 
         filter.name = (filter.name == "") ? tweet.filter.text : filter.name;
 
+        if(!tweet.user.followers || tweet.user.followers <= 0) {
+            value = 1;
+        } else {
+            value = tweet.user.followers;
+        }
 
-        var value = 1;
+        value = Math.pow(value, 1/20) - 0.9;
+
         position = _this.latLongToVector3(tweet.location.lat, tweet.location.lng, value / 2);
 
         //cylinder
-        cube = new THREE.Mesh(new THREE.CylinderGeometry(.01, .01, value, 8, 1, true), filter.material);
+        cube = new THREE.Mesh(new THREE.CylinderGeometry(.01, .01, value, 8, 1, false), filter.material);
         cube.geometry.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI / 2));
 
         //position the cube correctly
@@ -248,7 +255,9 @@ projectham.GlobeView = Backbone.View.extend({
             geom.merge(filter.geom);
 
             filter.total = new THREE.Mesh(geom, filter.material);
+
             _this.scene.add(filter.total);
+
             TWEEN.remove(this);
         });
         scaleTween.start();
