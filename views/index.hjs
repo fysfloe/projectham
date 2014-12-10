@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+    <link rel='stylesheet' href='css/style.css' />
+
+    <script src="lib/socket.io.js"></script>
+    <script src="lib/underscore-min.js"></script>
+    <script src="lib/jquery-2.1.1.min.js"></script>
+    <script src="lib/backbone-min.js"></script>
+    <script src="lib/backbone.localStorage.js"></script>
+</head>
+<body>
+<h1>{{ title }}</h1>
+{{#error}} <li> {{error}} </li> {{/error}}
+
+    <input type="text" placeholder="your filters" id="chooseFilter">
+    <button id="letsGo">Start</button>
+    <button id="stopStream">Stop</button>
+
+    <div class="content">
+        <h2>Total Tweets: <span id="overall"></span></h2>
+        <h4>Retweets: <span id="retweets"></span></h4>
+        <h4>Replies: <span id="replies"></span></h4>
+        <h4>Replies to live tweets: <span id="repliesToParent"></span></h4>
+        <h4>Locations (Geo enabled): <span id="locationsTweet"></span></h4>
+        <h4>Locations (User geocoded): <span id="locationsUser"></span></h4>
+        <h4>Connections: <span id="connections"></span></h4>
+        <h4>Hashtags: <span id="hashtags"></span></h4>
+
+        <div id="twitterStream">
+            <ul id="hashtagList"></ul>
+            <ul id="connectionList"></ul>
+            <ul id="tweets"></ul>
+        </div>
+    </div>
+
+    <script src="js/models/tweet.js"></script>
+    <script src="js/models/connection.js"></script>
+    <script src="js/models/hashtag.js"></script>
+    <script src="js/models/user.js"></script>
+    <script src="js/collections/tweetList.js"></script>
+    <script src="js/collections/connectionList.js"></script>
+    <script src="js/collections/hashtagList.js"></script>
+    <script src="js/collections/userList.js"></script>
+    <script src="js/views/tweetView.js"></script>
+    <script src="js/views/appView.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+</html>

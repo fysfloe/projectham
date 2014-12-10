@@ -26,7 +26,7 @@ var app = express();
 // all environments
 app.set('views', __dirname + '/views');
 app.set('origins', 'http://localhost:*');
-app.set('view engine', 'jade');
+app.set('view engine', 'hjs');
 
 // Add headers
 app.use(function (req, res, next) {
