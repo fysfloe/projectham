@@ -245,6 +245,25 @@ button#stop-stream {
     display: none;
 }
 
+ul#preFilterList {
+    list-style: none;
+    padding: 0;
+}
+
+ul#preFilterList li {
+    line-height: 1.5;
+}
+
+#filters .table-cell {
+    max-width: 5em;
+    overflow: hidden;
+}
+
+#filters figcaption {
+    text-align: center;
+    white-space: nowrap;
+}
+
 /*************************************************
     web-speech-box
  *************************************************/

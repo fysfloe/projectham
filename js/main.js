@@ -28,7 +28,12 @@ projectham.module = (function($) {
         rotate,
         goTo,
         reset,
-        zoom;
+        zoom,
+        filterBy,
+        addPreFilter,
+        addFilter,
+        startStream,
+        stopStream;
 
     initRecognition = function() {
         var final_transcript = '';
@@ -106,12 +111,15 @@ projectham.module = (function($) {
                 }
             }
 
-            //final_transcript = capitalize(final_transcript);
-            final_span.innerHTML = final_transcript;
-            interim_span.innerHTML = interim_transcript;
+            if(app_started) {
+                //final_transcript = capitalize(final_transcript);
+                final_span.innerHTML = final_transcript;
+                interim_span.innerHTML = interim_transcript;
+            }
 
             if(final_transcript) {
                 var matched_command = matchCommand(final_transcript);
+                console.log(matched_command);
 
                 console.log('matched command: ' + matched_command);
 
@@ -172,18 +180,18 @@ projectham.module = (function($) {
         if(app_started) {
 
             var string_array = command.split(' ');
-            var keyword = string_array[0];
+            var keyword = string_array[0] + " " + string_array[1];
 
             console.log(string_array);
 
             var obj = hasCommand(keyword);
 
             if(!obj) {
-                console.log(keyword + " " + string_array[1]);
-                obj = hasCommand(keyword + " " + string_array[1]);
-                obj.num_keywords = 2;
-            } else {
+                keyword = string_array[0];
+                obj = hasCommand(keyword);
                 obj.num_keywords = 1;
+            } else {
+                obj.num_keywords = 2;
             }
 
             obj.string_array = string_array;
@@ -235,6 +243,39 @@ projectham.module = (function($) {
         cv.zoom(direction);
     };
 
+    filterBy = function(parameters) {
+        var filter = '';
+
+        for(var i in parameters) {
+            if (!parameters.hasOwnProperty(i)) continue;
+            filter += parameters[i] + " ";
+        }
+
+        appView.filterInput.val(filter);
+    };
+
+    addPreFilter = function() {
+        if(appView.filterInput.val()) {
+            appView.state == 0 ? appView.addPreFilterButton.trigger('click') : appView.addFilterButton.trigger('click');
+        }
+    };
+
+    startStream = function() {
+        appView.startStream();
+    };
+
+    stopStream = function() {
+        if(appView.state == 1) {
+            appView.initialize();
+        }
+    };
+
+    addFilter = function() {
+        console.log('here');
+
+        $(".add-filter").trigger('click');
+    };
+
     init = function() {
         appStarted = false;
         restart = true;
@@ -246,7 +287,7 @@ projectham.module = (function($) {
         box = $('.move');
         listening = $('#listening');
 
-        //initRecognition();
+        initRecognition();
 
         //------- benni starts here --------
         gv = new projectham.GlobeView();
@@ -287,8 +328,6 @@ projectham.module = (function($) {
                     if (!commands[i].possibilities.hasOwnProperty(k)) continue;
 
                     if(commands[i].possibilities[k] == value.toLowerCase()) {
-                        console.log('FOUNDFOUND');
-
                         return {
                             'correct': commands[i].correct,
                             'function': commands[i].function,
@@ -313,7 +352,7 @@ projectham.module = (function($) {
     */
 
     commands = {
-        'start_app': {
+        /*'start_app': {
             'correct': 'ok ham',
             'function': startApp,
             'has_parameters': false,
@@ -326,6 +365,15 @@ projectham.module = (function($) {
                 5: 'okay m',
                 6: 'okay have',
                 7: 'ok have'
+            }
+        },*/
+
+        'start_app': {
+            'correct': 'listen',
+            'function': startApp,
+            'has_parameters': false,
+            'possibilities': {
+                0: 'listen'
             }
         },
 
@@ -377,6 +425,62 @@ projectham.module = (function($) {
             'has_parameters': true,
             'possibilities': {
                 0: 'zoom'
+            }
+        },
+
+        'filter_by': {
+            'correct': 'filter by',
+            'function': filterBy,
+            'has_parameters': true,
+            'possibilities': {
+                0: 'filter by'
+            }
+        },
+
+        'add_filter': {
+            'correct': 'add filter',
+            'function': addFilter,
+            'has_parameters': false,
+            'possibilities': {
+                0: 'add filter',
+                1: 'and filter',
+                2: 'ad filter',
+                3: 'at filter',
+                4: 'ass filter',
+                5: 'new filter'
+            }
+        },
+
+        'add_preFilter': {
+            'correct': 'add',
+            'function': addPreFilter,
+            'has_parameters': false,
+            'possibilities': {
+                0: 'add',
+                1: 'and',
+                2: 'ad',
+                3: 'at',
+                4: 'ass',
+                5: 'plus'
+            }
+        },
+
+        'start_stream': {
+            'correct': 'start stream',
+            'function': startStream,
+            'has_parameters': false,
+            'possibilities': {
+                0: 'start stream',
+                1: 'start'
+            }
+        },
+
+        'stop_stream': {
+            'correct': 'stop stream',
+            'function': stopStream,
+            'has_parameters': false,
+            'possibilities': {
+                0: 'stop stream'
             }
         }
     };

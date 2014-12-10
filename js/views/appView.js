@@ -32,6 +32,7 @@ projectham.AppView = Backbone.View.extend({
         this.filterDiv = $('#filters');
         this.preFilterList = $('#preFilterList');
         this.addPreFilterButton = $('#b-add-filter1');
+        this.addFilterButton = $('#b-add-filter2');
         this.filterErrMsg = $('#err-msg');
         this.preFilters = [];
 
@@ -167,7 +168,9 @@ projectham.AppView = Backbone.View.extend({
         if(this.preFilters.length >= 3) {
             console.log('maximum filter number reached');
         } else {
-            var preparedFilter = this.filterInput.val().trim();
+            var preparedFilter = this.htmlEntities(this.filterInput.val().trim());
+
+            console.log(preparedFilter);
 
             if(preparedFilter) {
                 this.errMsg('');
@@ -190,7 +193,7 @@ projectham.AppView = Backbone.View.extend({
         if(this.filters.length >= 3) {
             console.log('maximum filter number reached');
         } else {
-            var saveFilter = typeof filter === 'string' ? filter : this.filterInput.val();
+            var saveFilter = typeof filter === 'string' ? filter : this.htmlEntities(this.filterInput.val());
 
             if(saveFilter) {
                 this.filters.create({
@@ -223,5 +226,9 @@ projectham.AppView = Backbone.View.extend({
                 this.$("#b-add-filter2").click();
             }
         }
+    },
+
+    htmlEntities: function(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 });
