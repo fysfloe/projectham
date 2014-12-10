@@ -45,7 +45,14 @@ projectham.ControlView = Backbone.View.extend({
     },
 
     goToPlace: function (placeName) {
-        var val = (placeName ? placeName : $(this.el).find('#searchField').val());
+        var val;
+
+        if (placeName instanceof Object) {
+            val = $(this.el).find('#searchField').val();
+        } else {
+            val = (placeName ? placeName : $(this.el).find('#searchField').val());
+        }
+
         eventBus.trigger('goTo', val);
     },
 

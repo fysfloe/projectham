@@ -305,15 +305,26 @@ THREE.TrackballControls = function (object, domElement, viewObject) {
 
     };
 
-    this.zoom= function(direction, level){
-        if(direction.toLowerCase() == 'in'){
+    this.zoom = function (direction, level) {
+        if (direction.toLowerCase() == 'in') {
             _zoomStart.y += 3 * level;
-        }else if(direction.toLowerCase() == 'out'){
+        } else if (direction.toLowerCase() == 'out') {
             _zoomStart.y -= 3 * level;
-        }else{
+        } else {
             console.log("No direction given");
-            return;
         }
+    };
+
+    this.setRotateStart = function(start){
+
+        _rotateStart = _this.getMouseProjectionOnBall(start.x, start.y);
+
+    };
+
+    this.rotate = function (end) {
+
+        _rotateEnd = _this.getMouseProjectionOnBall(end.x, end.y);
+
     };
 
     // listeners
