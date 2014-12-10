@@ -77,7 +77,6 @@ io.sockets.on('connection', function (socket) {
         // 1. make string from filter object (filterToString)
         // 2. convert to array (split)
         // 3. delete duplicates (uniqueArray)
-        // (4. convert to string again)
         var currentFilter = uniqueArray(filterToString(filters).split(','));
 
         console.log("Minimized for Twitter:", currentFilter);
@@ -337,20 +336,24 @@ var InitStream = function() {
     authenticateToTwitter();
 
     destroyStream();
+	
+	// 1. make string from filter object (filterToString)
+	// 2. convert to array (split)
+	// 3. delete duplicates (uniqueArray)
+	// 4. convert to string again
+	var currentFilter = uniqueArray(filterToString(filters).split(',')).join(',');
+
+	if(currentFilter.trim().length <= 0) return; // do not start stream if filtersize is 0
 
     console.log("\nInit new stream\n");
 
     var parent_id = null,
         parent_tweet = null;
-
+	
     twit.stream(
         'statuses/filter',
 
-        // 1. make string from filter object (filterToString)
-        // 2. convert to array (split)
-        // 3. delete duplicates (uniqueArray)
-        // 4. convert to string again
-        {track: [uniqueArray(filterToString(filters).split(',')).join(',')]}, // verschiedene sprachen beachten (evtl. einstellbar)
+        {track: [currentFilter]}, // verschiedene sprachen beachten (evtl. einstellbar)
         //{locations: ['-180,-90,180,90']},
         function (stream) {
 
