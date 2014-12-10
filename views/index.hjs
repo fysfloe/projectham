@@ -1,51 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>{{ title }}</title>
-    <link rel='stylesheet' href='css/style.css' />
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="style.css" type="text/css">
 
     <script src="lib/socket.io.js"></script>
     <script src="lib/underscore-min.js"></script>
     <script src="lib/jquery-2.1.1.min.js"></script>
     <script src="lib/backbone-min.js"></script>
     <script src="lib/backbone.localStorage.js"></script>
+
+    <script src="lib/three.min.js"></script>
+
+    <script src="lib/TrackballControls.js"></script>
+    <script src='lib/tween.js'></script>
+
+    <script type="text/template" id="commandTemplate">
+        <span class="view"><%= command %></span>
+    </script>
+
+    <script type="text/template" id="filterTemplate">
+        <figure>
+            <figcaption><%= filter %></figcaption>
+            <img src="img/ui/colors/<%= src %>" alt="<%= alt %>">
+        </figure>
+    </script>
+
 </head>
 <body>
-<h1>{{ title }}</h1>
-{{#error}} <li> {{error}} </li> {{/error}}
+<header>
+    <h1>Project Ham <span>A Twitter Live Stream Web Experience</span></h1>
+</header>
+<main>
+    <div id="filter-box" class="main-box">
+        <img src="img/ui/hashtag.png" alt="Hastag" class="ui-img">
+        <h2>Filter By</h2>
 
-    <input type="text" placeholder="your filters" id="chooseFilter">
-    <button id="letsGo">Start</button>
-    <button id="stopStream">Stop</button>
+        <div id="filters" class="on-stream-started table">
 
-    <div class="content">
-        <h2>Total Tweets: <span id="overall"></span></h2>
-        <h4>Retweets: <span id="retweets"></span></h4>
-        <h4>Replies: <span id="replies"></span></h4>
-        <h4>Replies to live tweets: <span id="repliesToParent"></span></h4>
-        <h4>Locations (Geo enabled): <span id="locationsTweet"></span></h4>
-        <h4>Locations (User geocoded): <span id="locationsUser"></span></h4>
-        <h4>Connections: <span id="connections"></span></h4>
-        <h4>Hashtags: <span id="hashtags"></span></h4>
+        </div>
 
-        <div id="twitterStream">
-            <ul id="hashtagList"></ul>
-            <ul id="connectionList"></ul>
-            <ul id="tweets"></ul>
+        <ul id="preFilterList"></ul>
+
+        <div id="filter-input-div">
+            <input type="text" name="i-add-filter" id="i-add-filter" placeholder='Type your filter or say "filter by"'>
+            <button id="b-add-filter1"><img src="img/ui/plus_circle.png" alt="+"></button>
+            <button id="b-add-filter2" class="on-stream-started"><img src="img/ui/plus_circle.png" alt="+"></button>
+            <div id="err-msg" class="clear"></div>
+        </div>
+
+        <div class="clear"></div>
+
+        <button id="start-stream" class="ui-bg-color">Start Stream</button>
+
+        <div id="counts" class="table on-stream-started">
+            <div class="table-cell">
+                <figure>
+                    <span id="overall">0</span>
+                    <figcaption>Total</figcaption>
+                </figure>
+            </div>
+            <div class="table-cell">
+                <figure>
+                    <span id="retweets">0</span>
+                    <figcaption>Retweets</figcaption>
+                </figure>
+            </div>
+            <div class="table-cell">
+                <figure>
+                    <span id="replies">0</span>
+                    <figcaption>Replies</figcaption>
+                </figure>
+            </div>
+        </div>
+
+        <button id="stop-stream" class="ui-bg-color on-stream-started">Stop Stream</button>
+
+        <div class="more-info">
+            <p>This Web Experience uses a Twitter Stream.</p>
+            <p><a href="#" id="open-twitter-info-box">Learn more</a></p>
+        </div>
+    </div>
+    <div id="globe"></div>
+
+    <div id="web-speech-box" class="main-box">
+        <div id="results">
+            <span class="final" id="final_span"></span>
+            <span class="interim" id="interim_span"></span>
+        </div>
+        <img src="img/ui/mic.png" alt="Mic" class="ui-img">
+        <h2>That's what you said</h2>
+        <!--<div id="listening"></div>-->
+        <ul id="commands">
+            <li>Say "listen" to start the speech recognition</li>
+        </ul>
+
+        <div class="more-info">
+            <p>This Web Experience uses Speech Recognition.</p>
+            <p><a href="#" id="open-web-speech-info-box">Learn more</a></p>
         </div>
     </div>
 
-    <script src="js/models/tweet.js"></script>
-    <script src="js/models/connection.js"></script>
-    <script src="js/models/hashtag.js"></script>
-    <script src="js/models/user.js"></script>
-    <script src="js/collections/tweetList.js"></script>
-    <script src="js/collections/connectionList.js"></script>
-    <script src="js/collections/hashtagList.js"></script>
-    <script src="js/collections/userList.js"></script>
-    <script src="js/views/tweetView.js"></script>
-    <script src="js/views/appView.js"></script>
-    <script src="js/main.js"></script>
+</main>
+
+<footer>
+    <div class="more-info">
+        <p>This Web Experience uses GeoNames.</p>
+        <p><a href="#" id="open-geo-info-box">Learn more</a></p>
+    </div>
+    <div>
+        &copy; 2015, Project Ham | <a href="#" id="open-imprint">Imprint</a>
+    </div>
+</footer>
+
+<script type="text/javascript">
+    var eventBus = _.extend({}, Backbone.Events);
+</script>
+
+<!-- Benni -->
+<script src="js/views/globeView.js"></script>
+<script src="js/views/controlView.js"></script>
+
+<!-- Flo -->
+<script src="js/models/command.js"></script>
+<script src="js/collections/commandList.js"></script>
+<script src="js/views/commandView.js"></script>
+<script src="js/models/filter.js"></script>
+<script src="js/collections/filterList.js"></script>
+<script src="js/views/filterView.js"></script>
+
+<!-- Julian -->
+<script src="js/models/tweet.js"></script>
+<script src="js/models/connection.js"></script>
+<script src="js/models/hashtag.js"></script>
+<script src="js/models/user.js"></script>
+<script src="js/collections/tweetList.js"></script>
+<script src="js/collections/connectionList.js"></script>
+<script src="js/collections/hashtagList.js"></script>
+<script src="js/collections/userList.js"></script>
+<script src="js/views/tweetView.js"></script>
+
+<script src="js/views/appView.js"></script>
+<script src="js/main.js"></script>
+
+<script id="vertexShader" type="x-shader/x-vertex">
+                varying vec3 vNormal;
+                void main()
+                {
+                    vNormal = normalize( normalMatrix * normal );
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+                }
+
+
+    </script>
+
+<!-- fragment shader a.k.a. pixel shader -->
+<script id="fragmentShader" type="x-shader/x-vertex">
+                varying vec3 vNormal;
+                void main()
+                {
+                    float intensity = pow( 0.7 - dot( vNormal, vec3( 0.0, 0.0, 1.0 ) ), 4.0 );
+                    gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 ) * intensity;
+                }
+
+
+    </script>
 
 </body>
 </html>

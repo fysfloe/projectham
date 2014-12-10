@@ -1,136 +1,360 @@
 var projectham = projectham || {};
 
 projectham.AppView = Backbone.View.extend({
-	
-	el: $("#twitterStream"),
-	
-	initialize: function() {
-		this.tweets = new projectham.TweetList();
-		this.connections = new projectham.ConnectionList();
+    el: $('main'),
+    viewCommands: 3,
+    numFilters: 3,
+
+    image: [{
+        'src': 'blue.png',
+        'alt': 'Blue'
+    }, {
+        'src': 'orange.png',
+        'alt': 'Orange'
+    }, {
+        'src': 'green.png',
+        'alt': 'Green'
+    }
+    ],
+
+    placeHolder: '<div class="table-cell add-filter"><figure><figcaption>Add Filter</figcaption><img src="img/ui/plus.png" alt="Plus"></figure></div>',
+
+
+    initialize: function() {
+        this.filterCount = 0;
+        this.state = 0;
+
+        $('.on-stream-started').hide();
+        $('#start-stream').show();
+
+        localStorage.clear();
+
+        this.filterDiv = $('#filters');
+        this.preFilterList = $('#preFilterList');
+        this.addPreFilterButton = $('#b-add-filter1');
+        this.addFilterButton = $('#b-add-filter2');
+        this.filterErrMsg = $('#err-msg');
+        this.preFilters = [];
+
+        this.filterDiv.html("");
+
+        for(var i = 0; i < 3; i++) {
+            this.filterDiv.append(this.placeHolder);
+        }
+
+        this.commands = new projectham.CommandList();
+        this.listenTo(this.commands, 'add', this.printCommand);
+        this.commands.fetch();
+
+        this.filters = new projectham.FilterList();
+        this.listenTo(this.filters, 'add', this.printFilter);
+        this.filters.fetch();
+
+        this.filterInput = $("#i-add-filter");
+        this.filterInputDiv = $("#filter-input-div");
+
+        this.filterInputDiv.show();
+        this.addPreFilterButton.show();
+        this.preFilterList.html('');
+        this.preFilterList.show();
+
+        this.errMsg('');
+
+        //------------- Julian
+
+        this.tweets = new projectham.TweetList();
+        this.connections = new projectham.ConnectionList();
         this.hashtags = new projectham.HashtagList();
         this.users = new projectham.UserList();
 
-		this.listenTo(this.tweets, 'add', this.printTweets);
-		this.listenTo(this.connections, 'add', this.printConnections);
-		this.listenTo(this.hashtags, 'change', this.printHashtags);
+        this.listenTo(this.tweets, 'add', this.displayTweets);
+        this.listenTo(this.connections, 'add', this.displayConnections);
+        this.listenTo(this.hashtags, 'change', this.printHashtags);
 
         this.users.fetch();
 
         var _this = this;
-        var socket;
-        var filter = $('#chooseFilter');
+        this.socket = null;
 
-        $('#letsGo').click(function(e) {
+        window.onbeforeunload = function () {
+            _this.socket.emit('close');
+            //socket.onclose = function () {}; // disable onclose handler first
+            //socket.close();
+            _this.socket = null;
+        };
 
-            if(filter.val().trim()) {
-                if(!socket) {
-                    socket = io.connect('http://localhost:3001/');
-                    window.socket = socket;
+        console.log('initialized');
+    },
+
+    events: {
+        'click #b-add-filter2': 'addFilter',
+        'click #b-add-filter1': 'addPreFilter',
+        'click #start-stream': 'startStream',
+        'click .add-filter': function() {
+            this.errMsg('');
+            this.filterInputDiv.show();
+        },
+        'click #stop-stream': 'stopStream',
+        'keyup #i-add-filter': 'checkEnter'
+    },
+
+    saveCommand: function(command) {
+        this.commands.create({
+            command:    command
+        });
+    },
+
+    clearCommands: function() {
+        console.log('clear');
+        var model;
+
+        while(model = this.commands.at(0)) {
+            model.destroy();
+        }
+    },
+
+    printCommand: function(command) {
+        var commandView;
+
+        commandView = new projectham.CommandView({ model: command });
+        //this.$('#commands').prepend(commandView.render().el);
+
+        var listItems = $("#commands li");
+
+        for(var i = 3; i < listItems.length; i++) {
+            listItems[i].remove();
+        }
+
+        this.prependListItem('commands', commandView.render().el, 'prepend');
+
+        if(listItems.length >= this.viewCommands) {
+            this.$('#commands li:last-child').animate({
+                'opacity': 0
+            }, 500, function() {
+                this.remove();
+            });
+        }
+    },
+
+    prependListItem: function(listName, listItemHTML, preApp) {
+        if(preApp == 'prepend') {
+            $(listItemHTML)
+                .hide()
+                .css('opacity',0.0)
+                .prependTo('#' + listName)
+                .slideDown(500)
+                .animate({opacity: 1.0})
+        } else {
+            $(listItemHTML)
+                .hide()
+                .css('opacity', 0.0)
+                .appendTo('#' + listName)
+                .slideDown(500)
+                .animate({opacity: 1.0})
+        }
+    },
+
+    startStream: function() {
+        if(this.preFilters.length == 0 && !this.filterInput.val()) {
+            console.log('type a filter first!');
+
+            this.errMsg('Please type a filter first.');
+        } else {
+            this.showExtendedInfo();
+            this.state = 1;
+
+            if (this.filterInput.val()) {
+                this.addPreFilter();
+            }
+
+            for (var i = 0; i < this.preFilters.length; i++) {
+                this.addFilter(this.preFilters[i]);
+            }
+
+            this.preFilterList.hide();
+            this.addPreFilterButton.hide();
+
+            //--------------------------------------------------
+            if (!this.socket) {
+                this.socket = io.connect('http://localhost:3001/');
+                window.socket = this.socket;
+            }
+
+            this.socket.emit('filter', this.preFilters);
+
+            var overallCount = 0,
+                retweetCount = 0,
+                locationByTweetCount = 0,
+                locationByUserCount = 0,
+                replyCount = 0,
+                replyToParentCount = 0,
+                connectionCount = 0,
+                hashtagCount = 0,
+                _this = this;
+
+            var DOM_overall = $('#overall'),
+                DOM_retweets = $('#retweets'),
+                DOM_replies = $('#replies');
+                //DOM_locationsUser = $('#locationsUser'),
+                //DOM_locationsTweet = $('#locationsTweet'),
+                //DOM_repliesToParent = $('#repliesToParent'),
+                //DOM_connections = $('#connections'),
+                //DOM_hashtags = $('#hashtags');
+
+            this.socket.on('conn', function (conn) {
+                ///DOM_connections.text(++connectionCount);
+                _this.saveConnection(conn);
+            });
+
+            this.socket.on('tweet', function (tweet) {
+                DOM_overall.text(++overallCount);
+                if (tweet.type == 'retweet') {
+                    DOM_retweets.text(++retweetCount);
+                } else if (tweet.type == 'reply') {
+                    DOM_replies.text(++replyCount);
+                    /*if (tweet.parent_id) {
+                        DOM_repliesToParent.text(++replyToParentCount);
+                    }*/
                 }
 
-                $('#stopStream').click(function(e) {
-                    socket.emit('close');
-                    socket = null;
-                    e.preventDefault();
-                });
+                /*if (tweet.location.type == 'user_geo') {
+                    DOM_locationsUser.text(++locationByUserCount);
+                } else if (tweet.location.type == 'tweet_geo') {
+                    DOM_locationsTweet.text(++locationByTweetCount);
+                }*/
 
-                var filterArray = filter.val().trim().split(',');
-                socket.emit('filter', filterArray);
+                if (!$.isEmptyObject(tweet.hashtags)) {
+                    $.each(tweet.hashtags, function () {
+                        var foundHashtag = _this.hashtags.findWhere({text: this.text.toLowerCase().trim()});
+                        var count;
 
-                window.onbeforeunload = function() {
-                    socket.emit('close');
-                    //socket.onclose = function () {}; // disable onclose handler first
-                    //socket.close();
-                    socket = null;
-                };
-
-                var overallCount = 0,
-                    retweetCount = 0,
-                    locationByTweetCount = 0,
-                    locationByUserCount = 0,
-                    replyCount = 0,
-                    replyToParentCount = 0,
-                    connectionCount = 0,
-                    hashtagCount = 0;
-
-                var DOM_overall = $('#overall'),
-                    DOM_retweets = $('#retweets'),
-                    DOM_locationsUser = $('#locationsUser'),
-                    DOM_locationsTweet = $('#locationsTweet'),
-                    DOM_replies = $('#replies'),
-                    DOM_repliesToParent = $('#repliesToParent'),
-                    DOM_connections = $('#connections'),
-                    DOM_hashtags = $('#hashtags');
-
-                socket.on('conn', function (conn) {
-                    DOM_connections.text(++connectionCount);
-                    _this.saveConnection(conn);
-                });
-
-                socket.on('tweet', function (tweet) {
-                    DOM_overall.text(++overallCount);
-                    if(tweet.type == 'retweet') {
-                        DOM_retweets.text(++retweetCount);
-                    } else if(tweet.type == 'reply') {
-                        DOM_replies.text(++replyCount);
-                        if(tweet.parent_id) {
-                            DOM_repliesToParent.text(++replyToParentCount);
+                        if (!$.isEmptyObject(foundHashtag)) {
+                            count = foundHashtag.attributes.count;
+                            foundHashtag.set({count: ++count});
+                            foundHashtag.save();
+                            _this.hashtags.sort();
+                        } else {
+                            _this.saveHashtag({
+                                text: this.text.toLowerCase().trim()
+                            });
+                            //DOM_hashtags.text(++hashtagCount);
                         }
-                    }
+                    });
+                }
 
-                    if(tweet.location.type == 'user_geo') {
-                        DOM_locationsUser.text(++locationByUserCount);
-                    } else if(tweet.location.type == 'tweet_geo') {
-                        DOM_locationsTweet.text(++locationByTweetCount);
-                    }
+                _this.saveTweet(tweet);
+            });
 
-                    if(!$.isEmptyObject(tweet.hashtags)) {
-                        $.each(tweet.hashtags, function() {
-                            var foundHashtag = _this.hashtags.findWhere({text: this.text.toLowerCase().trim()});
-                            var count;
+            this.socket.on('err', function (error) {
+                alert("Sorry buddy, an error has occured:\n" + error);
+                console.trace('Module A'); // [1]
+                console.error(error.stack); // [2]
+            });
+        }
+    },
 
-                            if(!$.isEmptyObject(foundHashtag)) {
-                                count = foundHashtag.attributes.count;
-                                foundHashtag.set({count: ++count});
-                                foundHashtag.save();
-                                _this.hashtags.sort();
-                            } else {
-                                _this.saveHashtag({
-                                   text: this.text.toLowerCase().trim()
-                                });
-                                DOM_hashtags.text(++hashtagCount);
-                            }
-                        });
-                    }
+    stopStream: function() {
+        this.socket.emit('close');
+        this.socket = null;
 
-                    _this.saveTweet(tweet);
+        this.initialize();
+    },
+
+    errMsg: function(e) {
+        this.filterErrMsg.html(e);
+    },
+
+    showExtendedInfo: function() {
+        $('.on-stream-started').show();
+        $('#start-stream').hide();
+    },
+
+    addPreFilter: function() {
+        if(this.preFilters.length >= 3) {
+            console.log('maximum filter number reached');
+        } else {
+            console.log('foio');
+
+            var preparedFilter = this.htmlEntities(this.filterInput.val().trim());
+
+            console.log(preparedFilter);
+
+            if(preparedFilter) {
+                this.errMsg('');
+
+                this.prependListItem('preFilterList', '<li>'+preparedFilter+'</li>', 'append');
+                //this.preFilterList.append('<li>'+preparedFilter+'</li>');
+                this.preFilters.push(preparedFilter);
+            } else {
+                this.errMsg('Please type a filter.');
+            }
+
+            this.filterInput.val("");
+            if(this.preFilters.length == 3) {
+                this.filterInputDiv.hide();
+            }
+        }
+    },
+
+    addFilter: function(filter) {
+        if(this.filters.length >= 3) {
+            console.log('maximum filter number reached');
+        } else {
+            var saveFilter = typeof filter === 'string' ? filter : this.htmlEntities(this.filterInput.val());
+
+            if(saveFilter) {
+                this.filters.create({
+                    filter: saveFilter
                 });
 
-               socket.on('err', function(error) {
-                   alert("Sorry buddy, an error has occured:\n" + error);
-                   console.trace('Module A'); // [1]
-                   console.error(error.stack); // [2]
-               });
-
-               e.preventDefault();
+                this.filterInput.val("");
+                this.filterInputDiv.hide();
+            } else {
+                this.errMsg('Please type a filter.');
             }
-        });
-	},
-	
-	printTweets: function(tweets) {
+        }
+    },
+
+    printFilter: function(filter) {
+        var filterView;
+
+        filterView = new projectham.FilterView({ model: filter });
+        this.$('#filters div:nth-child('+(this.filterCount + 1)+')').before(filterView.render(this.image[this.filterCount]).el);
+        this.filterCount++;
+
+        this.$('#filters .add-filter:last-child').remove();
+    },
+
+    checkEnter: function(event) {
+        if(event.keyCode == 13) {
+            if(this.state == 0) {
+                this.$("#b-add-filter1").click();
+            } else if(this.state == 1) {
+                this.$("#b-add-filter2").click();
+            }
+        }
+    },
+
+    htmlEntities: function(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    },
+
+    // ------------------ Julian
+
+    displayTweets: function(tweets) {
 
         this.$("#tweets").empty();
 
         // LATER HANDLING
         /*var tweetView;
-        var tweet = this.tweets.last();
+         var tweet = this.tweets.last();
 
-        console.log(tweet);
+         console.log(tweet);
 
-        tweetView = new projectham.TweetView({model: tweet});
-        this.$("#tweets").append(tweetView.render().el);
+         tweetView = new projectham.TweetView({model: tweet});
+         this.$("#tweets").append(tweetView.render().el);
 
-        */
+         */
 
         tweets.collection.each(function(tweet) {
             var tweetView;
@@ -138,9 +362,9 @@ projectham.AppView = Backbone.View.extend({
             tweetView = new projectham.TweetView({model: tweet});
             this.$("#tweets").append(tweetView.render().el);
         });
-	},
+    },
 
-    printConnections: function(connections) {
+    displayConnections: function(connections) {
 
         this.$("#connectionList").empty();
 
@@ -160,10 +384,10 @@ projectham.AppView = Backbone.View.extend({
             this.$("#hashtagList").append(hashView.render().el);
         });
     },
-	
-	saveTweet: function(tweet) {
-		this.tweets.create(tweet);
-	},
+
+    saveTweet: function(tweet) {
+        this.tweets.create(tweet);
+    },
 
     saveHashtag: function(hashtag) {
         this.hashtags.create(hashtag);
@@ -174,10 +398,10 @@ projectham.AppView = Backbone.View.extend({
         var parent_tweet = this.tweets.get(connection.parent_id);
         var child_tweet = this.tweets.get(connection.child_id);
 
-        console.log('parent ' + connection.parent_id);
+        /*console.log('parent ' + connection.parent_id);
         console.log('child ' + connection.child_id);
         console.log(parent_tweet);
-        console.log(child_tweet);
+        console.log(child_tweet);*/
 
         if(parent_tweet && child_tweet) {
             if(parent_tweet.attributes.location && child_tweet.attributes.location) {
@@ -185,22 +409,22 @@ projectham.AppView = Backbone.View.extend({
                     parent_id: connection.parent_id,
                     child_id: connection.child_id
                     /*parent: {
-                        lat: parent_tweet.attributes.location.lat,
-                        lng: parent_tweet.attributes.location.lng
-                    },
-                    child: {
-                        lat: child_tweet.attributes.location.lat,
-                        lng: child_tweet.attributes.location.lng
-                    }*/
+                     lat: parent_tweet.attributes.location.lat,
+                     lng: parent_tweet.attributes.location.lng
+                     },
+                     child: {
+                     lat: child_tweet.attributes.location.lat,
+                     lng: child_tweet.attributes.location.lng
+                     }*/
                 });
             }
         }
     },
-	
-	clearTweets: function() {
-		var model;
-		while(model = this.tweets.at(0)) {
-			model.destroy();
-		}
-	}
+
+    clearTweets: function() {
+        var model;
+        while(model = this.tweets.at(0)) {
+            model.destroy();
+        }
+    }
 });
