@@ -122,7 +122,7 @@ projectham.GlobeView = Backbone.View.extend({
         // Fallback WebGL to Canvas Renderer
         if (window.WebGlRenderingContext || document.createElement('canvas').getContext('experimental-webgl')) {
             this.renderer = new THREE.WebGLRenderer({
-                antialias: true,
+                antialias: false,
                 sortObjects: true
             });
         } else {
@@ -221,7 +221,7 @@ projectham.GlobeView = Backbone.View.extend({
         position = _this.latLongToVector3(tweet.location.lat, tweet.location.lng, value / 2);
 
         //cylinder
-        cube = new THREE.Mesh(new THREE.CylinderGeometry(.01, .01, value, 8, 1, false), filter.material);
+        cube = new THREE.Mesh(new THREE.CylinderGeometry(.01, .01, value, 8, 1, true), filter.material);
         cube.geometry.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI / 2));
 
         //position the cube correctly

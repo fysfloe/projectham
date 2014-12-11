@@ -306,8 +306,8 @@ projectham.module = (function($) {
         };
 
         $(renderContainer).append(gv.render({
-            width: window.innerWidth,
-            height: window.innerHeight,
+            width: $('#globe').innerWidth(),
+            height: $('#globe').innerHeight(),
             mapSrc: 'img/world_map.png',
             enableTrackball: true
         }).el);

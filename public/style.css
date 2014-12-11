@@ -136,7 +136,7 @@ header > h1 span {
 
 .main-box {
     position: absolute;
-    width: 15em;
+    width: 16em;
     z-index: 2;
     top: 36%;
     padding: 0 3em;
@@ -152,6 +152,12 @@ header > h1 span {
 
 .more-info {
     margin-top: 3em;
+}
+
+#globe {
+    width: 98%;
+    margin: 0 auto;
+    height: 98%;
 }
 
 /*************************************************

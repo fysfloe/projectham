@@ -238,8 +238,8 @@ var addNewTweet = function(tweet, parent_id, type, callback, retweet) {
         // store id of tweet
         tweet_ids[tweet.id] = 1;
 
-        lat = tweet.coordinates.coordinates[0];
-        lng = tweet.coordinates.coordinates[1];
+        lat = tweet.coordinates.coordinates[1];
+        lng = tweet.coordinates.coordinates[0];
         locationType = 'tweet_geo';
 
         sendTweet(tweet, parent_id, type, lat, lng, locationType);
