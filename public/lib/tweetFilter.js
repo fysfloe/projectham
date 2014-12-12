@@ -34,7 +34,17 @@ projectham.GlobeFilter = function (name, color) {
         transparent: true,
         opacity: this.opacity,
         alphaMap: THREE.ImageUtils.loadTexture('img/alpha_map_cube2.png'),
-        side: THREE.FrontSide
+        side: THREE.FrontSide,
+        depthWrite: false
+    });
+
+    this.lineMaterial = new THREE.LineBasicMaterial({
+        blending: this.blending,
+        color: this.color,
+        transparent: true,
+        opacity: 0.5,
+        linewidth: 1,
+        depthWrite: false
     });
 
     this.setOpacity = function (val) {
@@ -45,6 +55,7 @@ projectham.GlobeFilter = function (name, color) {
     this.setColor = function (color){
         this.color = color;
         this.material.color = color;
+        this.lineMaterial.color = color
     }
 
 };
