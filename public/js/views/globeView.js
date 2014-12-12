@@ -74,6 +74,7 @@ projectham.GlobeView = Backbone.View.extend({
             map: THREE.ImageUtils.loadTexture('img/world_map_semi_details.png'),
             //map: THREE.ImageUtils.loadTexture(this.mapSrc),
             bumpMap: THREE.ImageUtils.loadTexture('img/world_map_alpha.png'),
+            specularMap: THREE.ImageUtils.loadTexture('img/world_map_semi_details.png'),
             bumpScale: .03,
             //alphaMap: THREE.ImageUtils.loadTexture('img/world_map_semi.png'),
            // specular: 0x00050a,
@@ -92,12 +93,54 @@ projectham.GlobeView = Backbone.View.extend({
         );
 
         this.globeFront = new THREE.Mesh(
-            new THREE.SphereGeometry(5.01, 50, 50),
+            new THREE.SphereGeometry(5.0, 50, 50),
             this.globeMaterialFront
         );
 
         this.scene.add(this.globeFront);
         //this.scene.add(this.globeWire);
+
+        var customMaterial = new THREE.ShaderMaterial(
+            {
+                uniforms:
+                {
+                    "c":   { type: "f", value: 0.4 },
+                    "p":   { type: "f", value: 6.0 },
+                    glowColor: { type: "c", value: new THREE.Color(0x5ea9e6) },
+                    viewVector: { type: "v3", value: this.camera.position }
+                },
+                vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+                fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+                side: THREE.BackSide,
+                blending: THREE.AdditiveBlending,
+                transparent: true
+            });
+
+        var customMaterial2 = new THREE.ShaderMaterial(
+            {
+                uniforms:
+                {
+                    "c":   { type: "f", value: 1.0 },
+                    "p":   { type: "f", value: 3.5 },
+                    glowColor: { type: "c", value: new THREE.Color(0x5ea9e6) },
+                    viewVector: { type: "v3", value: this.camera.position }
+                },
+                vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+                fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+                side: THREE.FrontSide,
+                blending: THREE.AdditiveBlending,
+                transparent: true
+
+            });
+
+        var ballGeometry = new THREE.SphereGeometry(6, 32, 16);
+        var ballGeometry2 = new THREE.SphereGeometry(5.03, 50, 50);
+        var ball = new THREE.Mesh(ballGeometry, customMaterial);
+        var ball2 = new THREE.Mesh(ballGeometry2, customMaterial2);
+
+
+        this.scene.add(ball2);
+        this.scene.add(ball);
 
         //Initialize Background ("Space")
         this.BGtexture = THREE.ImageUtils.loadTexture(this.bgSrc);
@@ -105,10 +148,10 @@ projectham.GlobeView = Backbone.View.extend({
         this.BGtexture.repeat.set(1, 1);
 
         this.spaceSphere = new THREE.Mesh(
-            new THREE.SphereGeometry(900, 64, 64),
+            new THREE.SphereGeometry(1000, 64, 64),
             new THREE.MeshBasicMaterial({
-                color: 0x000000,
-                // map: this.BGtexture,
+                color: 0x333333,
+                map: this.BGtexture,
                 side: THREE.BackSide,
                 transparent: false,
                 opacity: 1
