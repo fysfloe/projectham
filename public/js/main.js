@@ -265,8 +265,6 @@ projectham.module = (function($) {
 
         console.log('foo');
 
-        console.log(appView.filters);
-
         //gv.initFilters()
     };
 

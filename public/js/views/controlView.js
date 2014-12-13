@@ -62,7 +62,6 @@ projectham.ControlView = Backbone.View.extend({
     },
 
     displayConnection: function(){
-        alert("hi");
         eventBus.trigger('draw');
     }
 

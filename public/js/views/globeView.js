@@ -77,7 +77,7 @@ projectham.GlobeView = Backbone.View.extend({
             specularMap: THREE.ImageUtils.loadTexture('img/world_map_semi_details.png'),
             bumpScale: .03,
             //alphaMap: THREE.ImageUtils.loadTexture('img/world_map_semi.png'),
-           // specular: 0x00050a,
+            // specular: 0x00050a,
             specular: 0x0a0a0a,
             shininess: 2,
             transparent: false,
@@ -102,15 +102,14 @@ projectham.GlobeView = Backbone.View.extend({
 
         var customMaterial = new THREE.ShaderMaterial(
             {
-                uniforms:
-                {
-                    "c":   { type: "f", value: 0.4 },
-                    "p":   { type: "f", value: 6.0 },
-                    glowColor: { type: "c", value: new THREE.Color(0x5ea9e6) },
-                    viewVector: { type: "v3", value: this.camera.position }
+                uniforms: {
+                    "c": {type: "f", value: 0.4},
+                    "p": {type: "f", value: 6.0},
+                    glowColor: {type: "c", value: new THREE.Color(0x5ea9e6)},
+                    viewVector: {type: "v3", value: this.camera.position}
                 },
-                vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
-                fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+                vertexShader: document.getElementById('vertexShader').textContent,
+                fragmentShader: document.getElementById('fragmentShader').textContent,
                 side: THREE.BackSide,
                 blending: THREE.AdditiveBlending,
                 transparent: true
@@ -118,15 +117,14 @@ projectham.GlobeView = Backbone.View.extend({
 
         var customMaterial2 = new THREE.ShaderMaterial(
             {
-                uniforms:
-                {
-                    "c":   { type: "f", value: 1.0 },
-                    "p":   { type: "f", value: 3.5 },
-                    glowColor: { type: "c", value: new THREE.Color(0x5ea9e6) },
-                    viewVector: { type: "v3", value: this.camera.position }
+                uniforms: {
+                    "c": {type: "f", value: 1.0},
+                    "p": {type: "f", value: 3.5},
+                    glowColor: {type: "c", value: new THREE.Color(0x5ea9e6)},
+                    viewVector: {type: "v3", value: this.camera.position}
                 },
-                vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
-                fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+                vertexShader: document.getElementById('vertexShader').textContent,
+                fragmentShader: document.getElementById('fragmentShader').textContent,
                 side: THREE.FrontSide,
                 blending: THREE.AdditiveBlending,
                 transparent: true
@@ -316,7 +314,8 @@ projectham.GlobeView = Backbone.View.extend({
             y,
             x2,
             y2,
-            lineRes;
+            lineRes,
+            cPHeight;
 
         console.log(conn);
 
@@ -333,45 +332,78 @@ projectham.GlobeView = Backbone.View.extend({
 
         var length = Math.sqrt(Math.pow((x - x2), 2) + Math.pow((y - y2), 2));
 
-        if(length < 150){
-            var cp = new THREE.CurvePath();
-            cp.autoClose = false;
+        if(length > 180){
+            var xT, yT;
+            xT = x;
+            yT = y;
 
-            var cPHeight = length < 25 ? length / 30 : (length < 50 ? length / 45 : length / 60);
-            var x3 = (x + x2) / 2;
-            var y3 = (y + y2) / 2;
-            var cP1 = this.calculateCP(x, y, x3, y3);
-            var cP2 = this.calculateCP(x2, y2, x3, y3);
+            x = x2;
+            y = y2;
 
-            cP1 = this.latLongToVector3(cP1[0], cP1[1], cPHeight);
-            cP2 = this.latLongToVector3(cP2[0], cP2[1], cPHeight);
-
-
-            var position1 = this.latLongToVector3(x, y, -0.02);
-            var position2 = this.latLongToVector3(x2, y2, -0.02);
-            //var position3 = this.calculateMidPoint(x,y,x2,y2,2);
-            var cubicLine = new THREE.CubicBezierCurve3(position1, cP1, cP2, position2);
-
-            cubicLine.autoClose = false;
-            cp.add(cubicLine);
-
-            var curveGeo = cp.createPointsGeometry(lineRes);
-            var curvedLine = new THREE.Line(curveGeo, filter.lineMaterial);
-            //curvedLine.name = "line_" + i;
-            //curvedLine.geometry.verticesNeedUpdate = true;
-            //curvedLine.material = ;
-            //curvedLine.geometry.vertices.push(curveGeo.vertices[0], curveGeo.vertices[1]);
-            //curvedLine.geometry.verticesNeedUpdate = true;
-
-            curvedLine.lookAt(new THREE.Vector3(0, 0, 0));
-
-            filter.connections.add(curvedLine);
-
-            this.scene.remove(filter.connections);
-            this.scene.add(filter.connections);
-
-            console.log(this.scene);
+            x2 = xT;
+            y2 = yT;
         }
+
+        var factor = Math.sqrt((length / 950));     // Faktor berechnet sich zur Hyperbel y = 135*x^2 ( 135 gewählt um dort Grenzwert zu überschreiten)
+
+
+        var cp = new THREE.CurvePath();
+        cp.autoClose = false;
+
+        cPHeight = 0.1 + (length / 25 * (length / 180));
+
+        var xM = (x + x2) / 2;
+        var yM = (y + y2) / 2;
+        var cP1 = this.calculateCP(factor, xM, yM, x, y);
+        var cP2 = this.calculateCP(factor, xM, yM, x2, y2);
+
+        cP1 = this.latLongToVector3(cP1[0], cP1[1], cPHeight);
+        cP2 = this.latLongToVector3(cP2[0], cP2[1], cPHeight);
+
+
+        //// DISPLAY CONTROL POINTS
+
+        //var cube = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .1));
+        //cube.translateX(cP1.x);
+        //cube.translateY(cP1.y);
+        //cube.translateZ(cP1.z);
+        //cube.lookAt(new THREE.Vector3(0, 0, 0));
+        //
+        //var cube2 = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .1));
+        //cube2.translateX(cP2.x);
+        //cube2.translateY(cP2.y);
+        //cube2.translateZ(cP2.z);
+        //cube2.lookAt(new THREE.Vector3(0, 0, 0));
+        //
+        //
+        //this.scene.add(cube);
+        //this.scene.add(cube2);
+
+
+        var position1 = this.latLongToVector3(x, y, -0.02);
+        var position2 = this.latLongToVector3(x2, y2, -0.02);
+        //var position3 = this.calculateMidPoint(x,y,x2,y2,2);
+        var cubicLine = new THREE.CubicBezierCurve3(position1, cP1, cP2, position2);
+
+        cubicLine.autoClose = false;
+        cp.add(cubicLine);
+
+        var curveGeo = cp.createPointsGeometry(lineRes);
+        var curvedLine = new THREE.Line(curveGeo, filter.lineMaterial);
+        //curvedLine.name = "line_" + i;
+        //curvedLine.geometry.verticesNeedUpdate = true;
+        //curvedLine.material = ;
+        //curvedLine.geometry.vertices.push(curveGeo.vertices[0], curveGeo.vertices[1]);
+        //curvedLine.geometry.verticesNeedUpdate = true;
+
+        curvedLine.lookAt(new THREE.Vector3(0, 0, 0));
+
+        filter.connections.add(curvedLine);
+
+        this.scene.remove(filter.connections);
+        this.scene.add(filter.connections);
+
+        console.log(this.scene);
 
 
     },
@@ -464,13 +496,13 @@ projectham.GlobeView = Backbone.View.extend({
                     id: 0
                 },
                 parent: {
-                    lat: 45.3669367,
-                    lng: 14.5172742,
+                    lat: -33,
+                    lng: 150,
                     type: 'user_location'
                 },
                 child: {
-                    lat: 48.3669367,
-                    lng: 14.5172742,
+                    lat: 23,
+                    lng: -102,
                     type: 'user_location'
                 }
             }
@@ -795,12 +827,10 @@ projectham.GlobeView = Backbone.View.extend({
 
     },
 
-    calculateCP: function (x1, y1, x2, y2) {
-        var xC = (x1 + x2) / 2;
-        xC = (x1 + xC) / 2;
+    calculateCP: function (factor, xM, yM, xP, yP) {
 
-        var yC = (y1 + y2) / 2;
-        yC = (y1 + yC) / 2;
+        var xC = xM + ((xP - xM) * factor);
+        var yC = yM + ((yP - yM) * factor);
 
         return [xC, yC];
     },
@@ -820,89 +850,6 @@ projectham.GlobeView = Backbone.View.extend({
                 return null;
                 break;
         }
-    },
-
-    CSVToArray: function (strData, strDelimiter) {
-        // Check to see if the delimiter is defined. If not,
-        // then default to comma.
-        strDelimiter = (strDelimiter || ",");
-
-        // Create a regular expression to parse the CSV values.
-        var objPattern = new RegExp(
-            (
-                // Delimiters.
-            "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
-
-                // Quoted fields.
-            "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
-
-                // Standard fields.
-            "([^\"\\" + strDelimiter + "\\r\\n]*))"
-            ),
-            "gi"
-        );
-
-
-        // Create an array to hold our data. Give the array
-        // a default empty first row.
-        var arrData = [[]];
-
-        // Create an array to hold our individual pattern
-        // matching groups.
-        var arrMatches = null;
-
-
-        // Keep looping over the regular expression matches
-        // until we can no longer find a match.
-        while (arrMatches = objPattern.exec(strData)) {
-
-            // Get the delimiter that was found.
-            var strMatchedDelimiter = arrMatches[1];
-
-            // Check to see if the given delimiter has a length
-            // (is not the start of string) and if it matches
-            // field delimiter. If id does not, then we know
-            // that this delimiter is a row delimiter.
-            if (
-                strMatchedDelimiter.length &&
-                strMatchedDelimiter !== strDelimiter
-            ) {
-
-                // Since we have reached a new row of data,
-                // add an empty row to our data array.
-                arrData.push([]);
-
-            }
-
-            var strMatchedValue;
-
-            // Now that we have our delimiter out of the way,
-            // let's check to see which kind of value we
-            // captured (quoted or unquoted).
-            if (arrMatches[2]) {
-
-                // We found a quoted value. When we capture
-                // this value, unescape any double quotes.
-                strMatchedValue = arrMatches[2].replace(
-                    new RegExp("\"\"", "g"),
-                    "\""
-                );
-
-            } else {
-
-                // We found a non-quoted value.
-                strMatchedValue = arrMatches[3];
-
-            }
-
-
-            // Now that we have our value string, let's add
-            // it to the data array.
-            arrData[arrData.length - 1].push(strMatchedValue);
-        }
-
-        // Return the parsed data.
-        return ( arrData );
     }
 
 
