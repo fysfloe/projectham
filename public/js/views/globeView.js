@@ -315,9 +315,10 @@ projectham.GlobeView = Backbone.View.extend({
             x2,
             y2,
             lineRes,
-            cPHeight;
-
-        console.log(conn);
+            cPHeight,
+            factor,
+            cP1,
+            cP2;
 
         filter = this.getFilter(conn.filter.id);
 
@@ -333,29 +334,41 @@ projectham.GlobeView = Backbone.View.extend({
         var length = Math.sqrt(Math.pow((x - x2), 2) + Math.pow((y - y2), 2));
 
         if(length > 180){
-            var xT, yT;
-            xT = x;
-            yT = y;
 
-            x = x2;
-            y = y2;
+            length = 360 - length;
 
-            x2 = xT;
-            y2 = yT;
+            factor = (length - 360) / -720;
+
+            var y2temp;
+
+            if(y2 > 0) {
+               y2temp = y2 - 360;
+            } else {
+               y2temp = y2 + 360;
+            }
+
+            cP1 = this.calculateCP(factor, x, y, x2, y2temp, true);
+            cP2 = this.calculateCP((1-factor), x, y, x2, y2temp, true);
+
+        } else {
+
+            factor = (length - 360) / -720;
+
+            cP1 = this.calculateCP(factor, x, y, x2, y2);
+            cP2 = this.calculateCP((1-factor), x, y, x2, y2);
+
         }
 
-        var factor = Math.sqrt((length / 950));     // Faktor berechnet sich zur Hyperbel y = 135*x^2 ( 135 gewählt um dort Grenzwert zu überschreiten)
+        //var factor = Math.sqrt((length / 950));     // Faktor berechnet sich zur Hyperbel y = 135*x^2 ( 135 gewählt um dort Grenzwert zu überschreiten)
 
 
         var cp = new THREE.CurvePath();
         cp.autoClose = false;
 
-        cPHeight = 0.1 + (length / 25 * (length / 180));
+        cPHeight = 0.3 + (length / 40 * (length / 180));
 
-        var xM = (x + x2) / 2;
-        var yM = (y + y2) / 2;
-        var cP1 = this.calculateCP(factor, xM, yM, x, y);
-        var cP2 = this.calculateCP(factor, xM, yM, x2, y2);
+        //var xM = (x + x2) / 2;
+        //var yM = (y + y2) / 2;
 
         cP1 = this.latLongToVector3(cP1[0], cP1[1], cPHeight);
         cP2 = this.latLongToVector3(cP2[0], cP2[1], cPHeight);
@@ -363,25 +376,25 @@ projectham.GlobeView = Backbone.View.extend({
 
         //// DISPLAY CONTROL POINTS
 
-        //var cube = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .1));
-        //cube.translateX(cP1.x);
-        //cube.translateY(cP1.y);
-        //cube.translateZ(cP1.z);
-        //cube.lookAt(new THREE.Vector3(0, 0, 0));
-        //
-        //var cube2 = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .1));
-        //cube2.translateX(cP2.x);
-        //cube2.translateY(cP2.y);
-        //cube2.translateZ(cP2.z);
-        //cube2.lookAt(new THREE.Vector3(0, 0, 0));
-        //
-        //
-        //this.scene.add(cube);
-        //this.scene.add(cube2);
+//        var cube = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .1));
+//        cube.translateX(cP1.x);
+//        cube.translateY(cP1.y);
+//        cube.translateZ(cP1.z);
+//        cube.lookAt(new THREE.Vector3(0, 0, 0));
+//
+//        var cube2 = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .1));
+//        cube2.translateX(cP2.x);
+//        cube2.translateY(cP2.y);
+//        cube2.translateZ(cP2.z);
+//        cube2.lookAt(new THREE.Vector3(0, 0, 0));
+//
+//
+//        this.scene.add(cube);
+//        this.scene.add(cube2);
 
 
-        var position1 = this.latLongToVector3(x, y, -0.02);
-        var position2 = this.latLongToVector3(x2, y2, -0.02);
+        var position1 = this.latLongToVector3(x, y, 0.01);
+        var position2 = this.latLongToVector3(x2, y2, 0.01);
         //var position3 = this.calculateMidPoint(x,y,x2,y2,2);
         var cubicLine = new THREE.CubicBezierCurve3(position1, cP1, cP2, position2);
 
@@ -402,10 +415,6 @@ projectham.GlobeView = Backbone.View.extend({
 
         this.scene.remove(filter.connections);
         this.scene.add(filter.connections);
-
-        console.log(this.scene);
-
-
     },
 
 
@@ -496,13 +505,13 @@ projectham.GlobeView = Backbone.View.extend({
                     id: 0
                 },
                 parent: {
-                    lat: -33,
-                    lng: 150,
+                    lat: 36,
+                    lng: 138,
                     type: 'user_location'
                 },
                 child: {
-                    lat: 23,
-                    lng: -102,
+                    lat: -33,
+                    lng: -71.5,
                     type: 'user_location'
                 }
             }
@@ -827,10 +836,26 @@ projectham.GlobeView = Backbone.View.extend({
 
     },
 
-    calculateCP: function (factor, xM, yM, xP, yP) {
+    calculateCP: function (factor, x1, y1, x2, y2, inverse) {
 
-        var xC = xM + ((xP - xM) * factor);
-        var yC = yM + ((yP - yM) * factor);
+        var xC,
+            yC;
+
+        if(inverse) { // -- -> -+
+            xC = x1 + ((x2 - x1) * factor);
+            yC = y1 + ((y2 - y1) * factor);
+
+            if(y2 > 0) {
+                yC -= 360;
+            } else {
+                yC += 360;
+            }
+
+        } else {
+
+            xC = x1 + ((x2 - x1) * factor);
+            yC = y1 + ((y2 - y1) * factor);
+        }
 
         return [xC, yC];
     },
