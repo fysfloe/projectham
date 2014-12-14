@@ -12,14 +12,51 @@ var express = require('express'),
     errorHandler = require('errorhandler');
 var http = require('http');
 var path = require('path');
+var twitter = require('twitter');
 
 // DB
 var monk = require('monk');
-var db = monk('localhost:27017/userdb');
+var db = monk('localhost:27017/projectham');
 
 // Routes
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var trends = require('./routes/trends');
+
+var twit;
+
+var CronJob = require('cron').CronJob;
+var job = new CronJob({
+    cronTime: '00 */10 * * * *',
+    onTick: function() {
+        // Run the job
+
+        var trendsCollection = db.get('trendslist'); // get trends collection
+
+        if(!twit) {
+            twit = new twitter({
+                consumer_key: "1bOq10EhTL8UoeBGokYWHcYmP",
+                consumer_secret: "Z8zn26aTnADiosDN79TI5BrY7R5j7VYujmxC4CP94j5i654FnC",
+                access_token_key: "1491329144-ms8q9JOx70n2Rs6AeuBfaHITv3ut2UrfGyuZcud",
+                access_token_secret: "M82JbLOmIyLi8fZ9UXMsWac0Ksc85kM1N2eOBSrnw2HcO"
+            });
+            console.log("Logged in to twitter.");
+        }
+
+        if(twit) {
+            twit.get('/trends/place.json', {id: 1}, function(data, res) {
+                if(res.statusCode == 200) {
+                    trendsCollection.insert({trends: data, datetime: new Date().toUTCString()});
+                    console.log("Just got the latest trends from twitter.");
+                }
+            });
+        }
+
+        console.log("Cronjob completed.");
+    },
+    start: false
+});
+job.start();
 
 var app = express();
 
@@ -52,6 +89,7 @@ app.use(function(req,res,next) {
 
 app.use('/', routes);
 app.use('/users', users);
+app.use('/trends', trends);
 
 /*app.use(methodOverride());
 app.use(app.router);
