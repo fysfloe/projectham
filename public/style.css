@@ -130,6 +130,21 @@ header > h1 span {
     font-weight: 300;
 }
 
+button#fullscreen {
+    position: absolute;
+    right: 3em;
+    top: 2em;
+    width: 4em;
+    height: 4em;
+    z-index: 500;
+    background: none;
+    border: none;
+}
+
+button#fullscreen img {
+    width: 100%;
+}
+
 /*************************************************
     main-box
  *************************************************/

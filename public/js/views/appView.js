@@ -1,7 +1,7 @@
 var projectham = projectham || {};
 
 projectham.AppView = Backbone.View.extend({
-    el: $('main'),
+    el: $('body'),
     viewCommands: 3,
     numFilters: 3,
 
@@ -28,6 +28,13 @@ projectham.AppView = Backbone.View.extend({
         $('#start-stream').show();
 
         localStorage.clear();
+
+        this.fullscreenButton = $('#fullscreen');
+        this.fullscreenState = 0;
+
+        this.filterBox = $('#filter-box');
+        this.webspeechBox = $('#web-speech-box');
+        this.footer = $('footer');
 
         this.filterDiv = $('#filters');
         this.preFilterList = $('#preFilterList');
@@ -93,6 +100,7 @@ projectham.AppView = Backbone.View.extend({
 
     events: {
         'click #b-add-filter2': 'addFilter',
+        'click #fullscreen': 'toggleFullscreen',
         'click #b-add-filter1': 'addPreFilter',
         'click #start-stream': 'startStream',
         'click .add-filter': function() {
@@ -101,6 +109,7 @@ projectham.AppView = Backbone.View.extend({
         },
         'click #stop-stream': 'stopStream',
         'keyup #i-add-filter': 'checkEnter'
+
     },
 
     saveCommand: function(command) {
@@ -443,6 +452,65 @@ projectham.AppView = Backbone.View.extend({
         var model;
         while(model = this.tweets.at(0)) {
             model.destroy();
+        }
+    },
+
+    toggleFullscreen: function() {
+        if(this.fullscreenState == 0) {
+            this.filterBox.animate({
+                opacity: 0,
+                left: '-20em'
+            });
+
+            this.webspeechBox.animate({
+                opacity: 0,
+                right: '-20em'
+            });
+
+            this.footer.animate({
+                opacity: 0,
+                bottom: '-20em'
+            });
+
+            this.fullscreenButton.css({
+                opacity: 0
+            });
+
+            this.fullscreenButton.find('img').attr('src', 'img/ui/fullscreen_exit.png');
+
+            this.fullscreenButton.animate({
+                opacity: 1
+            });
+
+            this.fullscreenState = 1;
+        } else if(this.fullscreenState == 1) {
+            this.filterBox.animate({
+                opacity: 1,
+                left: '0'
+            });
+
+            this.webspeechBox.animate({
+                opacity: 1,
+                right: '0'
+            });
+
+            this.footer.animate({
+                opacity: 1,
+                bottom: '0'
+            });
+
+            this.fullscreenButton.css({
+                opacity: 0
+            });
+
+            this.fullscreenButton.find('img').attr('src', 'img/ui/fullscreen.png');
+
+            this.fullscreenButton.animate({
+                opacity: 1
+            });
+
+
+            this.fullscreenState = 0;
         }
     }
 });
