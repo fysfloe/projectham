@@ -34,6 +34,11 @@ projectham.AppView = Backbone.View.extend({
         this.addPreFilterButton = $('#b-add-filter1');
         this.addFilterButton = $('#b-add-filter2');
         this.filterErrMsg = $('#err-msg');
+        this.filterRatio = $('#filter-ratio');
+        this.filterRatio.html('');
+        this.filterCounts = [3];
+        this.filterCounts[0] = this.filterCounts[1] = this.filterCounts[2] = this.overallCount = 0;
+
         this.preFilters = [];
 
         this.filterDiv.html("");
@@ -171,6 +176,8 @@ projectham.AppView = Backbone.View.extend({
                 this.addFilter(this.preFilters[i]);
             }
 
+            this.filterRatioDivs = this.filterRatio.find('div');
+
             this.preFilterList.hide();
             this.addPreFilterButton.hide();
 
@@ -184,8 +191,7 @@ projectham.AppView = Backbone.View.extend({
 
             this.socket.emit('filter', this.preFilters);
 
-            var overallCount = 0,
-                retweetCount = 0,
+            var retweetCount = 0,
                 locationByTweetCount = 0,
                 locationByUserCount = 0,
                 replyCount = 0,
@@ -209,7 +215,7 @@ projectham.AppView = Backbone.View.extend({
             });
 
             this.socket.on('tweet', function (tweet) {
-                DOM_overall.text(++overallCount);
+                DOM_overall.text(++_this.overallCount);
                 if (tweet.type == 'retweet') {
                     DOM_retweets.text(++retweetCount);
                 } else if (tweet.type == 'reply') {
@@ -275,8 +281,6 @@ projectham.AppView = Backbone.View.extend({
         if(this.preFilters.length >= 3) {
             console.log('maximum filter number reached');
         } else {
-            console.log('foio');
-
             var preparedFilter = this.htmlEntities(this.filterInput.val().trim());
 
             console.log(preparedFilter);
@@ -331,6 +335,8 @@ projectham.AppView = Backbone.View.extend({
             } else {
                 this.errMsg('Please type a filter.');
             }
+
+            this.filterRatio.append('<div>');
         }
     },
 
@@ -362,6 +368,17 @@ projectham.AppView = Backbone.View.extend({
 
     displayTweets: function(tweets) {
         var tweet = this.tweets.last();
+
+        this.filterCounts[tweet.attributes.filter.id]++;
+
+        var i = 0,
+            _this = this;
+
+        this.filterRatioDivs.each(function() {
+            $(this).width(Math.round(_this.filterCounts[i]/_this.overallCount*100) - 0.5 + "%");
+            i++;
+        });
+
         eventBus.trigger('newTweet', tweet);
     },
 

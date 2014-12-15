@@ -43,6 +43,9 @@
 
         </div>
 
+        <div id="filter-ratio" class="on-stream-started">
+        </div>
+
         <ul id="preFilterList"></ul>
 
         <div id="filter-input-div">
