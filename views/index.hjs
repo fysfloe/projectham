@@ -3,6 +3,15 @@
 <head>
     <title>{{ title }}</title>
     <meta charset="utf-8">
+
+    <!-- fb og tags -->
+    <meta property="og:title" content="Project Ham" />
+    <meta property="og:site_name" content="Project Ham"/>
+    <meta property="og:url" content="http://127.0.0.1:3000/img/world_map.png" />
+    <meta property="og:description" content="Project Ham is a web experience 100 % cool." />
+    <meta property="og:image" content="http://127.0.0.1:3000/img/world_map.png" />
+
+
     <link rel="stylesheet" href="style.css" type="text/css">
 
     <script src="lib/socket.io.js"></script>
@@ -31,6 +40,26 @@
 
 </head>
 <body>
+
+<div id="fb-root"></div>
+<script>
+    window.fbAsyncInit = function() {
+        FB.init({
+            appId      : '675085619278231',
+            xfbml      : true,
+            version    : 'v2.2'
+        });
+    };
+
+    (function(d, s, id){
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+</script>
+
 <header>
     <h1>Project Ham <span>A Twitter Live Stream Web Experience</span></h1>
 </header>
@@ -110,11 +139,27 @@
     <div class="more-info">
         <p>This Web Experience uses GeoNames.</p>
         <p><a href="#" id="open-geo-info-box">Learn more</a></p>
+        <div class="fb-share-button" data-href="http://127.0.0.1:3000/img/world_map.png" data-layout="button"></div>
+        <a onclick="testshare()">Test Share</a>
     </div>
     <div>
         &copy; 2015, Project Ham | <a href="#" id="open-imprint">Imprint</a>
     </div>
 </footer>
+
+<script type="text/javascript">
+    function testshare() {
+        console.log('fuuiu');
+
+        FB.ui({
+            method: 'share_open_graph',
+            action_type: 'og.likes',
+            action_properties: JSON.stringify({
+                object: 'http://127.0.0.1:3000/img/world_map.png'
+            })
+        }, function(response){});
+    }
+</script>
 
 <script type="text/javascript">
     var eventBus = _.extend({}, Backbone.Events);
