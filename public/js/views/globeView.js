@@ -545,9 +545,6 @@ projectham.GlobeView = Backbone.View.extend({
 
         });
 
-<<<<<<< HEAD
-        eventBus.on("addFilter", function (e) {
-=======
         eventBus.on("soloMode", function (id) {
             var filter = _this.getFilter(id);
             if(filter.isDetailView){
@@ -581,8 +578,7 @@ projectham.GlobeView = Backbone.View.extend({
             _this.fadeInFilter(2);
         });
 
-        eventBus.on("startStream", function (e) {
->>>>>>> feature/032-globe-connections
+        eventBus.on("addFilter", function (e) {
             _this.initFilters(
                 new projectham.GlobeFilter(e.models[0].get('filter'), e.models[0].get('color')),
                 e.models[1] ? new projectham.GlobeFilter(e.models[1].get('filter'), e.models[1].get('color')) : undefined,
@@ -591,13 +587,10 @@ projectham.GlobeView = Backbone.View.extend({
         });
 
         eventBus.on("newTweet", function (e) {
-
             _this.displayTweet(e.attributes);
         });
 
         eventBus.on("newConn", function (e) {
-
-
             _this.displayConnection(e);
         });
 
@@ -809,9 +802,6 @@ projectham.GlobeView = Backbone.View.extend({
         });
 
         lineTween.start();
-
-
-
     },
 
     startCameraRotation: function () {
