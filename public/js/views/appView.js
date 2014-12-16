@@ -30,6 +30,9 @@ projectham.AppView = Backbone.View.extend({
 
         localStorage.clear();
 
+        this.trends = $('#trends');
+        this.trends.show();
+
         this.fullscreenButton = $('#fullscreen');
         this.fullscreenState = 0;
 
@@ -78,6 +81,8 @@ projectham.AppView = Backbone.View.extend({
 
         this.errMsg('');
 
+        this.getTrends();
+
         //------------- Julian
 
         this.tweets = new projectham.TweetList();
@@ -115,8 +120,10 @@ projectham.AppView = Backbone.View.extend({
             this.filterInputDiv.show();
         },
         'click #stop-stream': 'stopStream',
-        'keyup #i-add-filter': 'checkEnter'
-
+        'keyup #i-add-filter': 'checkEnter',
+        'click table#trends td:last-child': function(ev) {
+            this.filterInput.val($(ev.target).text());
+        }
     },
 
     saveCommand: function(command) {
@@ -196,6 +203,7 @@ projectham.AppView = Backbone.View.extend({
 
             this.preFilterList.hide();
             this.addPreFilterButton.hide();
+            this.trends.hide();
 
             //--------------------------------------------------
             if (!this.socket) {
@@ -555,5 +563,19 @@ projectham.AppView = Backbone.View.extend({
                 _this.fullscreenButton.html('&#xe601;');
             }
         }, false);
+    },
+
+    getTrends: function() {
+        var tds = $('table#trends td:last-child span');
+        var i = 0;
+
+        $.get( "data/trends_example_formatted.json", function( data ) {
+            var trends = data[data.length - 1].trends[0].trends;
+
+            tds.each(function() {
+                $(this).html((trends[i].name).replace('#', ''));
+                i++;
+            })
+        });
     }
 });

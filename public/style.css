@@ -111,6 +111,11 @@ input:focus, button:focus {
     outline:none;
 }
 
+h3 {
+    margin: 2em 0 0.5em;
+    color: #0084b4;
+}
+
 /*************************************************
     header
  *************************************************/
@@ -347,6 +352,50 @@ div#filter-ratio div:nth-child(2) {
 div#filter-ratio div:nth-child(3) {
     background: #81D056;
     box-shadow: 0 0 15px #81D056;
+}
+
+table#trends {
+    border-collapse: collapse;
+    width: 12em;
+}
+
+table#trends tr {
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+table#trends td:last-child:hover {
+    cursor: pointer;
+}
+
+table#trends td:last-child:hover:after {
+    opacity: 1;
+}
+
+table#trends tr:last-child {
+    border: none;
+}
+
+table#trends td {
+    padding: 0.4em;
+}
+
+table#trends td:first-child {
+    text-align: center;
+}
+
+table#trends td:last-child:after {
+    content: '+';
+    float: right;
+    opacity: 0.4;
+    margin-right: 0.3em;
+
+    transition: opacity 0.2s ease;
+}
+
+table#trends td:last-child span {
+    max-width: 8em;
+    overflow: hidden;
+    display: inline-flex;
 }
 
 /*************************************************

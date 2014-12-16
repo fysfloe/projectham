@@ -84,6 +84,30 @@
 
         <button id="stop-stream" class="ui-bg-color on-stream-started">Stop Stream</button>
 
+        <h3>Current Trends</h3>
+        <table id="trends">
+            <tr>
+                <td>1</td>
+                <td><span></span></td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td><span></span></td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td><span></span></td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td><span></span></td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td><span></span></td>
+            </tr>
+        </table>
+
         <div class="more-info">
             <p>This Web Experience uses a Twitter Stream.</p>
             <p><a href="#" id="open-twitter-info-box">Learn more</a></p>
