@@ -407,14 +407,17 @@ projectham.AppView = Backbone.View.extend({
     },
 
     displayConnections: function(connections) {
+        var conn = this.connections.last();
+        var parent = this.tweets.findWhere({id: conn.attributes.parent_id});
+        var child = this.tweets.findWhere({id: conn.attributes.child_id});
 
-        this.$("#connectionList").empty();
-
-        connections.collection.each(function(connection) {
-            var conView;
-            conView = new projectham.TweetView({model: connection});
-            this.$("#connectionList").append(conView.render().el);
-        });
+        if(parent && child){
+            conn = {};
+            conn.filter = parent.attributes.filter;
+            conn.parent = parent.attributes.location;
+            conn.child = child.attributes.location;
+            eventBus.trigger('newConn', conn);
+        }
     },
 
     printHashtags: function(hashtags) {

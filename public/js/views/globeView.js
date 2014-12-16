@@ -46,40 +46,44 @@ projectham.GlobeView = Backbone.View.extend({
         this.camera.position.set(10.443329520636075, 10.010497358953545, -4.0173981090580995);
 
 
-        this.ambientLight = new THREE.AmbientLight(0x333333);
+        this.ambientLight = new THREE.AmbientLight(0x090c10);
+        //this.ambientLight = new THREE.AmbientLight(0x333333);
         this.scene.add(this.ambientLight);
 
-        this.spotLight = new THREE.SpotLight(0xffffff, 10);
+        this.spotLight = new THREE.SpotLight(0xffffff, 7);
         this.scene.add(this.spotLight);
 
         //this.scene.add(new THREE.DirectionalLight(0xffffff, 1));
 
         this.globeMaterialWire = new THREE.MeshLambertMaterial({
-            color: 0x181f2b,
-            map: THREE.ImageUtils.loadTexture(this.mapSrc),
+            color: 0xff0000,
+            //map: THREE.ImageUtils.loadTexture(this.mapSrc),
             // specularMap: THREE.ImageUtils.loadTexture(this.specularMapSrc),
             // specular: new THREE.Color(this.specularColor),
             //alphaMap: THREE.ImageUtils.loadTexture('img/world_map_alpha.png'),
             //shininess: 4
             transparent: true,
             opacity: .4,
-            side: THREE.FrontSide,
-            wireframe: true,
-            depthWrite: false
+            side: THREE.DoubleSide,
+            wireframe: false
         });
 
-        this.globeMaterialFront = new THREE.MeshLambertMaterial({
-            color: 0x070c14,
+        this.globeMaterialFront = new THREE.MeshPhongMaterial({
+            color: 0x000407,
+            //color: 0x070707,
+            map: THREE.ImageUtils.loadTexture('img/world_map_semi_details.png'),
             //map: THREE.ImageUtils.loadTexture(this.mapSrc),
-            // specularMap: THREE.ImageUtils.loadTexture(this.specularMapSrc),
-            // specular: new THREE.Color(this.specularColor),
-            alphaMap: THREE.ImageUtils.loadTexture('img/world_map_alpha_stroke.png'),
-            //shininess: 4
-            transparent: true,
+            bumpMap: THREE.ImageUtils.loadTexture('img/world_map_alpha.png'),
+            specularMap: THREE.ImageUtils.loadTexture('img/world_map_semi_details.png'),
+            bumpScale: .03,
+            //alphaMap: THREE.ImageUtils.loadTexture('img/world_map_semi.png'),
+            // specular: 0x00050a,
+            specular: 0x0a0a0a,
+            shininess: 2,
+            transparent: false,
             opacity: 1,
             side: THREE.FrontSide,
-            wireframe: false,
-            depthTest: false
+            wireframe: false
         });
 
         //Initialize Globe
@@ -89,14 +93,52 @@ projectham.GlobeView = Backbone.View.extend({
         );
 
         this.globeFront = new THREE.Mesh(
-            new THREE.SphereGeometry(5.01, 50, 50),
+            new THREE.SphereGeometry(5.0, 50, 50),
             this.globeMaterialFront
         );
 
-
         this.scene.add(this.globeFront);
-        this.scene.add(this.globeWire);
+        //this.scene.add(this.globeWire);
 
+        var customMaterial = new THREE.ShaderMaterial(
+            {
+                uniforms: {
+                    "c": {type: "f", value: 0.4},
+                    "p": {type: "f", value: 6.0},
+                    glowColor: {type: "c", value: new THREE.Color(0x5ea9e6)},
+                    viewVector: {type: "v3", value: this.camera.position}
+                },
+                vertexShader: document.getElementById('vertexShader').textContent,
+                fragmentShader: document.getElementById('fragmentShader').textContent,
+                side: THREE.BackSide,
+                blending: THREE.AdditiveBlending,
+                transparent: true
+            });
+
+        var customMaterial2 = new THREE.ShaderMaterial(
+            {
+                uniforms: {
+                    "c": {type: "f", value: 1.0},
+                    "p": {type: "f", value: 3.5},
+                    glowColor: {type: "c", value: new THREE.Color(0x5ea9e6)},
+                    viewVector: {type: "v3", value: this.camera.position}
+                },
+                vertexShader: document.getElementById('vertexShader').textContent,
+                fragmentShader: document.getElementById('fragmentShader').textContent,
+                side: THREE.FrontSide,
+                blending: THREE.AdditiveBlending,
+                transparent: true
+
+            });
+
+        var ballGeometry = new THREE.SphereGeometry(6, 32, 16);
+        var ballGeometry2 = new THREE.SphereGeometry(5.03, 50, 50);
+        var ball = new THREE.Mesh(ballGeometry, customMaterial);
+        var ball2 = new THREE.Mesh(ballGeometry2, customMaterial2);
+
+
+        this.scene.add(ball2);
+        this.scene.add(ball);
 
         //Initialize Background ("Space")
         this.BGtexture = THREE.ImageUtils.loadTexture(this.bgSrc);
@@ -104,10 +146,10 @@ projectham.GlobeView = Backbone.View.extend({
         this.BGtexture.repeat.set(1, 1);
 
         this.spaceSphere = new THREE.Mesh(
-            new THREE.SphereGeometry(900, 64, 64),
+            new THREE.SphereGeometry(1000, 64, 64),
             new THREE.MeshBasicMaterial({
-                color: 0x000000,
-                // map: this.BGtexture,
+                color: 0x333333,
+                map: this.BGtexture,
                 side: THREE.BackSide,
                 transparent: false,
                 opacity: 1
@@ -122,8 +164,8 @@ projectham.GlobeView = Backbone.View.extend({
         // Fallback WebGL to Canvas Renderer
         if (window.WebGlRenderingContext || document.createElement('canvas').getContext('experimental-webgl')) {
             this.renderer = new THREE.WebGLRenderer({
-                antialias: true,
-                preserveDrawingBuffer: false
+                antialias: false,
+                sortObjects: true
             });
         } else {
             this.renderer = new THREE.CanvasRenderer();
@@ -136,7 +178,7 @@ projectham.GlobeView = Backbone.View.extend({
         this.controls = options.enableTrackball ? new THREE.TrackballControls(this.camera, this.renderer.domElement, this) : null;
 
         //Add empty total meshes of filters
-        $.each(this.filters, function(key,value){
+        $.each(this.filters, function (key, value) {
             _this.scene.add(value.total);
         });
 
@@ -178,7 +220,7 @@ projectham.GlobeView = Backbone.View.extend({
 
     },
 
-    initFilters: function (filter1,filter2,filter3){
+    initFilters: function (filter1, filter2, filter3) {
         this.filters = {
             _0: filter1,
             _1: filter2,
@@ -192,7 +234,8 @@ projectham.GlobeView = Backbone.View.extend({
             filter,
             position,
             mesh,
-            cube;
+            cube,
+            value;
 
         filter = this.getFilter(tweet.filter.id);
 
@@ -209,8 +252,14 @@ projectham.GlobeView = Backbone.View.extend({
 
         filter.name = (filter.name == "") ? tweet.filter.text : filter.name;
 
+        if (!tweet.user.followers || tweet.user.followers <= 0) {
+            value = 1;
+        } else {
+            value = tweet.user.followers;
+        }
 
-        var value = 1;
+        value = Math.pow(value, 1 / 20) - 0.9;
+
         position = _this.latLongToVector3(tweet.location.lat, tweet.location.lng, value / 2);
 
         //cylinder
@@ -248,7 +297,9 @@ projectham.GlobeView = Backbone.View.extend({
             geom.merge(filter.geom);
 
             filter.total = new THREE.Mesh(geom, filter.material);
+
             _this.scene.add(filter.total);
+
             TWEEN.remove(this);
         });
         scaleTween.start();
@@ -256,90 +307,114 @@ projectham.GlobeView = Backbone.View.extend({
 
     },
 
-    displayLineData: function (data) {
-        this.data = data || null;
+    displayConnection: function (conn) {
 
-        var arrayData = this.CSVToArray(this.data);
-        var lineRes = 100;
+        var filter,
+            x,
+            y,
+            x2,
+            y2,
+            lineRes,
+            cPHeight,
+            factor,
+            cP1,
+            cP2;
 
+        filter = this.getFilter(conn.filter.id);
 
-        this.lineVertices = [];
+        lineRes = 100;
 
-        var lineMaterial = new THREE.LineBasicMaterial({
-            blending: THREE.AdditiveBlending,
-            color: 0x3a7aa2,
-            transparent: true,
-            opacity: 0.8,
-            linewidth: 1,
-            alphaMap: THREE.ImageUtils.loadTexture('img/alpha_map_cube.png')
-        });
+        x = parseFloat(conn.parent.lat);
+        y = parseFloat(conn.parent.lng);
 
-        var lineMaterial2 = new THREE.LineBasicMaterial({
-            color: 0xFF0000,
-            transparent: true,
-            opacity: 0.2,
-            linewidth: 1
-        });
-
-        var lineMaterial3 = new THREE.LineBasicMaterial({
-            color: 0xFF8900,
-            transparent: true,
-            opacity: 0.2,
-            linewidth: 1
-        });
+        x2 = parseFloat(conn.child.lat);
+        y2 = parseFloat(conn.child.lng);
 
 
-        for (var i = 0, len = 1; i < len; i++) {
-            var x = parseFloat(arrayData[i][0]);
-            var y = parseFloat(arrayData[i][1]);
+        var length = Math.sqrt(Math.pow((x - x2), 2) + Math.pow((y - y2), 2));
 
-            var x2 = parseFloat(arrayData[i][2]);
-            var y2 = parseFloat(arrayData[i][3]);
+        if(length > 180){
 
-            var length = Math.sqrt(Math.pow((x - x2), 2) + Math.pow((y - y2), 2));
+            length = 360 - length;
 
-            if (length < 150) {
+            factor = (length - 360) / -720;
 
-                var cp = new THREE.CurvePath();
-                cp.autoClose = false;
+            var y2temp;
 
-                var cPHeight = length < 25 ? length / 30 : (length < 50 ? length / 45 : length / 60);
-                var x3 = (x + x2) / 2;
-                var y3 = (y + y2) / 2;
-                var cP1 = this.calculateCP(x, y, x3, y3);
-                var cP2 = this.calculateCP(x2, y2, x3, y3);
-
-                cP1 = this.latLongToVector3(cP1[0], cP1[1], cPHeight);
-                cP2 = this.latLongToVector3(cP2[0], cP2[1], cPHeight);
-
-
-                var position1 = this.latLongToVector3(x, y, -0.02);
-                var position2 = this.latLongToVector3(x2, y2, -0.02);
-                //var position3 = this.calculateMidPoint(x,y,x2,y2,2);
-                var cubicLine = new THREE.CubicBezierCurve3(position1, cP1, cP2, position2);
-
-                cubicLine.autoClose = false;
-                cp.add(cubicLine);
-
-                var curveGeo = cp.createPointsGeometry(lineRes);
-                var curvedLine = new THREE.Line();
-                curvedLine.name = "line_" + i;
-                curvedLine.geometry.verticesNeedUpdate = true;
-                curvedLine.material = lineMaterial;
-                curvedLine.geometry.vertices.push(curveGeo.vertices[0], curveGeo.vertices[1]);
-                curvedLine.geometry.verticesNeedUpdate = true;
-
-                curvedLine.lookAt(new THREE.Vector3(0, 0, 0));
-                this.lines = curvedLine;
-                this.lineVertices = curveGeo.vertices;
-
-                //this.scene.add(this.lines);
-
-
+            if(y2 > 0) {
+               y2temp = y2 - 360;
+            } else {
+               y2temp = y2 + 360;
             }
+
+            cP1 = this.calculateCP(factor, x, y, x2, y2temp, true);
+            cP2 = this.calculateCP((1-factor), x, y, x2, y2temp, true);
+
+        } else {
+
+            factor = (length - 360) / -720;
+
+            cP1 = this.calculateCP(factor, x, y, x2, y2);
+            cP2 = this.calculateCP((1-factor), x, y, x2, y2);
+
         }
 
+        //var factor = Math.sqrt((length / 950));     // Faktor berechnet sich zur Hyperbel y = 135*x^2 ( 135 gewählt um dort Grenzwert zu überschreiten)
 
+
+        var cp = new THREE.CurvePath();
+        cp.autoClose = false;
+
+        cPHeight = 0.3 + (length / 40 * (length / 180));
+
+        //var xM = (x + x2) / 2;
+        //var yM = (y + y2) / 2;
+
+        cP1 = this.latLongToVector3(cP1[0], cP1[1], cPHeight);
+        cP2 = this.latLongToVector3(cP2[0], cP2[1], cPHeight);
+
+
+        //// DISPLAY CONTROL POINTS
+
+//        var cube = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .1));
+//        cube.translateX(cP1.x);
+//        cube.translateY(cP1.y);
+//        cube.translateZ(cP1.z);
+//        cube.lookAt(new THREE.Vector3(0, 0, 0));
+//
+//        var cube2 = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .1));
+//        cube2.translateX(cP2.x);
+//        cube2.translateY(cP2.y);
+//        cube2.translateZ(cP2.z);
+//        cube2.lookAt(new THREE.Vector3(0, 0, 0));
+//
+//
+//        this.scene.add(cube);
+//        this.scene.add(cube2);
+
+
+        var position1 = this.latLongToVector3(x, y, 0.01);
+        var position2 = this.latLongToVector3(x2, y2, 0.01);
+        //var position3 = this.calculateMidPoint(x,y,x2,y2,2);
+        var cubicLine = new THREE.CubicBezierCurve3(position1, cP1, cP2, position2);
+
+        cubicLine.autoClose = false;
+        cp.add(cubicLine);
+
+        var curveGeo = cp.createPointsGeometry(lineRes);
+        var curvedLine = new THREE.Line(curveGeo, filter.lineMaterial);
+        //curvedLine.name = "line_" + i;
+        //curvedLine.geometry.verticesNeedUpdate = true;
+        //curvedLine.material = ;
+        //curvedLine.geometry.vertices.push(curveGeo.vertices[0], curveGeo.vertices[1]);
+        //curvedLine.geometry.verticesNeedUpdate = true;
+
+        curvedLine.lookAt(new THREE.Vector3(0, 0, 0));
+
+        filter.connections.add(curvedLine);
+
+        this.scene.remove(filter.connections);
+        this.scene.add(filter.connections);
     },
 
 
@@ -424,72 +499,25 @@ projectham.GlobeView = Backbone.View.extend({
         });
 
         eventBus.on("draw", function () {
-           /* if (_this.lineVar == 3) {
-                _this.scene.add(_this.lines);
-            }
-            _this.scene.remove(_this.lines);
-            _this.lines.geometry.verticesNeedUpdate = true;
-            _this.lines.geometry.vertices.push(_this.lineVertices[_this.lineVar], _this.lineVertices[_this.lineVar + 1]);
-            _this.lines.geometry.verticesNeedUpdate = true;
-            var lines = _this.lines;
-            _this.scene.add(lines);
-
-            console.log(_this.scene);
-            console.log(_this.lines.geometry.verticesNeedUpdate);
-
-            _this.lineVar++;
-            if (_this.lineVar >= 100) {
-                _this.lineVar = 3;
-                _this.isLineAnim = false;
-            }*/
-
-            var tweet1 = {
-                id: 12125512,
-                text: 'Project Ham is the yellow from the egg #obama',
-                parent_id: null,
-                type: 'retweet',
-                location: {
-                    lat: 48.3669367,
-                    lng: 40.5172742,
-                    type: 'user_location'
-                },
-                user: {
-                    name: 'hans',
-                    followers: 200550,
-                    lang: 'de'
-                },
-                hashtags: null,
+            var connection = {
                 filter: {
-                    text: 'obama',
+                    text: 'merkel',
                     id: 0
-                }
-            };
-
-            var tweet2 = {
-                id: 12125512,
-                text: 'Project Ham is NOT the yellow from the egg #putin',
-                parent_id: null,
-                type: 'tweet',
-                location: {
-                    lat: 45.3669367,
-                    lng: 20.5172742,
+                },
+                parent: {
+                    lat: 36,
+                    lng: 138,
                     type: 'user_location'
                 },
-                user: {
-                    name: 'hans',
-                    followers: 200550,
-                    lang: 'de'
-                },
-                hashtags: null,
-                filter: {
-                    text: 'putin',
-                    id: 2
+                child: {
+                    lat: -33,
+                    lng: -71.5,
+                    type: 'user_location'
                 }
-            };
+            }
 
-            _this.displayTweet(tweet1);
-            _this.displayTweet(tweet2);
-            _this.fadeInFilter(0);
+            _this.displayConnection(connection)
+
         });
 
         eventBus.on("startStream", function (e) {
@@ -500,11 +528,18 @@ projectham.GlobeView = Backbone.View.extend({
             );
         });
 
-        eventBus.on("newTweet", function(e) {
-            console.log(e.attributes);
+        eventBus.on("newTweet", function (e) {
 
             _this.displayTweet(e.attributes);
         });
+
+        eventBus.on("newConn", function (e) {
+
+
+            _this.displayConnection(e);
+        });
+
+
     },
 
 
@@ -683,36 +718,36 @@ projectham.GlobeView = Backbone.View.extend({
 
     },
 
-    fadeOutFilter: function(filterID) {
+    fadeOutFilter: function (filterID) {
         var filter = this.getFilter(filterID);
-        var position = { o: filter.material.opacity};
-        var target = { o: 0};
+        var position = {o: filter.material.opacity};
+        var target = {o: 0};
 
         var fadeOutTween = new TWEEN.Tween(position).to(target, 200);
 
-        fadeOutTween.onUpdate(function(){
+        fadeOutTween.onUpdate(function () {
             filter.setOpacity(position.o);
         });
 
-        fadeOutTween.onComplete(function(){
+        fadeOutTween.onComplete(function () {
             TWEEN.remove(this);
         });
 
         fadeOutTween.start();
     },
 
-    fadeInFilter: function(filterID) {
+    fadeInFilter: function (filterID) {
         var filter = this.getFilter(filterID);
-        var position = { o: filter.material.opacity};
-        var target = { o: 1};
+        var position = {o: filter.material.opacity};
+        var target = {o: 1};
 
         var fadeOutTween = new TWEEN.Tween(position).to(target, 200);
 
-        fadeOutTween.onUpdate(function(){
+        fadeOutTween.onUpdate(function () {
             filter.setOpacity(position.o);
         });
 
-        fadeOutTween.onComplete(function(){
+        fadeOutTween.onComplete(function () {
             TWEEN.remove(this);
         });
 
@@ -801,17 +836,31 @@ projectham.GlobeView = Backbone.View.extend({
 
     },
 
-    calculateCP: function (x1, y1, x2, y2) {
-        var xC = (x1 + x2) / 2;
-        xC = (x1 + xC) / 2;
+    calculateCP: function (factor, x1, y1, x2, y2, inverse) {
 
-        var yC = (y1 + y2) / 2;
-        yC = (y1 + yC) / 2;
+        var xC,
+            yC;
+
+        if(inverse) { // -- -> -+
+            xC = x1 + ((x2 - x1) * factor);
+            yC = y1 + ((y2 - y1) * factor);
+
+            if(y2 > 0) {
+                yC -= 360;
+            } else {
+                yC += 360;
+            }
+
+        } else {
+
+            xC = x1 + ((x2 - x1) * factor);
+            yC = y1 + ((y2 - y1) * factor);
+        }
 
         return [xC, yC];
     },
 
-    getFilter: function(filterID){
+    getFilter: function (filterID) {
         switch (filterID) {
             case 0:
                 return this.filters._0;
@@ -826,89 +875,6 @@ projectham.GlobeView = Backbone.View.extend({
                 return null;
                 break;
         }
-    },
-
-    CSVToArray: function (strData, strDelimiter) {
-        // Check to see if the delimiter is defined. If not,
-        // then default to comma.
-        strDelimiter = (strDelimiter || ",");
-
-        // Create a regular expression to parse the CSV values.
-        var objPattern = new RegExp(
-            (
-                // Delimiters.
-            "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
-
-                // Quoted fields.
-            "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
-
-                // Standard fields.
-            "([^\"\\" + strDelimiter + "\\r\\n]*))"
-            ),
-            "gi"
-        );
-
-
-        // Create an array to hold our data. Give the array
-        // a default empty first row.
-        var arrData = [[]];
-
-        // Create an array to hold our individual pattern
-        // matching groups.
-        var arrMatches = null;
-
-
-        // Keep looping over the regular expression matches
-        // until we can no longer find a match.
-        while (arrMatches = objPattern.exec(strData)) {
-
-            // Get the delimiter that was found.
-            var strMatchedDelimiter = arrMatches[1];
-
-            // Check to see if the given delimiter has a length
-            // (is not the start of string) and if it matches
-            // field delimiter. If id does not, then we know
-            // that this delimiter is a row delimiter.
-            if (
-                strMatchedDelimiter.length &&
-                strMatchedDelimiter !== strDelimiter
-            ) {
-
-                // Since we have reached a new row of data,
-                // add an empty row to our data array.
-                arrData.push([]);
-
-            }
-
-            var strMatchedValue;
-
-            // Now that we have our delimiter out of the way,
-            // let's check to see which kind of value we
-            // captured (quoted or unquoted).
-            if (arrMatches[2]) {
-
-                // We found a quoted value. When we capture
-                // this value, unescape any double quotes.
-                strMatchedValue = arrMatches[2].replace(
-                    new RegExp("\"\"", "g"),
-                    "\""
-                );
-
-            } else {
-
-                // We found a non-quoted value.
-                strMatchedValue = arrMatches[3];
-
-            }
-
-
-            // Now that we have our value string, let's add
-            // it to the data array.
-            arrData[arrData.length - 1].push(strMatchedValue);
-        }
-
-        // Return the parsed data.
-        return ( arrData );
     }
 
 

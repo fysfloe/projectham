@@ -265,8 +265,6 @@ projectham.module = (function($) {
 
         console.log('foo');
 
-        console.log(appView.filters);
-
         //gv.initFilters()
     };
 
@@ -297,7 +295,7 @@ projectham.module = (function($) {
 
         //------- benni starts here --------
         gv = new projectham.GlobeView();
-        cv = new projectham.ControlView({el: $('#controls')});
+        cv = new projectham.ControlView({el: $('#filter-box')});
 
         var renderContainer = '#globe';
 
@@ -306,8 +304,8 @@ projectham.module = (function($) {
         };
 
         $(renderContainer).append(gv.render({
-            width: window.innerWidth,
-            height: window.innerHeight,
+            width: $('#globe').innerWidth(),
+            height: $('#globe').innerHeight(),
             mapSrc: 'img/world_map.png',
             enableTrackball: true
         }).el);
@@ -315,7 +313,7 @@ projectham.module = (function($) {
         gv.rotateCameraCon(0.001);
         gv.startCameraRotation();
         /*$.get('Global_Routes.csv', function(data){
-         gv.displayLineData(data);
+         gv.displayConnection(data);
          });
         $.get('data/data2.csv', function(data){
             gv.displayData(data);

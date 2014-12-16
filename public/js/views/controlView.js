@@ -14,6 +14,7 @@ projectham.ControlView = Backbone.View.extend({
         "click #reset": 'resetControls',
         "click #rotate": 'rotateGlobe',
         "click #goTo": 'goToPlace',
+        "click #connection": 'displayConnection',
         "keypress #searchField": 'detectEnter'
     },
 
@@ -58,6 +59,10 @@ projectham.ControlView = Backbone.View.extend({
 
     zoom: function (dir) {
         eventBus.trigger('zoom', dir);
+    },
+
+    displayConnection: function(){
+        eventBus.trigger('draw');
     }
 
 });

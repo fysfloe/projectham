@@ -49,6 +49,10 @@ body, html, main {
     font-family: "BebasNeue", "Helvetica Neue", Arial, sans-serif;
     color: white;
     background: black;
+
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .clear {
@@ -186,7 +190,7 @@ button#fullscreen:hover {
 
 .main-box {
     position: absolute;
-    width: 15em;
+    width: 16em;
     z-index: 2;
     top: 36%;
     padding: 0 3em;
@@ -202,6 +206,12 @@ button#fullscreen:hover {
 
 .more-info {
     margin-top: 3em;
+}
+
+#globe {
+    width: 98%;
+    margin: 0 auto;
+    height: 98%;
 }
 
 /*************************************************
