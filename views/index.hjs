@@ -32,8 +32,9 @@
 </head>
 <body>
 <header>
+    <button id="tools">&#xe602; <span>Hide Tools</span></button>
     <h1>Project Ham <span>A Twitter Live Stream Web Experience</span></h1>
-    <button id="fullscreen"><img src="img/ui/fullscreen.png" alt="Fullscreen"></button>
+    <button id="fullscreen">&#xe601;</button>
 </header>
 <main>
     <div id="filter-box" class="main-box">

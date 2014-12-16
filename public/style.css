@@ -32,13 +32,16 @@
     font-weight: 100;
     font-style: normal;
 }
+@font-face {
+    font-family: 'icomoon';
+    src: url('fonts/icomoon.ttf') format('truetype');
+}
 
 /*************************************************
     general
  *************************************************/
 
 body, html, main {
-    position: absolute;
     width: 100%;
     height: 100%;
     margin: 0;
@@ -130,19 +133,46 @@ header > h1 span {
     font-weight: 300;
 }
 
+button#tools {
+    position: absolute;
+    left: 3em;
+    top: 2em;
+    z-index: 500;
+    background: none;
+    border: none;
+    font-family: 'icomoon', sans-serif;
+    color: white;
+    font-size: 1.3em;
+
+    transition: color 0.2s ease;
+}
+
+button#tools:hover {
+    color: #0084b4;
+}
+
+button#tools span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 400;
+    font-size: 0.7em;
+}
+
 button#fullscreen {
     position: absolute;
     right: 3em;
     top: 2em;
-    width: 4em;
-    height: 4em;
     z-index: 500;
     background: none;
     border: none;
+    font-family: 'icomoon', sans-serif;
+    color: white;
+    font-size: 1.3em;
+
+    transition: color 0.2s ease;
 }
 
-button#fullscreen img {
-    width: 100%;
+button#fullscreen:hover {
+    color: #0084b4;
 }
 
 /*************************************************

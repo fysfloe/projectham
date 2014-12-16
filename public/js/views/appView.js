@@ -21,6 +21,7 @@ projectham.AppView = Backbone.View.extend({
 
 
     initialize: function() {
+
         this.filterCount = 0;
         this.state = 0;
 
@@ -31,6 +32,11 @@ projectham.AppView = Backbone.View.extend({
 
         this.fullscreenButton = $('#fullscreen');
         this.fullscreenState = 0;
+
+        this.addFullScreenEventHandler();
+
+        this.toolsButton = $('#tools');
+        this.sidebarState = 0;
 
         this.filterBox = $('#filter-box');
         this.webspeechBox = $('#web-speech-box');
@@ -101,6 +107,7 @@ projectham.AppView = Backbone.View.extend({
     events: {
         'click #b-add-filter2': 'addFilter',
         'click #fullscreen': 'toggleFullscreen',
+        'click #tools': 'toggleSidebars',
         'click #b-add-filter1': 'addPreFilter',
         'click #start-stream': 'startStream',
         'click .add-filter': function() {
@@ -455,8 +462,8 @@ projectham.AppView = Backbone.View.extend({
         }
     },
 
-    toggleFullscreen: function() {
-        if(this.fullscreenState == 0) {
+    toggleSidebars: function() {
+        if(this.sidebarState == 0) {
             this.filterBox.animate({
                 opacity: 0,
                 left: '-20em'
@@ -472,18 +479,10 @@ projectham.AppView = Backbone.View.extend({
                 bottom: '-20em'
             });
 
-            this.fullscreenButton.css({
-                opacity: 0
-            });
+            this.sidebarState = 1;
+            this.toolsButton.find('span').html('Show Tools');
 
-            this.fullscreenButton.find('img').attr('src', 'img/ui/fullscreen_exit.png');
-
-            this.fullscreenButton.animate({
-                opacity: 1
-            });
-
-            this.fullscreenState = 1;
-        } else if(this.fullscreenState == 1) {
+        } else if(this.sidebarState == 1) {
             this.filterBox.animate({
                 opacity: 1,
                 left: '0'
@@ -499,18 +498,62 @@ projectham.AppView = Backbone.View.extend({
                 bottom: '0'
             });
 
-            this.fullscreenButton.css({
-                opacity: 0
-            });
+            this.sidebarState = 0;
+            this.toolsButton.find('span').html('Hide Tools');
+        }
+    },
 
-            this.fullscreenButton.find('img').attr('src', 'img/ui/fullscreen.png');
+    toggleFullscreen: function() {
+        if(this.fullscreenState == 0) {
 
-            this.fullscreenButton.animate({
-                opacity: 1
-            });
+            var element = document.body;
 
+            // Supports most browsers and their versions.
+            var requestMethod = element.requestFullScreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || element.msRequestFullscreen;
 
+            if (requestMethod) { // Native full screen.
+                requestMethod.call(element);
+            } else if (typeof window.ActiveXObject !== "undefined") { // Older IE.
+                var wscript = new ActiveXObject("WScript.Shell");
+                if (wscript !== null) {
+                    wscript.SendKeys("{F11}");
+                }
+            }
+
+            this.fullscreenButton.html('&#xe600;');
+            this.fullscreenState = 1;
+
+        } else if(this.fullscreenState == 1) {
+            if(document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if(document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if(document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+
+            this.fullscreenButton.html('&#xe601;');
             this.fullscreenState = 0;
         }
+    },
+
+    addFullScreenEventHandler: function() {
+        var _this = this;
+
+        document.addEventListener("fullscreenchange", function() {
+            if(!document.fullscreenElement) {
+                _this.fullscreenButton.html('&#xe601;');
+            }
+        }, false);
+        document.addEventListener("webkitfullscreenchange", function() {
+            if(!document.webkitFullscreenElement) {
+                _this.fullscreenButton.html('&#xe601;');
+            }
+        }, false);
+        document.addEventListener("mozfullscreenchange", function() {
+            if(!document.mozFullScreenElement) {
+                _this.fullscreenButton.html('&#xe601;');
+            }
+        }, false);
     }
 });
