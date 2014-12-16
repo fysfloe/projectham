@@ -55,10 +55,6 @@
         <div class="clear"></div>
 
         <button id="start-stream" class="ui-bg-color">Start Stream</button>
-        <button id="connection">Connection</button>
-        <button id="change">changeView</button>
-        <button id="fadeIn">Fade in</button>
-        <button id="fadeOut">Fade out</button>
 
         <div id="counts" class="table on-stream-started">
             <div class="table-cell">

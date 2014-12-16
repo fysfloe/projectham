@@ -69,7 +69,7 @@ projectham.ControlView = Backbone.View.extend({
     },
 
     changeView: function () {
-        eventBus.trigger('change');
+        eventBus.trigger('soloMode', 1);
     },
 
     fadeIn: function () {
@@ -77,7 +77,7 @@ projectham.ControlView = Backbone.View.extend({
     },
 
     fadeOut: function () {
-        eventBus.trigger('fadeOut');
+        eventBus.trigger('toggleVisibility', 1);
     }
 
 });

@@ -21,19 +21,23 @@ projectham.GlobeFilter = function (name, color) {
     this.replies = new THREE.Mesh();
     this.replies.name = "replies_"+filterCount;
 
+    this.alphaMap = THREE.ImageUtils.loadTexture('img/alpha_map_cube2.png')
+
     this.connections = new THREE.Group();
 
     this.opacity = 1;
     this.id = filterCount++;
     this.name = name;
     this.blending = THREE.AdditiveBlending;
+    this.isVisible = true;
+    this.isDetailView = false;
 
     this.material = new THREE.MeshBasicMaterial({
         blending: this.blending,
         color: new THREE.Color(this.color),
         transparent: true,
         opacity: this.opacity,
-        alphaMap: THREE.ImageUtils.loadTexture('img/alpha_map_cube2.png'),
+        alphaMap: this.alphaMap,
         side: THREE.FrontSide,
         depthWrite: false
     });
@@ -43,7 +47,7 @@ projectham.GlobeFilter = function (name, color) {
         color: new THREE.Color(this.color),
         transparent: true,
         opacity: this.opacity,
-        alphaMap: THREE.ImageUtils.loadTexture('img/alpha_map_cube2.png'),
+        alphaMap: this.alphaMap,
         side: THREE.FrontSide,
         depthWrite: false
     });
@@ -53,7 +57,7 @@ projectham.GlobeFilter = function (name, color) {
         color: new THREE.Color(this.color),
         transparent: true,
         opacity: this.opacity,
-        alphaMap: THREE.ImageUtils.loadTexture('img/alpha_map_cube2.png'),
+        alphaMap: this.alphaMap,
         side: THREE.FrontSide,
         depthWrite: false
     });
@@ -63,7 +67,7 @@ projectham.GlobeFilter = function (name, color) {
         color: new THREE.Color(this.color),
         transparent: true,
         opacity: this.opacity,
-        alphaMap: THREE.ImageUtils.loadTexture('img/alpha_map_cube2.png'),
+        alphaMap: this.alphaMap,
         side: THREE.FrontSide,
         depthWrite: false
     });
@@ -73,7 +77,6 @@ projectham.GlobeFilter = function (name, color) {
         color: new THREE.Color(this.color),
         transparent: true,
         opacity: 0.5,
-        linewidth: 1,
         depthWrite: false
     });
 
