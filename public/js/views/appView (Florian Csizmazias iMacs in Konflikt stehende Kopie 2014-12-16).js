@@ -46,12 +46,6 @@ projectham.AppView = Backbone.View.extend({
         this.footer = $('footer');
 
         this.filterDiv = $('#filters');
-        this.filterSoloDiv = $('#filter-solo');
-
-        this.filterBoxH2 = this.filterBox.find('h2');
-
-        this.filterSoloDiv.hide();
-
         this.preFilterList = $('#preFilterList');
         this.addPreFilterButton = $('#b-add-filter1');
         this.addFilterButton = $('#b-add-filter2');
@@ -130,7 +124,7 @@ projectham.AppView = Backbone.View.extend({
         },
         'click .solo': 'separateView',
         'click .visibility': 'toggleVisibility',
-        'click .end-solo': 'endSeparateView'
+        'click .endsolo': 'endSeparateView'
     },
 
     saveCommand: function (command) {
@@ -196,7 +190,6 @@ projectham.AppView = Backbone.View.extend({
             this.errMsg('Please type a filter first.');
         } else {
             this.showExtendedInfo();
-            this.filterBoxH2.html('Filtered by');
             this.state = 1;
 
             if (this.filterInput.val()) {
@@ -594,7 +587,6 @@ projectham.AppView = Backbone.View.extend({
     separateView: function(ev) {
         var model,
             id,
-            _this = this,
             filter = ev.target.parentElement.parentElement.childNodes[1].firstElementChild.textContent;
 
         model = this.filters.find(function(m) {
@@ -605,18 +597,40 @@ projectham.AppView = Backbone.View.extend({
 
         eventBus.trigger('soloMode', id);
 
-        this.filterBoxH2.html(filter + '<span class="end-solo">&#xe603;</span>');
+        this.filterBox.find('h2').html(filter + '<span class="end-solo">&#xe603;</span>');
 
-        this.filterDiv.fadeOut(500, function() {
-            _this.filterSoloDiv.fadeIn(500);
+        var divs = this.filterBox.find('#filters .table-cell');
+        var figures = this.filterBox.find('#filters figure');
+        var figcaptions = this.filterBox.find('#filters figcaption');
+
+        console.log(figcaptions);
+
+        figcaptions[0].innerHTML = 'Tweets';
+        figcaptions[1].innerHTML = 'Retweets';
+        figcaptions[2].innerHTML = 'Replies';
+
+        divs.each(function() {
+            if($(this).hasClass('add-filter')) {
+                $(this).removeClass('add-filter');
+                console.log($(this));
+
+                $(this).context.firstChild.classList.add('visible');
+            }
+
+            $(this).context.children[1].style.display = 'none';
         });
+
+        console.log(figures);
+
+        figures[0].children[1].attributes[0].value = "img/ui/colors/blue.png";
+        figures[1].children[1].attributes[0].value = "img/ui/colors/orange.png";
+        figures[2].children[1].attributes[0].value = "img/ui/colors/green.png";
+
+        console.log(divs);
     },
 
     endSeparateView: function() {
-        this.filterBoxH2.html('Filtered by');
 
-        this.filterSoloDiv.hide();
-        this.filterDiv.show();
     },
 
     toggleVisibility: function(ev) {

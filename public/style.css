@@ -222,20 +222,23 @@ button#fullscreen:hover {
     left: 0;
 }
 
+#filter-box h2 span {
+    font-family: 'icomoon', sans-serif;
+}
+
+#filter-box h2 span {
+    font-family: 'icomoon', sans-serif;
+    margin-left: 0.5em;
+    font-size: 0.8em;
+    color: #0084b4;
+}
+
+#filter-box h2 span {
+    cursor: pointer;
+}
+
 .filter-names {
     font-weight: 300;
-}
-
-#filters figure {
-    margin: 0;
-}
-
-#filters img {
-    width: 100%;
-}
-
-#filters figcaption {
-    text-align: center;
 }
 
 .on-stream-started {
@@ -318,12 +321,20 @@ ul#preFilterList li {
     line-height: 1.5;
 }
 
-#filters .table-cell {
+#filters figure, #filter-solo figure {
+    margin: 0;
+}
+
+#filters img, #filter-solo img {
+    width: 100%;
+}
+
+#filters .table-cell, #filter-solo .table-cell {
     max-width: 5em;
     overflow: hidden;
 }
 
-#filters figcaption {
+#filters figcaption, #filter-solo figcaption {
     text-align: center;
     white-space: nowrap;
 }
@@ -406,6 +417,64 @@ table#trends td:last-child span {
     max-width: 8em;
     overflow: hidden;
     display: inline-flex;
+}
+
+#filters .table-cell:not(.add-filter):hover .sv-options {
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    opacity: 1;
+    color: white;
+    top: 0;
+    padding-top: 2.8em;
+}
+
+#filters .sv-options a {
+    color: white;
+    font-family: 'icomoon', sans-serif;
+    font-size: 1.2em;
+    margin: 0 0.1em;
+}
+
+#filters .sv-options a:hover {
+    text-decoration: none;
+}
+
+#filters .sv-options a.visibility.ci-color {
+    color: #0084b4;
+}
+
+#filters .sv-options a.visibility.white {
+    color: white;
+}
+
+#filters figure.visible {
+    opacity: 1;
+}
+
+#filters figure {
+    opacity: 0.5;
+}
+
+#filters .sv-options {
+    display: none;
+    opacity: 0;
+
+    transition: opacity 0.3s ease;
+}
+
+#filters .table-cell:not(.add-filter) figure {
+    transition: opacity 0.3s ease;
+}
+
+#filters .table-cell:not(.add-filter):hover figure {
+    opacity: 0.5;
+}
+
+#filters .table-cell:hover {
+    cursor: pointer;
 }
 
 /*************************************************

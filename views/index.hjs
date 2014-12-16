@@ -23,10 +23,11 @@
     </script>
 
     <script type="text/template" id="filterTemplate">
-        <figure>
-            <figcaption><%= filter %></figcaption>
-            <img src="img/ui/colors/<%= src %>" alt="<%= alt %>">
-        </figure>
+        <figure class="visible"><figcaption><%= filter %></figcaption><img src="img/ui/colors/<%= src %>" alt="<%= alt %>"></figure>
+        <span class="sv-options">
+            <a class="solo">&#xe603;</a>
+            <a class="visibility ci-color">&#xe604;</a>
+        </span>
     </script>
 
 </head>
@@ -41,8 +42,27 @@
         <img src="img/ui/hashtag.png" alt="Hashtag" class="ui-img">
         <h2>Filter By</h2>
 
-        <div id="filters" class="on-stream-started table">
+        <div id="filters" class="on-stream-started table"></div>
 
+        <div id="filter-solo" class="table">
+            <div class="table-cell">
+                <figure class="visible">
+                    <figcaption>Tweets</figcaption>
+                    <img src="img/ui/colors/blue.png" alt="Blue">
+                </figure>
+            </div>
+            <div class="table-cell">
+                <figure class="visible">
+                    <figcaption>Retweets</figcaption>
+                    <img src="img/ui/colors/orange.png" alt="Orange">
+                </figure>
+            </div>
+            <div class="table-cell">
+                <figure class="visible">
+                    <figcaption>Replies</figcaption>
+                    <img src="img/ui/colors/green.png" alt="Green">
+                </figure>
+            </div>
         </div>
 
         <div id="filter-ratio" class="on-stream-started">
@@ -84,8 +104,8 @@
 
         <button id="stop-stream" class="ui-bg-color on-stream-started">Stop Stream</button>
 
-        <h3>Current Trends</h3>
         <table id="trends">
+            <h3>Current Trends</h3>
             <tr>
                 <td>1</td>
                 <td><span></span></td>
