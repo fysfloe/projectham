@@ -46,24 +46,8 @@ var job = new CronJob({
         if(twit) {
             twit.get('/trends/place.json', {id: 1}, function(data, res) {
                 if(res.statusCode == 200) {
-
-                    // get the oldest item in collection
-                    trendsCollection.findOne({}, { sort: {_id: 1} }, function(err, doc) {
-
-                        // count collection size
-                        trendsCollection.count().on('success', function(count) {
-
-                            // delete oldest item if more than 3 elements are in list
-                            if(count > 3) {
-                                trendsCollection.remove( {"_id": (doc._id)});
-                                console.log("removed record " + doc._id + " from trends collection.");
-                            }
-
-                            // insert new trends
-                            trendsCollection.insert({trends: data, datetime: new Date().toUTCString()});
-                            console.log("Just got the latest trends from twitter.");
-                        });
-                    });
+                    trendsCollection.insert({trends: data, datetime: new Date().toUTCString()});
+                    console.log("Just got the latest trends from twitter.");
                 }
             });
         }
