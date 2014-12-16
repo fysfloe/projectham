@@ -177,10 +177,7 @@ projectham.GlobeView = Backbone.View.extend({
         // Enable Trackball
         this.controls = options.enableTrackball ? new THREE.TrackballControls(this.camera, this.renderer.domElement, this) : null;
 
-        //Add empty total meshes of filters
-        $.each(this.filters, function (key, value) {
-            _this.scene.add(value.total);
-        });
+
 
 
         var windowResize = THREEx.WindowResize(this.renderer, this.camera);
@@ -239,16 +236,6 @@ projectham.GlobeView = Backbone.View.extend({
 
         filter = this.getFilter(tweet.filter.id);
 
-        if (tweet.type == "tweet") {
-            mesh = filter.tweets;
-        } else if (tweet.type == "retweet") {
-            mesh = filter.retweets;
-        } else if (tweet.type == "reply") {
-            mesh = filter.replies;
-        } else {
-            return;
-        }
-
 
         filter.name = (filter.name == "") ? tweet.filter.text : filter.name;
 
@@ -260,10 +247,10 @@ projectham.GlobeView = Backbone.View.extend({
 
         value = Math.pow(value, 1 / 20) - 0.9;
 
-        position = _this.latLongToVector3(tweet.location.lat, tweet.location.lng, value / 2);
+        position = _this.latLongToVector3(tweet.location.lat, tweet.location.lng, value, true);
 
         //cylinder
-        cube = new THREE.Mesh(new THREE.CylinderGeometry(.01, .01, value, 8, 1, true), filter.material);
+        cube = new THREE.Mesh(new THREE.CylinderGeometry(.01, .01, value*2, 8, 1, true), filter.material);
         cube.geometry.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI / 2));
 
         //position the cube correctly
@@ -286,19 +273,33 @@ projectham.GlobeView = Backbone.View.extend({
             //cube.scale.z = target.i;
 
             cube.updateMatrix();
-            filter.geom.merge(cube.geometry, cube.matrix);
+
 
             _this.scene.remove(cube);
 
-            _this.scene.remove(filter.total);
-            //_this.renderer.deallocateObject(_this.total);
-
             var geom = new THREE.Geometry();
-            geom.merge(filter.geom);
 
-            filter.total = new THREE.Mesh(geom, filter.material);
-
-            _this.scene.add(filter.total);
+            if (tweet.type == "tweet") {
+                filter.tweets.geometry.merge(cube.geometry, cube.matrix);
+                _this.scene.remove(filter.tweets);
+                geom.merge(filter.tweets.geometry);
+                filter.tweets = new THREE.Mesh(geom, filter.tweetMaterial);
+                _this.scene.add(filter.tweets);
+            } else if (tweet.type == "retweet") {
+                filter.retweets.geometry.merge(cube.geometry, cube.matrix);
+                _this.scene.remove(filter.retweets);
+                geom.merge(filter.retweets.geometry);
+                filter.retweets = new THREE.Mesh(geom, filter.retweetMaterial);
+                _this.scene.add(filter.retweets);
+            } else if (tweet.type == "reply") {
+                filter.replies.geometry.merge(cube.geometry, cube.matrix);
+                _this.scene.remove(filter.replies);
+                geom.merge(filter.replies.geometry);
+                filter.replies = new THREE.Mesh(geom, filter.replyMaterial);
+                _this.scene.add(filter.replies);
+            } else {
+                return;
+            }
 
             TWEEN.remove(this);
         });
@@ -318,8 +319,11 @@ projectham.GlobeView = Backbone.View.extend({
             cPHeight,
             factor,
             cP1,
-            cP2;
+            cP2,
 
+            _this;
+
+        _this = this;
         filter = this.getFilter(conn.filter.id);
 
         lineRes = 100;
@@ -333,7 +337,7 @@ projectham.GlobeView = Backbone.View.extend({
 
         var length = Math.sqrt(Math.pow((x - x2), 2) + Math.pow((y - y2), 2));
 
-        if(length > 180){
+        if (length > 180) {
 
             length = 360 - length;
 
@@ -341,21 +345,21 @@ projectham.GlobeView = Backbone.View.extend({
 
             var y2temp;
 
-            if(y2 > 0) {
-               y2temp = y2 - 360;
+            if (y2 > 0) {
+                y2temp = y2 - 360;
             } else {
-               y2temp = y2 + 360;
+                y2temp = y2 + 360;
             }
 
             cP1 = this.calculateCP(factor, x, y, x2, y2temp, true);
-            cP2 = this.calculateCP((1-factor), x, y, x2, y2temp, true);
+            cP2 = this.calculateCP((1 - factor), x, y, x2, y2temp, true);
 
         } else {
 
             factor = (length - 360) / -720;
 
             cP1 = this.calculateCP(factor, x, y, x2, y2);
-            cP2 = this.calculateCP((1-factor), x, y, x2, y2);
+            cP2 = this.calculateCP((1 - factor), x, y, x2, y2);
 
         }
 
@@ -402,19 +406,40 @@ projectham.GlobeView = Backbone.View.extend({
         cp.add(cubicLine);
 
         var curveGeo = cp.createPointsGeometry(lineRes);
-        var curvedLine = new THREE.Line(curveGeo, filter.lineMaterial);
+
+        console.log(curveGeo);
+
+        // DISPLAY LINE AT ONCE
+
+
         //curvedLine.name = "line_" + i;
         //curvedLine.geometry.verticesNeedUpdate = true;
         //curvedLine.material = ;
         //curvedLine.geometry.vertices.push(curveGeo.vertices[0], curveGeo.vertices[1]);
         //curvedLine.geometry.verticesNeedUpdate = true;
 
-        curvedLine.lookAt(new THREE.Vector3(0, 0, 0));
+        
 
-        filter.connections.add(curvedLine);
 
-        this.scene.remove(filter.connections);
-        this.scene.add(filter.connections);
+
+
+
+        var tempGeom = new THREE.Geometry();
+        var v1 = curveGeo.vertices[0];
+        tempGeom.vertices.push(v1);
+        var curvedLine = new THREE.Line();
+        this.animateLine(filter, curveGeo, tempGeom, curvedLine, 0, 1, function(line){
+            _this.scene.remove(line);
+            var finalLine = new THREE.Line(curveGeo, filter.lineMaterial);
+            finalLine.lookAt(new THREE.Vector3(0, 0, 0));
+            filter.connections.add(finalLine);
+            _this.scene.remove(filter.connections);
+            _this.scene.add(filter.connections);
+        });
+
+
+
+
     },
 
 
@@ -520,7 +545,44 @@ projectham.GlobeView = Backbone.View.extend({
 
         });
 
+<<<<<<< HEAD
         eventBus.on("addFilter", function (e) {
+=======
+        eventBus.on("soloMode", function (id) {
+            var filter = _this.getFilter(id);
+            if(filter.isDetailView){
+                $.each(_this.filters, function(key, value){
+                    if(value.id != filter.id && !value.isVisible){
+                        _this.fadeInFilter(value.id);
+                    }
+                });
+            }else{
+                $.each(_this.filters, function(key, value){
+                    if(value.id != filter.id && value.isVisible){
+                        _this.fadeOutFilter(value.id);
+                    }
+                });
+            }
+            _this.changeView(id);
+        });
+
+        eventBus.on("toggleVisibility", function(id){
+            var filter = _this.getFilter(id);
+            filter.isVisible ? _this.fadeOutFilter(id) : _this.fadeInFilter(id);
+        });
+
+        eventBus.on("fadeOut", function () {
+            _this.fadeOutFilter(0);
+            _this.fadeOutFilter(2);
+        });
+
+        eventBus.on("fadeIn", function () {
+            _this.fadeInFilter(0);
+            _this.fadeInFilter(2);
+        });
+
+        eventBus.on("startStream", function (e) {
+>>>>>>> feature/032-globe-connections
             _this.initFilters(
                 new projectham.GlobeFilter(e.models[0].get('filter'), e.models[0].get('color')),
                 e.models[1] ? new projectham.GlobeFilter(e.models[1].get('filter'), e.models[1].get('color')) : undefined,
@@ -697,12 +759,57 @@ projectham.GlobeView = Backbone.View.extend({
         scaleTween.start();
     },
 
-    animateLine: function (line, vertices, runVar) {
+    animateLine: function (filter, curveGeo, tempGeom, curvedLine, i,j, callback) {
 
-        var vert = vertices[runVar];
-        line.geometry.verticesNeedUpdate = true;
-        line.geometry.vertices.push(vert);
-        line.geometry.verticesNeedUpdate = true;
+
+        var _this = this;
+        var filter = filter;
+        var curveGeo = curveGeo;
+        var tempGeom2 = tempGeom;
+        var tempGeom = new THREE.Geometry();
+        var curvedLine2;
+
+        var i = i;
+        var j = j;
+
+        var v1 = curveGeo.vertices[i];
+        var v2 = curveGeo.vertices[j];
+
+        var position = {x: v1.x, y: v1.y, z: v1.z};
+        var target = {x: v2.x, y: v2.y, z: v2.z};
+
+        tempGeom.merge(tempGeom2);
+        tempGeom.vertices.push(v1.clone());
+        tempGeom.dynamic = true;
+
+        this.scene.remove(curvedLine);
+        curvedLine2 = new THREE.Line(tempGeom, filter.lineMaterial);
+        this.scene.add(curvedLine2);
+
+
+
+        var lineTween = new TWEEN.Tween(position).to(target, 0.3);
+
+        lineTween.onUpdate(function () {
+            curvedLine2.geometry.vertices[j].set(position.x, position.y, position.z);
+            curvedLine2.geometry.verticesNeedUpdate = true;
+        });
+
+        lineTween.onComplete(function () {
+            i += 1;
+            j += 1;
+
+            if(curveGeo.vertices[j]){
+                _this.animateLine(filter,curveGeo,tempGeom,curvedLine2,i,j, callback);
+            }else{
+                callback(curvedLine2);
+            }
+
+
+        });
+
+        lineTween.start();
+
 
 
     },
@@ -730,6 +837,7 @@ projectham.GlobeView = Backbone.View.extend({
         });
 
         fadeOutTween.onComplete(function () {
+            filter.isVisible = false;
             TWEEN.remove(this);
         });
 
@@ -744,6 +852,7 @@ projectham.GlobeView = Backbone.View.extend({
         var fadeOutTween = new TWEEN.Tween(position).to(target, 200);
 
         fadeOutTween.onUpdate(function () {
+            filter.isVisible = true;
             filter.setOpacity(position.o);
         });
 
@@ -752,6 +861,117 @@ projectham.GlobeView = Backbone.View.extend({
         });
 
         fadeOutTween.start();
+    },
+
+    changeView: function (filterID) {
+        var tweetColor = new THREE.Color(0x4099FF),
+            retweetColor = new THREE.Color(0xE28C10),
+            replyColor = new THREE.Color(0x81D056),
+            filter = this.getFilter(filterID),
+            _this = this,
+            position,
+            target;
+
+        if (!filter.isDetailView) {
+            this.scene.remove(filter.total);
+            filter.tweets.material = filter.tweetMaterial;
+            filter.retweets.material = filter.retweetMaterial;
+            filter.replies.material = filter.replyMaterial;
+
+            position = {
+                r1: filter.material.color.r,
+                g1: filter.material.color.g,
+                b1: filter.material.color.b,
+
+                r2: filter.material.color.r,
+                g2: filter.material.color.g,
+                b2: filter.material.color.b,
+
+                r3: filter.material.color.r,
+                g3: filter.material.color.g,
+                b3: filter.material.color.b
+
+            };
+
+            target = {
+                r1: tweetColor.r,
+                g1: tweetColor.g,
+                b1: tweetColor.b,
+
+                r2: retweetColor.r,
+                g2: retweetColor.g,
+                b2: retweetColor.b,
+
+                r3: replyColor.r,
+                g3: replyColor.g,
+                b3: replyColor.b
+
+            };
+
+            var changeTween = new TWEEN.Tween(position).to(target, 200);
+
+            changeTween.onUpdate(function () {
+                filter.setTweetColor(position.r1, position.g1, position.b1);
+                filter.setLineColor(position.r1, position.g1, position.b1);
+                filter.setRetweetColor(position.r2, position.g2, position.b2);
+                filter.setReplyColor(position.r3, position.g3, position.b3);
+            });
+
+            changeTween.onComplete(function () {
+                TWEEN.remove(this);
+                filter.isDetailView = true;
+            });
+
+            changeTween.start();
+        } else {
+            target = {
+                r1: filter.material.color.r,
+                g1: filter.material.color.g,
+                b1: filter.material.color.b,
+
+                r2: filter.material.color.r,
+                g2: filter.material.color.g,
+                b2: filter.material.color.b,
+
+                r3: filter.material.color.r,
+                g3: filter.material.color.g,
+                b3: filter.material.color.b
+
+            };
+
+            position = {
+                r1: tweetColor.r,
+                g1: tweetColor.g,
+                b1: tweetColor.b,
+
+                r2: retweetColor.r,
+                g2: retweetColor.g,
+                b2: retweetColor.b,
+
+                r3: replyColor.r,
+                g3: replyColor.g,
+                b3: replyColor.b
+
+            };
+
+            var changeTween = new TWEEN.Tween(position).to(target, 200);
+
+            changeTween.onUpdate(function () {
+                filter.setTweetColor(position.r1, position.g1, position.b1);
+                filter.setLineColor(position.r1, position.g1, position.b1);
+                filter.setRetweetColor(position.r2, position.g2, position.b2);
+                filter.setReplyColor(position.r3, position.g3, position.b3);
+            });
+
+            changeTween.onComplete(function () {
+                TWEEN.remove(this);
+                filter.isDetailView = false;
+            });
+
+            changeTween.start();
+        }
+
+
     },
 
 
@@ -793,10 +1013,10 @@ projectham.GlobeView = Backbone.View.extend({
     },
 
 
-    latLongToVector3: function (lat, lon, heigth) {
+    latLongToVector3: function (lat, lon, heigth, offset) {
         var phi = (lat) * Math.PI / 180;
         var theta = (lon - 180) * Math.PI / 180;
-        var radius = 5;
+        var radius = (offset) ? (5 - heigth) : 5;
 
         var x = -(radius + heigth) * Math.cos(phi) * Math.cos(theta);
         var y = (radius + heigth) * Math.sin(phi);
@@ -841,11 +1061,11 @@ projectham.GlobeView = Backbone.View.extend({
         var xC,
             yC;
 
-        if(inverse) { // -- -> -+
+        if (inverse) { // -- -> -+
             xC = x1 + ((x2 - x1) * factor);
             yC = y1 + ((y2 - y1) * factor);
 
-            if(y2 > 0) {
+            if (y2 > 0) {
                 yC -= 360;
             } else {
                 yC += 360;

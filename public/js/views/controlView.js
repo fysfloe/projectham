@@ -15,6 +15,9 @@ projectham.ControlView = Backbone.View.extend({
         "click #rotate": 'rotateGlobe',
         "click #goTo": 'goToPlace',
         "click #connection": 'displayConnection',
+        "click #change": 'changeView',
+        "click #fadeIn": 'fadeIn',
+        "click #fadeOut": 'fadeOut',
         "keypress #searchField": 'detectEnter'
     },
 
@@ -61,8 +64,20 @@ projectham.ControlView = Backbone.View.extend({
         eventBus.trigger('zoom', dir);
     },
 
-    displayConnection: function(){
+    displayConnection: function () {
         eventBus.trigger('draw');
+    },
+
+    changeView: function () {
+        eventBus.trigger('soloMode', 1);
+    },
+
+    fadeIn: function () {
+        eventBus.trigger('fadeIn');
+    },
+
+    fadeOut: function () {
+        eventBus.trigger('toggleVisibility', 1);
     }
 
 });
