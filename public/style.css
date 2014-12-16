@@ -323,10 +323,13 @@ ul#preFilterList li {
 
 #filters figure, #filter-solo figure {
     margin: 0;
+    text-align: center;
 }
 
 #filters img, #filter-solo img {
     width: 100%;
+    padding: 0.3em;
+    box-sizing: border-box;
 }
 
 #filters .table-cell, #filter-solo .table-cell {
@@ -337,6 +340,10 @@ ul#preFilterList li {
 #filters figcaption, #filter-solo figcaption {
     text-align: center;
     white-space: nowrap;
+    text-overflow: ellipsis;
+    display: inline-block;
+    overflow: hidden;
+    max-width: 4.5em;
 }
 
 div#filter-ratio {
