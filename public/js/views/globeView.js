@@ -520,7 +520,7 @@ projectham.GlobeView = Backbone.View.extend({
 
         });
 
-        eventBus.on("startStream", function (e) {
+        eventBus.on("addFilter", function (e) {
             _this.initFilters(
                 new projectham.GlobeFilter(e.models[0].get('filter'), e.models[0].get('color')),
                 e.models[1] ? new projectham.GlobeFilter(e.models[1].get('filter'), e.models[1].get('color')) : undefined,

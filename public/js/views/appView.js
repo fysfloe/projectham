@@ -55,8 +55,6 @@ projectham.AppView = Backbone.View.extend({
         this.filterCounts = [3];
         this.filterCounts[0] = this.filterCounts[1] = this.filterCounts[2] = this.overallCount = 0;
 
-        this.preFilters = [];
-
         this.filterDiv.html("");
 
         for(var i = 0; i < 3; i++) {
@@ -110,10 +108,10 @@ projectham.AppView = Backbone.View.extend({
     },
 
     events: {
-        'click #b-add-filter2': 'addFilter',
+        'click #b-add-filter2': 'addFilterDuringStream',
         'click #fullscreen': 'toggleFullscreen',
         'click #tools': 'toggleSidebars',
-        'click #b-add-filter1': 'addPreFilter',
+        'click #b-add-filter1': 'addFilter',
         'click #start-stream': 'startStream',
         'click .add-filter': function() {
             this.errMsg('');
@@ -183,7 +181,7 @@ projectham.AppView = Backbone.View.extend({
     },
 
     startStream: function() {
-        if(this.preFilters.length == 0 && !this.filterInput.val()) {
+        if(this.filters.length == 0 && !this.filterInput.val()) {
             console.log('type a filter first!');
 
             this.errMsg('Please type a filter first.');
@@ -192,14 +190,8 @@ projectham.AppView = Backbone.View.extend({
             this.state = 1;
 
             if (this.filterInput.val()) {
-                this.addPreFilter();
+                this.addFilter();
             }
-
-            for (var i = 0; i < this.preFilters.length; i++) {
-                this.addFilter(this.preFilters[i]);
-            }
-
-            this.filterRatioDivs = this.filterRatio.find('div');
 
             this.preFilterList.hide();
             this.addPreFilterButton.hide();
@@ -211,9 +203,7 @@ projectham.AppView = Backbone.View.extend({
                 window.socket = this.socket;
             }
 
-            eventBus.trigger('startStream', this.filters);
-
-            this.socket.emit('filter', this.preFilters);
+            this.socket.emit('filter', this.prepareFilters());
 
             var retweetCount = 0,
                 locationByTweetCount = 0,
@@ -301,66 +291,52 @@ projectham.AppView = Backbone.View.extend({
         $('#start-stream').hide();
     },
 
-    addPreFilter: function() {
-        if(this.preFilters.length >= 3) {
-            console.log('maximum filter number reached');
-        } else {
-            var preparedFilter = this.htmlEntities(this.filterInput.val().trim());
-
-            console.log(preparedFilter);
-
-            if(preparedFilter) {
-                this.errMsg('');
-
-                this.prependListItem('preFilterList', '<li>'+preparedFilter+'</li>', 'append');
-                //this.preFilterList.append('<li>'+preparedFilter+'</li>');
-                this.preFilters.push(preparedFilter);
-            } else {
-                this.errMsg('Please type a filter.');
-            }
-
-            this.filterInput.val("");
-            if(this.preFilters.length == 3) {
-                this.filterInputDiv.hide();
-            }
-        }
-    },
-
     addFilter: function(filter) {
         if(this.filters.length >= 3) {
             console.log('maximum filter number reached');
         } else {
             var saveFilter = typeof filter === 'string' ? filter : this.htmlEntities(this.filterInput.val());
 
-            var color;
-
-            switch(this.filters.length) {
-                case 0:
-                    color = 0x4099FF;
-                    break;
-                case 1:
-                    color = 0xE28C10;
-                    break;
-                case 2:
-                    color = 0x81D056;
-                    break;
-                default:
-                    break;
-            }
-
             if(saveFilter) {
+                this.errMsg('');
+
+                this.prependListItem('preFilterList', '<li>'+saveFilter+'</li>', 'append');
+                //this.preFilterList.append('<li>'+preparedFilter+'</li>');
+
+
+                var color;
+
+                switch(this.filters.length) {
+                    case 0:
+                        color = 0x4099FF;
+                        break;
+                    case 1:
+                        color = 0xE28C10;
+                        break;
+                    case 2:
+                        color = 0x81D056;
+                        break;
+                    default:
+                        break;
+                }
+
                 this.filters.create({
                     filter: saveFilter,
                     color: color
                 });
 
                 this.filterInput.val("");
-                this.filterInputDiv.hide();
+                if(this.state == 1 || this.filters.length == 3) {
+                    this.filterInputDiv.hide();
+                }
+
+                this.filterRatio.append('<div>');
+                this.filterRatioDivs = this.filterRatio.find('div');
+
+                eventBus.trigger('addFilter', this.filters);
             } else {
                 this.errMsg('Please type a filter.');
             }
-
-            this.filterRatio.append('<div>');
         }
     },
 
@@ -580,5 +556,26 @@ projectham.AppView = Backbone.View.extend({
                 i++;
             })
         });
+    },
+
+    prepareFilters: function() {
+        var preparedFilters = [];
+        var i = 0;
+
+        this.filters.each(function(filter) {
+            console.log(filter.attributes.filter);
+
+            preparedFilters[i] = filter.attributes.filter;
+            i++;
+        });
+
+        console.log(preparedFilters);
+
+        return preparedFilters;
+    },
+
+    addFilterDuringStream: function() {
+        this.addFilter();
+        this.socket.emit('filter', this.prepareFilters());
     }
 });
