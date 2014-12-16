@@ -175,83 +175,83 @@ projectham.AppView = Backbone.View.extend({
             this.addPreFilterButton.hide();
 
             //--------------------------------------------------
-            if (!this.socket) {
-                this.socket = io.connect('http://localhost:3001/');
-                window.socket = this.socket;
-            }
+            //if (!this.socket) {
+            //    this.socket = io.connect('http://localhost:3001/');
+            //    window.socket = this.socket;
+            //}
 
             eventBus.trigger('startStream', this.filters);
 
-            this.socket.emit('filter', this.preFilters);
-
-            var overallCount = 0,
-                retweetCount = 0,
-                locationByTweetCount = 0,
-                locationByUserCount = 0,
-                replyCount = 0,
-                replyToParentCount = 0,
-                connectionCount = 0,
-                hashtagCount = 0,
-                _this = this;
-
-            var DOM_overall = $('#overall'),
-                DOM_retweets = $('#retweets'),
-                DOM_replies = $('#replies');
-            //DOM_locationsUser = $('#locationsUser'),
-            //DOM_locationsTweet = $('#locationsTweet'),
-            //DOM_repliesToParent = $('#repliesToParent'),
-            //DOM_connections = $('#connections'),
-            //DOM_hashtags = $('#hashtags');
-
-            this.socket.on('conn', function (conn) {
-                ///DOM_connections.text(++connectionCount);
-                _this.saveConnection(conn);
-            });
-
-            this.socket.on('tweet', function (tweet) {
-                DOM_overall.text(++overallCount);
-                if (tweet.type == 'retweet') {
-                    DOM_retweets.text(++retweetCount);
-                } else if (tweet.type == 'reply') {
-                    DOM_replies.text(++replyCount);
-                    /*if (tweet.parent_id) {
-                     DOM_repliesToParent.text(++replyToParentCount);
-                     }*/
-                }
-
-                /*if (tweet.location.type == 'user_geo') {
-                 DOM_locationsUser.text(++locationByUserCount);
-                 } else if (tweet.location.type == 'tweet_geo') {
-                 DOM_locationsTweet.text(++locationByTweetCount);
-                 }*/
-
-                if (!$.isEmptyObject(tweet.hashtags)) {
-                    $.each(tweet.hashtags, function () {
-                        var foundHashtag = _this.hashtags.findWhere({text: this.text.toLowerCase().trim()});
-                        var count;
-
-                        if (!$.isEmptyObject(foundHashtag)) {
-                            count = foundHashtag.attributes.count;
-                            foundHashtag.set({count: ++count});
-                            foundHashtag.save();
-                            _this.hashtags.sort();
-                        } else {
-                            _this.saveHashtag({
-                                text: this.text.toLowerCase().trim()
-                            });
-                            //DOM_hashtags.text(++hashtagCount);
-                        }
-                    });
-                }
-
-                _this.saveTweet(tweet);
-            });
-
-            this.socket.on('err', function (error) {
-                alert("Sorry buddy, an error has occured:\n" + error);
-                console.trace('Module A'); // [1]
-                console.error(error.stack); // [2]
-            });
+            //this.socket.emit('filter', this.preFilters);
+            //
+            //var overallCount = 0,
+            //    retweetCount = 0,
+            //    locationByTweetCount = 0,
+            //    locationByUserCount = 0,
+            //    replyCount = 0,
+            //    replyToParentCount = 0,
+            //    connectionCount = 0,
+            //    hashtagCount = 0,
+            //    _this = this;
+            //
+            //var DOM_overall = $('#overall'),
+            //    DOM_retweets = $('#retweets'),
+            //    DOM_replies = $('#replies');
+            ////DOM_locationsUser = $('#locationsUser'),
+            ////DOM_locationsTweet = $('#locationsTweet'),
+            ////DOM_repliesToParent = $('#repliesToParent'),
+            ////DOM_connections = $('#connections'),
+            ////DOM_hashtags = $('#hashtags');
+            //
+            //this.socket.on('conn', function (conn) {
+            //    ///DOM_connections.text(++connectionCount);
+            //    _this.saveConnection(conn);
+            //});
+            //
+            //this.socket.on('tweet', function (tweet) {
+            //    DOM_overall.text(++overallCount);
+            //    if (tweet.type == 'retweet') {
+            //        DOM_retweets.text(++retweetCount);
+            //    } else if (tweet.type == 'reply') {
+            //        DOM_replies.text(++replyCount);
+            //        /*if (tweet.parent_id) {
+            //         DOM_repliesToParent.text(++replyToParentCount);
+            //         }*/
+            //    }
+            //
+            //    /*if (tweet.location.type == 'user_geo') {
+            //     DOM_locationsUser.text(++locationByUserCount);
+            //     } else if (tweet.location.type == 'tweet_geo') {
+            //     DOM_locationsTweet.text(++locationByTweetCount);
+            //     }*/
+            //
+            //    if (!$.isEmptyObject(tweet.hashtags)) {
+            //        $.each(tweet.hashtags, function () {
+            //            var foundHashtag = _this.hashtags.findWhere({text: this.text.toLowerCase().trim()});
+            //            var count;
+            //
+            //            if (!$.isEmptyObject(foundHashtag)) {
+            //                count = foundHashtag.attributes.count;
+            //                foundHashtag.set({count: ++count});
+            //                foundHashtag.save();
+            //                _this.hashtags.sort();
+            //            } else {
+            //                _this.saveHashtag({
+            //                    text: this.text.toLowerCase().trim()
+            //                });
+            //                //DOM_hashtags.text(++hashtagCount);
+            //            }
+            //        });
+            //    }
+            //
+            //    _this.saveTweet(tweet);
+            //});
+            //
+            //this.socket.on('err', function (error) {
+            //    alert("Sorry buddy, an error has occured:\n" + error);
+            //    console.trace('Module A'); // [1]
+            //    console.error(error.stack); // [2]
+            //});
         }
     },
 

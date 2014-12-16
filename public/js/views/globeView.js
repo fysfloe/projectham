@@ -239,15 +239,7 @@ projectham.GlobeView = Backbone.View.extend({
 
         filter = this.getFilter(tweet.filter.id);
 
-        if (tweet.type == "tweet") {
-            mesh = filter.tweets;
-        } else if (tweet.type == "retweet") {
-            mesh = filter.retweets;
-        } else if (tweet.type == "reply") {
-            mesh = filter.replies;
-        } else {
-            return;
-        }
+
 
 
         filter.name = (filter.name == "") ? tweet.filter.text : filter.name;
@@ -286,19 +278,36 @@ projectham.GlobeView = Backbone.View.extend({
             //cube.scale.z = target.i;
 
             cube.updateMatrix();
-            filter.geom.merge(cube.geometry, cube.matrix);
+
 
             _this.scene.remove(cube);
 
-            _this.scene.remove(filter.total);
-            //_this.renderer.deallocateObject(_this.total);
-
             var geom = new THREE.Geometry();
-            geom.merge(filter.geom);
 
-            filter.total = new THREE.Mesh(geom, filter.material);
-
-            _this.scene.add(filter.total);
+            if (tweet.type == "tweet") {
+                filter.tweets.geometry.merge(cube.geometry, cube.matrix);
+                _this.scene.remove(filter.tweets);
+                geom.merge(filter.tweets.geometry);
+                filter.tweets = new THREE.Mesh(geom, filter.tweetMaterial);
+                _this.scene.add(filter.tweets);
+                console.log("It's a tweet");
+            } else if (tweet.type == "retweet") {
+                filter.retweets.geometry.merge(cube.geometry, cube.matrix);
+                _this.scene.remove(filter.retweets);
+                geom.merge(filter.retweets.geometry);
+                filter.retweets = new THREE.Mesh(geom, filter.retweetMaterial);
+                _this.scene.add(filter.retweets);
+                console.log("It's a retweet");
+            } else if (tweet.type == "reply") {
+                filter.replies.geometry.merge(cube.geometry, cube.matrix);
+                _this.scene.remove(filter.replies);
+                geom.merge(filter.replies.geometry);
+                filter.replies = new THREE.Mesh(geom, filter.replyMaterial);
+                _this.scene.add(filter.replies);
+                console.log("It's a reply");
+            } else {
+                return;
+            }
 
             TWEEN.remove(this);
         });
@@ -402,16 +411,35 @@ projectham.GlobeView = Backbone.View.extend({
         cp.add(cubicLine);
 
         var curveGeo = cp.createPointsGeometry(lineRes);
-        var curvedLine = new THREE.Line(curveGeo, filter.lineMaterial);
-        //curvedLine.name = "line_" + i;
-        //curvedLine.geometry.verticesNeedUpdate = true;
-        //curvedLine.material = ;
-        //curvedLine.geometry.vertices.push(curveGeo.vertices[0], curveGeo.vertices[1]);
-        //curvedLine.geometry.verticesNeedUpdate = true;
 
-        curvedLine.lookAt(new THREE.Vector3(0, 0, 0));
+        console.log(curveGeo);
+        
+        // DISPLAY LINE AT ONCE
+        
+        //var curvedLine = new THREE.Line(curveGeo, filter.lineMaterial);
+        ////curvedLine.name = "line_" + i;
+        ////curvedLine.geometry.verticesNeedUpdate = true;
+        ////curvedLine.material = ;
+        ////curvedLine.geometry.vertices.push(curveGeo.vertices[0], curveGeo.vertices[1]);
+        ////curvedLine.geometry.verticesNeedUpdate = true;
+        //
+        //curvedLine.lookAt(new THREE.Vector3(0, 0, 0));
+        //
+        //filter.connections.add(curvedLine);
 
-        filter.connections.add(curvedLine);
+        var i = 0;
+        var position = {x: curveGeo.vertices[i].x, y: curveGeo.vertices[i].y,z: curveGeo.vertices[i].z};
+        var target = {x: curveGeo.vertices[i].x, y: curveGeo.vertices[i].y,z: curveGeo.vertices[i].z};
+
+        var tempGeom = new THREE.Geometry();
+        var curvedLine = new THREE.Line(tempGeom, filter.material);
+
+
+
+        tempGeom.push(curveGeo.vertices[i]);
+        tempGeom.push(curveGeo.vertices[i]);
+
+        console.log(tempGeom);
 
         this.scene.remove(filter.connections);
         this.scene.add(filter.connections);
@@ -518,6 +546,20 @@ projectham.GlobeView = Backbone.View.extend({
 
             _this.displayConnection(connection)
 
+        });
+
+        eventBus.on("change", function () {
+            _this.changeView(1);
+        });
+
+        eventBus.on("fadeOut", function () {
+            _this.fadeOutFilter(0);
+            _this.fadeOutFilter(2);
+        });
+
+        eventBus.on("fadeIn", function () {
+            _this.fadeInFilter(0);
+            _this.fadeInFilter(2);
         });
 
         eventBus.on("startStream", function (e) {
@@ -752,6 +794,117 @@ projectham.GlobeView = Backbone.View.extend({
         });
 
         fadeOutTween.start();
+    },
+
+    changeView: function (filterID) {
+        var tweetColor = new THREE.Color(0x4099FF),
+            retweetColor = new THREE.Color(0xE28C10),
+            replyColor = new THREE.Color(0x81D056),
+            filter = this.getFilter(filterID),
+            _this = this,
+            position,
+            target;
+
+        if(!filter.isDetailView) {
+            this.scene.remove(filter.total);
+            filter.tweets.material = filter.tweetMaterial;
+            filter.retweets.material = filter.retweetMaterial;
+            filter.replies.material = filter.replyMaterial;
+
+            position = {
+                r1: filter.material.color.r,
+                g1: filter.material.color.g,
+                b1: filter.material.color.b,
+
+                r2: filter.material.color.r,
+                g2: filter.material.color.g,
+                b2: filter.material.color.b,
+
+                r3: filter.material.color.r,
+                g3: filter.material.color.g,
+                b3: filter.material.color.b
+
+            };
+
+            target = {
+                r1: tweetColor.r,
+                g1: tweetColor.g,
+                b1: tweetColor.b,
+
+                r2: retweetColor.r,
+                g2: retweetColor.g,
+                b2: retweetColor.b,
+
+                r3: replyColor.r,
+                g3: replyColor.g,
+                b3: replyColor.b
+
+            };
+
+            var changeTween = new TWEEN.Tween(position).to(target, 200);
+
+            changeTween.onUpdate(function () {
+                filter.setTweetColor(position.r1, position.g1, position.b1);
+                filter.setLineColor(position.r1, position.g1, position.b1);
+                filter.setRetweetColor(position.r2, position.g2, position.b2);
+                filter.setReplyColor(position.r3, position.g3, position.b3);
+            });
+
+            changeTween.onComplete(function () {
+                TWEEN.remove(this);
+                filter.isDetailView = true;
+            });
+
+            changeTween.start();
+        }else{
+            target = {
+                r1: filter.material.color.r,
+                g1: filter.material.color.g,
+                b1: filter.material.color.b,
+
+                r2: filter.material.color.r,
+                g2: filter.material.color.g,
+                b2: filter.material.color.b,
+
+                r3: filter.material.color.r,
+                g3: filter.material.color.g,
+                b3: filter.material.color.b
+
+            };
+
+            position = {
+                r1: tweetColor.r,
+                g1: tweetColor.g,
+                b1: tweetColor.b,
+
+                r2: retweetColor.r,
+                g2: retweetColor.g,
+                b2: retweetColor.b,
+
+                r3: replyColor.r,
+                g3: replyColor.g,
+                b3: replyColor.b
+
+            };
+
+            var changeTween = new TWEEN.Tween(position).to(target, 200);
+
+            changeTween.onUpdate(function () {
+                filter.setTweetColor(position.r1, position.g1, position.b1);
+                filter.setLineColor(position.r1, position.g1, position.b1);
+                filter.setRetweetColor(position.r2, position.g2, position.b2);
+                filter.setReplyColor(position.r3, position.g3, position.b3);
+            });
+
+            changeTween.onComplete(function () {
+                TWEEN.remove(this);
+                filter.isDetailView = false;
+            });
+
+            changeTween.start();
+        }
+
+
     },
 
 
