@@ -55,6 +55,7 @@
         <div class="clear"></div>
 
         <button id="start-stream" class="ui-bg-color">Start Stream</button>
+        <button id="connection">Connection</button>
 
         <div id="counts" class="table on-stream-started">
             <div class="table-cell">
@@ -146,28 +147,32 @@
 <script src="js/views/appView.js"></script>
 <script src="js/main.js"></script>
 
+<!-- ---------------- Custom Shader Code ------------------------ -->
 <script id="vertexShader" type="x-shader/x-vertex">
-                varying vec3 vNormal;
-                void main()
-                {
-                    vNormal = normalize( normalMatrix * normal );
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-                }
+uniform vec3 viewVector;
+uniform float c;
+uniform float p;
+varying float intensity;
+void main()
+{
+    vec3 vNormal = normalize( normalMatrix * normal );
+	vec3 vNormel = normalize( normalMatrix * viewVector );
+	intensity = pow( c - dot(vNormal, vNormel), p );
 
-
-    </script>
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+}
+</script>
 
 <!-- fragment shader a.k.a. pixel shader -->
 <script id="fragmentShader" type="x-shader/x-vertex">
-                varying vec3 vNormal;
-                void main()
-                {
-                    float intensity = pow( 0.7 - dot( vNormal, vec3( 0.0, 0.0, 1.0 ) ), 4.0 );
-                    gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 ) * intensity;
-                }
-
-
-    </script>
+uniform vec3 glowColor;
+varying float intensity;
+void main()
+{
+	vec3 glow = glowColor * intensity;
+    gl_FragColor = vec4( glow, 0.5 );
+}
+</script>
 
 </body>
 </html>
