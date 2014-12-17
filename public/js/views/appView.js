@@ -390,26 +390,23 @@ projectham.AppView = Backbone.View.extend({
         var i = 0,
             _this = this,
             overallWidth = 0,
-            addWidth;
+            addWidth,
+            curWidths = [];
 
-<<<<<<< HEAD
-        this.filterRatioDivs.each(function () {
-            $(this).width(Math.round(_this.filterCounts[i] / _this.overallCount * 100) - 0.5 + "%");
-=======
         this.filterRatioDivs.each(function() {
             overallWidth += _this.filterCounts[i]/_this.overallCount*100;
 
-            $(this).width(_this.filterCounts[i]/_this.overallCount*100 - 0.5 + "%");
->>>>>>> feature/045-filter-ratio-bar
+            var width = _this.filterCounts[i]/_this.overallCount*100 - 0.5;
+            curWidths[i] = width;
+
+            $(this).width(width + "%");
             i++;
         });
 
         if(overallWidth < 100) {
             addWidth = (100 - overallWidth)/this.filterRatioDivs.length;
             this.filterRatioDivs.each(function() {
-                var cur_width = $(this).width().replace('%', '');
-
-                $(this).width((cur_width + addWidth) + "%");
+                $(this).width((curWidths[i] + addWidth) + "%");
             });
         }
 
