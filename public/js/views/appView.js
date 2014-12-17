@@ -87,6 +87,9 @@ projectham.AppView = Backbone.View.extend({
 
         this.getTrends();
 
+        //------------- Benni
+
+        this.currentSepFilter = '';
         //------------- Julian
 
         this.tweets = new projectham.TweetList();
@@ -598,6 +601,8 @@ projectham.AppView = Backbone.View.extend({
             _this = this,
             filter = ev.target.parentElement.parentElement.childNodes[1].firstElementChild.textContent;
 
+            this.currentSepFilter = filter;
+
         model = this.filters.find(function(m) {
             return m.get('filter') == filter;
         });
@@ -613,7 +618,20 @@ projectham.AppView = Backbone.View.extend({
         });
     },
 
-    endSeparateView: function() {
+    endSeparateView: function(ev) {
+        console.log(ev);
+        var model,
+            id,
+            filter = this.currentSepFilter;
+
+        model = this.filters.find(function(m) {
+            return m.get('filter') == filter;
+        });
+
+        id = this.filters.indexOf(model);
+
+        eventBus.trigger('soloMode', id);
+        
         this.filterBoxH2.html('Filtered by');
 
         this.filterSoloDiv.hide();

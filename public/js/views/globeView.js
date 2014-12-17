@@ -178,8 +178,6 @@ projectham.GlobeView = Backbone.View.extend({
         this.controls = options.enableTrackball ? new THREE.TrackballControls(this.camera, this.renderer.domElement, this) : null;
 
 
-
-
         var windowResize = THREEx.WindowResize(this.renderer, this.camera);
         this._updateScene();
         this._eventHandler();
@@ -250,7 +248,16 @@ projectham.GlobeView = Backbone.View.extend({
         position = _this.latLongToVector3(tweet.location.lat, tweet.location.lng, value, true);
 
         //cylinder
-        cube = new THREE.Mesh(new THREE.CylinderGeometry(.01, .01, value*2, 8, 1, true), filter.material);
+        if (tweet.type == "tweet") {
+            cube = new THREE.Mesh(new THREE.CylinderGeometry(.01, .01, value * 2, 8, 1, true), filter.tweetMaterial);
+        } else if (tweet.type == "retweet") {
+            cube = new THREE.Mesh(new THREE.CylinderGeometry(.01, .01, value * 2, 8, 1, true), filter.retweetMaterial);
+        } else if (tweet.type == "reply") {
+            cube = new THREE.Mesh(new THREE.CylinderGeometry(.01, .01, value * 2, 8, 1, true), filter.replyMaterial);
+        } else {
+            return;
+        }
+
         cube.geometry.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI / 2));
 
         //position the cube correctly
@@ -407,7 +414,6 @@ projectham.GlobeView = Backbone.View.extend({
 
         var curveGeo = cp.createPointsGeometry(lineRes);
 
-        console.log(curveGeo);
 
         // DISPLAY LINE AT ONCE
 
@@ -418,17 +424,12 @@ projectham.GlobeView = Backbone.View.extend({
         //curvedLine.geometry.vertices.push(curveGeo.vertices[0], curveGeo.vertices[1]);
         //curvedLine.geometry.verticesNeedUpdate = true;
 
-        
-
-
-
-
 
         var tempGeom = new THREE.Geometry();
         var v1 = curveGeo.vertices[0];
         tempGeom.vertices.push(v1);
         var curvedLine = new THREE.Line();
-        this.animateLine(filter, curveGeo, tempGeom, curvedLine, 0, 1, function(line){
+        this.animateLine(filter, curveGeo, tempGeom, curvedLine, 0, 1, function (line) {
             _this.scene.remove(line);
             var finalLine = new THREE.Line(curveGeo, filter.lineMaterial);
             finalLine.lookAt(new THREE.Vector3(0, 0, 0));
@@ -436,8 +437,6 @@ projectham.GlobeView = Backbone.View.extend({
             _this.scene.remove(filter.connections);
             _this.scene.add(filter.connections);
         });
-
-
 
 
     },
@@ -546,16 +545,20 @@ projectham.GlobeView = Backbone.View.extend({
         });
 
         eventBus.on("soloMode", function (id) {
+            console.log(id);
             var filter = _this.getFilter(id);
-            if(filter.isDetailView){
-                $.each(_this.filters, function(key, value){
-                    if(value.id != filter.id && !value.isVisible){
+            console.log(_this.filters);
+            if (filter.isDetailView) {
+                $.each(_this.filters, function (key, value) {
+                    console.log(value);
+                    if (value && value.id != filter.id && !value.isVisible) {
                         _this.fadeInFilter(value.id);
                     }
                 });
-            }else{
-                $.each(_this.filters, function(key, value){
-                    if(value.id != filter.id && value.isVisible){
+            } else {
+                $.each(_this.filters, function (key, value) {
+                    console.log(value);
+                    if (value && value.id != filter.id && value.isVisible) {
                         _this.fadeOutFilter(value.id);
                     }
                 });
@@ -563,7 +566,7 @@ projectham.GlobeView = Backbone.View.extend({
             _this.changeView(id);
         });
 
-        eventBus.on("toggleVisibility", function(id){
+        eventBus.on("toggleVisibility", function (id) {
             var filter = _this.getFilter(id);
             filter.isVisible ? _this.fadeOutFilter(id) : _this.fadeInFilter(id);
         });
@@ -580,9 +583,9 @@ projectham.GlobeView = Backbone.View.extend({
 
         eventBus.on("addFilter", function (e) {
             _this.initFilters(
-                new projectham.GlobeFilter(e.models[0].get('filter'), e.models[0].get('color')),
-                e.models[1] ? new projectham.GlobeFilter(e.models[1].get('filter'), e.models[1].get('color')) : undefined,
-                e.models[2] ? new projectham.GlobeFilter(e.models[2].get('filter'), e.models[2].get('color')) : undefined
+                new projectham.GlobeFilter(e.models[0].get('filter'), e.models[0].get('color'), 0),
+                e.models[1] ? new projectham.GlobeFilter(e.models[1].get('filter'), e.models[1].get('color'), 1) : undefined,
+                e.models[2] ? new projectham.GlobeFilter(e.models[2].get('filter'), e.models[2].get('color'), 2) : undefined
             );
         });
 
@@ -592,6 +595,19 @@ projectham.GlobeView = Backbone.View.extend({
 
         eventBus.on("newConn", function (e) {
             _this.displayConnection(e);
+        });
+
+        eventBus.on("startStream", function () {
+            $.each(_this.scene.children, function (key, value) {
+                if (key > 5) {
+                    _this.scene.remove(value);
+                }
+            });
+            $.each(_this.scene.children, function (key, value) {
+                if (key > 5) {
+                    _this.scene.remove(value);
+                }
+            });
         });
 
 
@@ -752,7 +768,7 @@ projectham.GlobeView = Backbone.View.extend({
         scaleTween.start();
     },
 
-    animateLine: function (filter, curveGeo, tempGeom, curvedLine, i,j, callback) {
+    animateLine: function (filter, curveGeo, tempGeom, curvedLine, i, j, callback) {
 
 
         var _this = this;
@@ -780,7 +796,6 @@ projectham.GlobeView = Backbone.View.extend({
         this.scene.add(curvedLine2);
 
 
-
         var lineTween = new TWEEN.Tween(position).to(target, 0.3);
 
         lineTween.onUpdate(function () {
@@ -792,9 +807,9 @@ projectham.GlobeView = Backbone.View.extend({
             i += 1;
             j += 1;
 
-            if(curveGeo.vertices[j]){
-                _this.animateLine(filter,curveGeo,tempGeom,curvedLine2,i,j, callback);
-            }else{
+            if (curveGeo.vertices[j]) {
+                _this.animateLine(filter, curveGeo, tempGeom, curvedLine2, i, j, callback);
+            } else {
                 callback(curvedLine2);
             }
 
@@ -817,6 +832,7 @@ projectham.GlobeView = Backbone.View.extend({
 
     fadeOutFilter: function (filterID) {
         var filter = this.getFilter(filterID);
+
         var position = {o: filter.material.opacity};
         var target = {o: 0};
 

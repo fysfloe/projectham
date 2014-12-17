@@ -1,32 +1,32 @@
 var projectham = projectham || {};
 
 
-var filterCount = 0;
 
-projectham.GlobeFilter = function (name, color) {
+
+projectham.GlobeFilter = function (name, color, id) {
     this.color = color ? color : 0x4099FF;
 
     this.total = new THREE.Mesh();
-    this.total.name = "total_"+filterCount;
+    this.total.name = "total_"+id;
 
     this.geom = new THREE.Geometry();
-    this.total.name = "geom_"+filterCount;
+    this.total.name = "geom_"+id;
 
     this.retweets = new THREE.Mesh();
-    this.retweets.name = "retweets_"+filterCount;
+    this.retweets.name = "retweets_"+id;
 
     this.tweets = new THREE.Mesh();
-    this.tweets.name = "tweets_"+filterCount;
+    this.tweets.name = "tweets_"+id;
 
     this.replies = new THREE.Mesh();
-    this.replies.name = "replies_"+filterCount;
+    this.replies.name = "replies_"+id;
 
     this.alphaMap = THREE.ImageUtils.loadTexture('img/alpha_map_cube2.png')
 
     this.connections = new THREE.Group();
 
     this.opacity = 1;
-    this.id = filterCount++;
+    this.id = id;
     this.name = name;
     this.blending = THREE.AdditiveBlending;
     this.isVisible = true;
