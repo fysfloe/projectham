@@ -372,12 +372,25 @@ projectham.AppView = Backbone.View.extend({
         this.filterCounts[tweet.attributes.filter.id]++;
 
         var i = 0,
-            _this = this;
+            _this = this,
+            overallWidth = 0,
+            addWidth;
 
         this.filterRatioDivs.each(function() {
-            $(this).width(Math.round(_this.filterCounts[i]/_this.overallCount*100) - 0.5 + "%");
+            overallWidth += _this.filterCounts[i]/_this.overallCount*100;
+
+            $(this).width(_this.filterCounts[i]/_this.overallCount*100 - 0.5 + "%");
             i++;
         });
+
+        if(overallWidth < 100) {
+            addWidth = (100 - overallWidth)/this.filterRatioDivs.length;
+            this.filterRatioDivs.each(function() {
+                var cur_width = $(this).width().replace('%', '');
+
+                $(this).width((cur_width + addWidth) + "%");
+            });
+        }
 
         eventBus.trigger('newTweet', tweet);
     },

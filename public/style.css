@@ -271,12 +271,15 @@ ul#preFilterList li {
 div#filter-ratio {
     width: 100%;
     padding: 1em 0 2em;
+    overflow: hidden;
 }
 
 div#filter-ratio > div {
     height: 0.4em;
     float: left;
     opacity: 0.7;
+
+    transition: width 0.3s ease;
 }
 
 div#filter-ratio div:first-child {
@@ -290,17 +293,17 @@ div#filter-ratio div:last-child {
 }
 
 div#filter-ratio div:nth-child(1) {
-    background: #4099FF;
+    background: url('img/ui/ratio-bar/blue.png');
     box-shadow: 0 0 15px #4099FF;
 }
 
 div#filter-ratio div:nth-child(2) {
-    background: #E28C10;
+    background: url('img/ui/ratio-bar/orange.png');
     box-shadow: 0 0 15px #E28C10;
 }
 
 div#filter-ratio div:nth-child(3) {
-    background: #81D056;
+    background: url('img/ui/ratio-bar/green.png');
     box-shadow: 0 0 15px #81D056;
 }
 
