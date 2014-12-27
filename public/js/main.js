@@ -22,6 +22,8 @@ projectham.module = (function($) {
         initRecognition,
         matchCommand,
         executeCommand,
+        convertToInt,
+        isInt,
 
         startApp,
         move,
@@ -33,7 +35,8 @@ projectham.module = (function($) {
         addPreFilter,
         addFilter,
         startStream,
-        stopStream;
+        stopStream,
+        addTrend;
 
     initRecognition = function() {
         var final_transcript = '';
@@ -274,9 +277,59 @@ projectham.module = (function($) {
         }
     };
 
-    addFilter = function() {
-        console.log('here');
+    addTrend = function(parameters) {
+        var trend = parameters[2];
 
+        trend = convertToInt(trend);
+
+        console.log(trend);
+
+        if(trend) {
+            $("table#trends tr:nth-child("+trend+") td:last-child").trigger('click');
+        }
+    };
+
+    convertToInt = function(convert) {
+        if(typeof convert == 'string' || convert instanceof String) {
+            console.log('string');
+
+            switch(convert) {
+                case 'one':
+                    convert = 1;
+                    break;
+                case 'two':
+                case 'to':
+                    convert = 2;
+                    break;
+                case 'three':
+                    convert = 3;
+                    break;
+                case 'four':
+                case 'for':
+                    convert = 4;
+                    break;
+                case 'five':
+                    convert = 5;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        convert = parseInt(convert);
+
+        if(isInt(convert)) {
+            return convert;
+        }
+
+        return false;
+    };
+
+    isInt = function(value) {
+        return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value))
+    };
+
+    addFilter = function() {
         $(".add-filter").trigger('click');
     };
 
@@ -458,6 +511,24 @@ projectham.module = (function($) {
             }
         },
 
+        'add_trend': {
+            'correct': 'add trend',
+            'function': addTrend,
+            'has_parameters': true,
+            'possibilities': {
+                0: 'add trend',
+                1: 'at trend',
+                2: 'add trent',
+                3: 'at trent',
+                4: 'add friend',
+                5: 'at friend',
+                6: 'add friends',
+                7: 'at friends',
+                8: 'add trends',
+                9: 'at trends'
+            }
+        },
+
         'add_preFilter': {
             'correct': 'add',
             'function': addPreFilter,
@@ -478,7 +549,8 @@ projectham.module = (function($) {
             'has_parameters': false,
             'possibilities': {
                 0: 'start stream',
-                1: 'start'
+                1: 'start',
+                2: 'startstream'
             }
         },
 
@@ -487,7 +559,8 @@ projectham.module = (function($) {
             'function': stopStream,
             'has_parameters': false,
             'possibilities': {
-                0: 'stop stream'
+                0: 'stop stream',
+                1: 'stopstream'
             }
         }
     };
