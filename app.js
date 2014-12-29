@@ -1,5 +1,5 @@
 /**
- * Module dependencies.
+ * Start Script fired by bin/www
  */
 
 var express = require('express'),
@@ -9,19 +9,20 @@ var express = require('express'),
     methodOverride = require('method-override'),
     favicon = require('serve-favicon'),
     cookieParser = require('cookie-parser'),
-    errorHandler = require('errorhandler');
-var http = require('http');
-var path = require('path');
-var twitter = require('twitter');
+    errorHandler = require('errorhandler'),
+    http = require('http'),
+    path = require('path');
 
-// DB
-var monk = require('monk');
-var db = monk('localhost:27017/projectham');
+var twitter = require('twitter');
 
 // Routes
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var trends = require('./routes/trends');
+
+// DB
+var monk = require('monk');
+var db = monk('localhost:27017/projectham');
 
 var twit;
 
@@ -45,9 +46,13 @@ var job = new CronJob({
 
         if(twit) {
             twit.get('/trends/place.json', {id: 1}, function(data, res) {
-                if(res.statusCode == 200) {
-                    trendsCollection.insert({trends: data, datetime: new Date().toUTCString()});
-                    console.log("Just got the latest trends from twitter.");
+                try {
+                    if(res.statusCode == 200) {
+                        trendsCollection.insert({trends: data, datetime: new Date().toUTCString()});
+                        console.log("Just got the latest trends from twitter.");
+                    }
+                } catch(e) {
+                    console.log("No response from twitter trends. Not able to complete request.");
                 }
             });
         }
@@ -58,6 +63,7 @@ var job = new CronJob({
 });
 job.start();
 
+// Express
 var app = express();
 
 // all environments
@@ -90,10 +96,6 @@ app.use(function(req,res,next) {
 app.use('/', routes);
 app.use('/users', users);
 app.use('/trends', trends);
-
-/*app.use(methodOverride());
-app.use(app.router);
-app.use(session({ resave: true, saveUninitialized: true, secret: 'very-secret' }));*/
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

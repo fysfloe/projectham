@@ -43,33 +43,6 @@ router.get('/', function(req, res) {
         }
     }
 
-    // GET THE LATEST TRENDS
-    /*var trendsCollection = req.db.get('trendslist'); // get trends collection
-
-    trendsCollection.findOne({}, { sort: {datetime: -1} }, function(err, doc) {
-
-        var minutesToLatest = 0;
-
-        if(!err && doc) {
-            minutesToLatest = Math.round((new Date() - new Date(doc.datetime))/1000/60);
-            console.log(minutesToLatest + " minutes since last update of trends.");
-        }
-
-        if(minutesToLatest > 15 || !doc) {
-            authenticateToTwitter();
-
-            console.log("Now getting latest trends.");
-
-            if(twit) {
-                twit.get('/trends/place.json', {id: 1}, function(data, res) {
-                    if(res.statusCode == 200) {
-                        trendsCollection.insert({trends: data, datetime: new Date().toUTCString()});
-                    }
-                });
-            }
-        }
-    });*/
-
     res.render('index', { title: 'Project Ham' });
 });
 
@@ -248,8 +221,8 @@ var sendTweet = function(tweet, parent_id, type, lat, lng, locationType) {
         });
 
     } else {
-        console.log("not able to send:");
-        console.log(tweet.text);
+        console.log("not able to send tweet (client or keyword not found).");
+        //console.log(tweet.text);
     }
 
     tweetToSend = null;
@@ -279,71 +252,46 @@ var addNewTweet = function(tweet, parent_id, type, callback, retweet) {
     } else if(tweet.user) {
         if(tweet.user.location) {
 
-            // reserve id of tweet
-            tweet_ids[tweet.id] = 0;
+            // check if location is alphanumeric incl. spaces
+            if(containsAlphabeticCharacters(tweet.user.location)) {
+                // reserve id of tweet
+                tweet_ids[tweet.id] = 0;
 
-            // GEOCODER MODULE
-            geocoder.geocode(tweet.user.location, function(err, res) {
-                if(!err && res[0]) {
-                    if(res[0].latitude && res[0].longitude) {
-                        lat = res[0].latitude;
-                        lng = res[0].longitude;
-                        locationType = 'user_geo';
+                // GEOCODER MODULE
+                geocoder.geocode(tweet.user.location, function(err, res) {
+                    if(!err && res[0]) {
+                        if(res[0].latitude && res[0].longitude) {
+                            lat = res[0].latitude;
+                            lng = res[0].longitude;
+                            locationType = 'user_geo';
 
-                        locationByUserCount++;
+                            locationByUserCount++;
 
-                        sendTweet(tweet, parent_id, type, lat, lng, locationType); // problem: duplicate tweets due to callback
+                            sendTweet(tweet, parent_id, type, lat, lng, locationType); // problem: duplicate tweets due to callback
 
-                        tweet_ids[tweet.id] = 1;
+                            tweet_ids[tweet.id] = 1;
 
-                        callback && callback(true, tweet.id, retweet); // if callback
+                            callback && callback(true, tweet.id, retweet); // if callback
+                        } else {
+                            tweet_ids[tweet.id] = -1; // geocoding failed = -1
+
+                            callback && callback(false, tweet.id, retweet); // if callback
+                        }
                     } else {
                         tweet_ids[tweet.id] = -1; // geocoding failed = -1
+                        console.log("Geocoding failed.");
 
                         callback && callback(false, tweet.id, retweet); // if callback
                     }
-                } else {
-                    tweet_ids[tweet.id] = -1; // geocoding failed = -1
+                });
+            }
 
-                    callback && callback(false, tweet.id, retweet); // if callback
-                }
-            });
-
-            // GEONAMES
-            /*request("http://api.geonames.org/searchJSON?q=" + encodeURI(tweet.user.location) + "&maxRows=1&username=project_ham", function(error, response, body) {
-
-             if(!error) {
-             var data = JSON.parse(body);
-
-             if(data.totalResultsCount > 0) {
-
-             lat = data.geonames[0].lat;
-             lng = data.geonames[0].lng;
-             locationType = 'user_geo';
-
-             locationByUserCount++;
-
-             sendTweet(tweet, parent_id, type, lat, lng, locationType); // problem: duplicate tweets due to callback
-
-             tweet_ids[tweet.id] = 1;
-
-             callback && callback(true, tweet.id, retweet); // if callback
-
-             } else {
-             tweet_ids[tweet.id] = -1; // geocoding failed = -1
-
-             callback && callback(false, tweet.id, retweet); // if callback
-             }
-             } else {
-             tweet_ids[tweet.id] = -1; // geocoding failed = -1
-             console.log(error);
-
-             callback && callback(false, tweet.id, retweet); // if callback
-             }
-             });*/
         } else {
+            console.log("No location available in tweet.");
             callback && callback(false, tweet.id, retweet); // if callback
         }
+    } else {
+        console.log("No user information available in tweet.");
     }
 };
 
@@ -429,7 +377,6 @@ var InitStream = function() {
                         }, item);
 
                     } else if(tweet_ids[parent_id] == (-1)) { // geocoding failed on the parent tweet
-                        console.log("failed geocoded retweet");
                         addNewTweet(item, null, 'retweet');
 
                     } else if(tweet_ids[parent_id] == 1) { // existing geocoded parent tweet
@@ -533,6 +480,11 @@ var escapeString = function(html) {
         .replace(/'/g, '&#39;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
+};
+
+var containsAlphabeticCharacters = function(str) {
+    var regex = /^[0-9.,\s]+$/;
+    return !regex.test(str);
 };
 
 module.exports = router;
