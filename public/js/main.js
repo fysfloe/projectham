@@ -22,6 +22,7 @@ projectham.module = (function($) {
         initRecognition,
         matchCommand,
         executeCommand,
+        showAlternativeInfo,
 
         startApp,
         move,
@@ -280,6 +281,16 @@ projectham.module = (function($) {
         $(".add-filter").trigger('click');
     };
 
+    showAlternativeInfo = function() {
+        var chrome = $("#chrome");
+        var not_chrome = $("#not-chrome");
+        chrome.css({
+            opacity: 0.15
+        });
+
+        not_chrome.show();
+    };
+
     init = function() {
         appStarted = false;
         restart = true;
@@ -291,7 +302,11 @@ projectham.module = (function($) {
         box = $('.move');
         listening = $('#listening');
 
-        initRecognition();
+        if(/chrome/.test(navigator.userAgent.toLowerCase())) {
+            initRecognition();
+        } else {
+            showAlternativeInfo();
+        }
 
         //------- benni starts here --------
         gv = new projectham.GlobeView();

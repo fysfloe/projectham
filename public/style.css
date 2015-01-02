@@ -530,6 +530,14 @@ table#trends td:last-child span {
     opacity: 0.25 !important;
 }
 
+#not-chrome {
+    position: absolute;
+    right: 3em;
+    top: 7.6em;
+
+    display: none;
+}
+
 /*************************************************
     footer
  *************************************************/
