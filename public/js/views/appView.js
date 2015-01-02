@@ -527,7 +527,7 @@ projectham.AppView = Backbone.View.extend({
             var element = document.body;
 
             // Supports most browsers and their versions.
-            var requestMethod = element.requestFullScreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || element.msRequestFullscreen;
+            var requestMethod = element.requestFullScreen || element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT) || element.mozRequestFullScreen || element.msRequestFullscreen;
 
             if (requestMethod) { // Native full screen.
                 requestMethod.call(element);
