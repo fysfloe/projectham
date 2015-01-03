@@ -1,0 +1,571 @@
+/*************************************************
+    ui-color: #0084b4
+ *************************************************/
+
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('fonts/BebasNeueRegular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('fonts/BebasNeueBold.otf') format('opentype');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('fonts/BebasNeueBook.otf') format('opentype');
+    font-weight: 300;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('fonts/BebasNeueLight.otf') format('opentype');
+    font-weight: 200;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('fonts/BebasNeueThin.otf') format('opentype');
+    font-weight: 100;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'icomoon';
+    src: url('fonts/icomoon.ttf') format('truetype');
+}
+
+/*************************************************
+    general
+ *************************************************/
+
+body, html, main {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: "BebasNeue", "Helvetica Neue", Arial, sans-serif;
+    color: white;
+    background: black;
+
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.clear {
+    clear: both;
+}
+
+.bold {
+    font-weight: 600;
+}
+
+.ui-color {
+    color: #0084b4;
+}
+
+.ui-bg-color {
+    background-color: #0084b4;
+    color: white;
+}
+
+.table {
+    display: table;
+}
+
+.table-row {
+    display: table-row;
+}
+
+.table-cell {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+button, input, textarea {
+    font-family: "BebasNeue", "Helvetica Neue", Arial, sans-serif;
+}
+
+div {
+    position: relative;
+}
+
+button:hover {
+    cursor: pointer;
+}
+
+a {
+    color: #0084b4;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+p {
+    margin: 0 0 0.5em 0;
+    padding: 0;
+}
+
+input:focus, button:focus {
+    outline:none;
+}
+
+h3 {
+    margin: 2em 0 0.5em;
+    color: #0084b4;
+}
+
+/*************************************************
+    header
+ *************************************************/
+
+header {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    z-index: 1;
+    padding: 0.6em 0;
+}
+
+header > h1 {
+    font-size: 2.3em;
+    font-weight: 600;
+}
+
+header > h1 span {
+    color: #0084b4;
+    font-weight: 300;
+}
+
+button#tools {
+    position: absolute;
+    left: 3em;
+    top: 2em;
+    z-index: 500;
+    background: none;
+    border: none;
+    font-family: 'icomoon', sans-serif;
+    color: white;
+    font-size: 1.3em;
+
+    transition: color 0.2s ease;
+}
+
+button#tools:hover {
+    color: #0084b4;
+}
+
+button#tools span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 400;
+    font-size: 0.7em;
+}
+
+button#fullscreen {
+    position: absolute;
+    right: 3em;
+    top: 2em;
+    z-index: 500;
+    background: none;
+    border: none;
+    font-family: 'icomoon', sans-serif;
+    color: white;
+    font-size: 1.3em;
+
+    transition: color 0.2s ease;
+}
+
+button#fullscreen:hover {
+    color: #0084b4;
+}
+
+/*************************************************
+    main-box
+ *************************************************/
+
+.main-box {
+    position: absolute;
+    width: 16em;
+    z-index: 2;
+    top: 36%;
+    padding: 0 3em;
+}
+
+.main-box h2 {
+    font-size: 1.4em;
+}
+
+.ui-img {
+    width: 3.5em;
+}
+
+.more-info {
+    margin-top: 3em;
+}
+
+#globe {
+    width: 98%;
+    margin: 0 auto;
+    height: 98%;
+}
+
+/*************************************************
+    filter-box
+ *************************************************/
+
+#filter-box {
+    left: 0;
+}
+
+#filter-box h2 span {
+    font-family: 'icomoon', sans-serif;
+}
+
+#filter-box h2 span {
+    font-family: 'icomoon', sans-serif;
+    margin-left: 0.5em;
+    font-size: 0.8em;
+    color: #0084b4;
+}
+
+#filter-box h2 span {
+    cursor: pointer;
+}
+
+.filter-names {
+    font-weight: 300;
+}
+
+.on-stream-started {
+    display: none;
+}
+
+.add-filter {
+    opacity: 0.2;
+}
+
+#counts figure {
+    margin: 0 1.6em 0 0;
+}
+
+#counts figure span {
+    color: #0084b4;
+    font-size: 2.5em;
+}
+
+#counts figure figcaption {
+    font-weight: 200;
+}
+
+input#i-add-filter {
+    padding: 0.5em 0;
+    border: 0;
+    border-bottom: 1px solid white;
+    background: none;
+    font-family: "BebasNeue", "Helvetica Neue", sans-serif;
+    min-width: 12em;
+    font-size: 1em;
+    float: left;
+    color: white;
+}
+
+button#b-add-filter1, button#b-add-filter2 {
+    background: none;
+    border: none;
+    width: 4em;
+    display: block;
+    float: right;
+}
+
+button#b-add-filter1 img, button#b-add-filter2 img {
+    width: 100%;
+}
+
+div#err-msg {
+    font-size: 0.8em;
+    color: red;
+    margin-top: 1em;
+}
+
+button#start-stream, button#stop-stream  {
+    display: block;
+    border: none;
+    background: #0084b4;
+    color: white;
+    width: 12em;
+    margin: 1em 0;
+    padding: 0.5em 0;
+    font-size: 1em;
+    clear: both;
+}
+
+div#counts {
+    margin-top: 3em;
+}
+
+button#stop-stream {
+    display: none;
+}
+
+ul#preFilterList {
+    list-style: none;
+    padding: 0;
+}
+
+ul#preFilterList li {
+    line-height: 1.5;
+}
+
+#filters figure, #filter-solo figure {
+    margin: 0;
+    text-align: center;
+}
+
+#filters img, #filter-solo img {
+    width: 100%;
+    padding: 0.3em;
+    box-sizing: border-box;
+}
+
+#filters .table-cell, #filter-solo .table-cell {
+    max-width: 5em;
+    overflow: hidden;
+}
+
+#filters figcaption, #filter-solo figcaption {
+    text-align: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: inline-block;
+    overflow: hidden;
+    max-width: 4.5em;
+}
+
+div#filter-ratio {
+    width: 100%;
+    padding: 1em 0 2em;
+    overflow: hidden;
+}
+
+div#filter-ratio > div {
+    height: 0.4em;
+    float: left;
+    opacity: 0.7;
+
+    transition: width 0.3s ease;
+}
+
+div#filter-ratio div:first-child {
+    border-top-left-radius: 1em;
+    border-bottom-left-radius: 1em;
+}
+
+div#filter-ratio div:last-child {
+    border-top-right-radius: 1em;
+    border-bottom-right-radius: 1em;
+}
+
+div#filter-ratio div:nth-child(1) {
+    background: url('img/ui/ratio-bar/blue.png');
+    box-shadow: 0 0 15px #4099FF;
+}
+
+div#filter-ratio div:nth-child(2) {
+    background: url('img/ui/ratio-bar/orange.png');
+    box-shadow: 0 0 15px #E28C10;
+}
+
+div#filter-ratio div:nth-child(3) {
+    background: url('img/ui/ratio-bar/green.png');
+    box-shadow: 0 0 15px #81D056;
+}
+
+table#trends {
+    border-collapse: collapse;
+    width: 12em;
+}
+
+table#trends tr {
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+table#trends td:last-child:hover {
+    cursor: pointer;
+}
+
+table#trends td:last-child:hover:after {
+    opacity: 1;
+}
+
+table#trends tr:last-child {
+    border: none;
+}
+
+table#trends td {
+    padding: 0.4em;
+}
+
+table#trends td:first-child {
+    text-align: center;
+}
+
+table#trends td:last-child:after {
+    content: '+';
+    float: right;
+    opacity: 0.4;
+    margin-right: 0.3em;
+
+    transition: opacity 0.2s ease;
+}
+
+table#trends td:last-child span {
+    max-width: 8em;
+    overflow: hidden;
+    display: inline-flex;
+}
+
+#filters .table-cell:not(.add-filter):hover .sv-options {
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    opacity: 1;
+    color: white;
+    top: 0;
+    padding-top: 2.8em;
+}
+
+#filters .sv-options a {
+    color: white;
+    font-family: 'icomoon', sans-serif;
+    font-size: 1.2em;
+    margin: 0 0.1em;
+}
+
+#filters .sv-options a:hover {
+    text-decoration: none;
+}
+
+#filters .sv-options a.visibility.ci-color {
+    color: #0084b4;
+}
+
+#filters .sv-options a.visibility.white {
+    color: white;
+}
+
+#filters figure.visible {
+    opacity: 1;
+}
+
+#filters figure {
+    opacity: 0.5;
+}
+
+#filters .sv-options {
+    display: none;
+    opacity: 0;
+
+    transition: opacity 0.3s ease;
+}
+
+#filters .table-cell:not(.add-filter) figure {
+    transition: opacity 0.3s ease;
+}
+
+#filters .table-cell:not(.add-filter):hover figure {
+    opacity: 0.5;
+}
+
+#filters .table-cell:hover {
+    cursor: pointer;
+}
+
+/*************************************************
+    web-speech-box
+ *************************************************/
+
+#web-speech-box {
+    right: 0;
+    text-align: right;
+}
+
+#listening {
+    margin: 30px 0;
+    width: 20px;
+    height: 20px;
+
+    background-color: red;
+}
+
+#results {
+    margin-right: 1em;
+    display: inline-block;
+}
+
+.interim {
+    color: gray;
+}
+
+.final {
+    padding-right: 3px;
+}
+
+#commands {
+    list-style: none;
+    padding-left: 2em;
+}
+
+#commands li:nth-child(2) {
+    opacity: 0.5 !important;
+}
+
+#commands li:nth-child(3) {
+    opacity: 0.25 !important;
+}
+
+#not-chrome {
+    position: absolute;
+    right: 3em;
+    top: 7.6em;
+
+    display: none;
+}
+
+#bars {
+    position: absolute;
+    right: 2em;
+    top: 2em;
+}
+
+.bar {
+    position: absolute;
+    background: url("img/bg_bar.png");
+    background-size: 5px 50px;
+    width: 5px;
+    transform-origin: 4px -4px;
+    transition: 0.1s height;
+    max-height: 20px;
+}
+
+/*************************************************
+    footer
+ *************************************************/
+
+footer {
+    position: absolute;
+    bottom: 0;
+    text-align: center;
+    width: 100%;
+    padding-bottom: 3em;
+}
+
+footer .more-info {
+    margin-bottom: 2em;
+}
