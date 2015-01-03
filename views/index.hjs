@@ -39,7 +39,7 @@
 </header>
 <main>
     <div id="filter-box" class="main-box">
-        <img src="img/ui/hashtag.png" alt="Hashtag" class="ui-img">
+        <p class="ui-img">&#xe600;</p>
         <h2>Filter By</h2>
 
         <div id="filters" class="on-stream-started table"></div>
@@ -143,7 +143,8 @@
             </div>
 
             <div id="bars"></div>
-            <img src="img/ui/mic.png" alt="Mic" class="ui-img">
+
+            <p class="ui-img" id="mic">&#xe601;</p>
             <h2>That's what you said</h2>
             <!--<div id="listening"></div>-->
             <ul id="commands">

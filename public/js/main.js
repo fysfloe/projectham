@@ -16,6 +16,8 @@ projectham.module = (function($) {
         analyserNode = null,
         ignore_onend,
         restart,
+        mic,
+        final_transcript,
 
         commands,
         app_started,
@@ -30,6 +32,8 @@ projectham.module = (function($) {
         matchCommand,
         executeCommand,
         showAlternativeInfo,
+        toggleAudioFunc,
+        stopApp,
 
         startApp,
         move,
@@ -44,7 +48,7 @@ projectham.module = (function($) {
         stopStream;
 
     initRecognition = function() {
-        var final_transcript = '';
+        final_transcript = '';
         var recognizing = false;
         var ignore_onend = true;
         var start_timestamp;
@@ -120,16 +124,12 @@ projectham.module = (function($) {
             }
 
             if(app_started) {
-                //final_transcript = capitalize(final_transcript);
                 final_span.innerHTML = final_transcript;
                 interim_span.innerHTML = interim_transcript;
             }
 
             if(final_transcript) {
                 var matched_command = matchCommand(final_transcript);
-                console.log(matched_command);
-
-                console.log('matched command: ' + matched_command);
 
                 if(matched_command) {
                     if(matched_command.string_array) {
@@ -140,10 +140,10 @@ projectham.module = (function($) {
                             combined_command += matched_command.string_array[k] + " ";
                         }
 
-                        appView.saveCommand(combined_command);
+                        if(app_started) appView.saveCommand(combined_command);
 
                     } else {
-                        appView.saveCommand(matched_command.correct);
+                        if(app_started) appView.saveCommand(matched_command.correct);
                     }
 
                     if(matched_command.has_parameters) {
@@ -156,11 +156,22 @@ projectham.module = (function($) {
                         executeCommand(matched_command);
                     }
 
+                    mic.css("color", "green");
+
+                    setTimeout(function () {
+                        mic.css("color", "#0084b4");
+                    }, 500);
                 } else {
-                    appView.saveCommand(final_transcript);
+                    if(app_started) appView.saveCommand(final_transcript);
+
+                    mic.css("color", "darkred");
+
+                    setTimeout(function () {
+                        mic.css("color", "#0084b4");
+                    }, 500);
                 }
 
-                final_span.innerHTML = '';
+                interim_span.innerHTML = '';
 
                 final_transcript = '';
             }
@@ -216,9 +227,7 @@ projectham.module = (function($) {
 
     startApp = function() {
         app_started = true;
-
-        listening.css('background-color', 'green');
-
+        mic.css({opacity: 1});
         console.log('app started');
     };
 
@@ -380,7 +389,7 @@ projectham.module = (function($) {
             var fft_array = new Uint8Array(analyserNode.frequencyBinCount);
             analyserNode.getByteFrequencyData(fft_array);
 
-            drawSpectrum(fft_array);
+            if(app_started) drawSpectrum(fft_array);
         }
     }
 
@@ -389,8 +398,6 @@ projectham.module = (function($) {
     }
 
     function drawSpectrum(array) {
-        //var cur_array = new Array(final_array.length);
-        var accuracy = 8;
         var bars = $(".bar");
         for(var i = 0; i < (array.length / 2); i++) {
             var value = array[i] / 4 > 8 ? array[i] / 4 : 0;
@@ -430,6 +437,22 @@ projectham.module = (function($) {
         }
     }
 
+    toggleAudioFunc = function() {
+        if(app_started) {
+            stopApp();
+        } else {
+            startApp();
+        }
+    };
+
+    stopApp = function() {
+        bars.css({height: '0'});
+        app_started = false;
+        $('#final_span').html('');
+        $('#interim_span').html('');
+        mic.css({opacity: 0.5})
+    };
+
     init = function() {
         restart = true;
 
@@ -440,6 +463,8 @@ projectham.module = (function($) {
         if(/chrome/.test(navigator.userAgent.toLowerCase())) {
             initRecognition();
             initAudioContext();
+            mic = $("#mic");
+            mic.on('click', toggleAudioFunc);
         } else {
             showAlternativeInfo();
         }
@@ -524,7 +549,7 @@ projectham.module = (function($) {
         },*/
 
         'start_app': {
-            'correct': 'listen',
+            'correct': 'app started',
             'function': startApp,
             'has_parameters': false,
             'possibilities': {
@@ -639,6 +664,15 @@ projectham.module = (function($) {
             'has_parameters': false,
             'possibilities': {
                 0: 'stop stream'
+            }
+        },
+
+        'stop_listening': {
+            'correct': 'stop listening',
+            'function': stopApp,
+            'has_parameters': false,
+            'possibilities': {
+                0: 'stop listening'
             }
         }
     };
