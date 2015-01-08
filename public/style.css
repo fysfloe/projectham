@@ -36,6 +36,10 @@
     font-family: 'icomoon';
     src: url('fonts/icomoon.ttf') format('truetype');
 }
+@font-face {
+    font-family: 'ui-img';
+    src: url('fonts/ui-img.ttf') format('truetype');
+}
 
 /*************************************************
     general
@@ -201,7 +205,11 @@ button#fullscreen:hover {
 }
 
 .ui-img {
-    width: 3.5em;
+    font-size: 3.5em;
+    font-family: 'ui-img', sans-serif;
+    color: #0084b4;
+    display: inline-block;
+    margin-bottom: 0;
 }
 
 .more-info {
@@ -505,8 +513,10 @@ table#trends td:last-child span {
 }
 
 #results {
-    margin-right: 1em;
+    margin-right: 1.5em;
     display: inline-block;
+    max-width: 10.8em;
+    overflow: hidden;
 }
 
 .interim {
@@ -528,6 +538,40 @@ table#trends td:last-child span {
 
 #commands li:nth-child(3) {
     opacity: 0.25 !important;
+}
+
+#not-chrome {
+    position: absolute;
+    right: 3em;
+    top: 7.6em;
+
+    display: none;
+}
+
+#bars {
+    position: absolute;
+    right: 2em;
+    top: 2em;
+}
+
+.bar {
+    position: absolute;
+    background: url("img/bg_bar.png");
+    background-size: 5px 50px;
+    width: 5px;
+    transform-origin: 4px -4px;
+    transition: 0.1s height;
+    max-height: 20px;
+}
+
+#mic {
+    opacity: 0.5;
+
+    transition: 0.2s all;
+}
+
+#mic:hover {
+    cursor: pointer;
 }
 
 /*************************************************

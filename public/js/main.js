@@ -5,11 +5,19 @@
 var projectham = projectham || {};
 
 projectham.module = (function($) {
-
-    var listening,
+    var bars,
         appView,
+        audioContext,
+        BUFF_SIZE,
+        microphone_stream = null,
+        gain_node = null,
+        script_processor_node = null,
+        script_processor_fft_node = null,
+        analyserNode = null,
         ignore_onend,
         restart,
+        mic,
+        final_transcript,
 
         commands,
         app_started,
@@ -19,9 +27,13 @@ projectham.module = (function($) {
         cv;
 
     var init,
+        initAudioContext,
         initRecognition,
         matchCommand,
         executeCommand,
+        showAlternativeInfo,
+        toggleAudioFunc,
+        stopApp,
 
         startApp,
         move,
@@ -36,7 +48,7 @@ projectham.module = (function($) {
         stopStream;
 
     initRecognition = function() {
-        var final_transcript = '';
+        final_transcript = '';
         var recognizing = false;
         var ignore_onend = true;
         var start_timestamp;
@@ -112,16 +124,12 @@ projectham.module = (function($) {
             }
 
             if(app_started) {
-                //final_transcript = capitalize(final_transcript);
                 final_span.innerHTML = final_transcript;
                 interim_span.innerHTML = interim_transcript;
             }
 
             if(final_transcript) {
                 var matched_command = matchCommand(final_transcript);
-                console.log(matched_command);
-
-                console.log('matched command: ' + matched_command);
 
                 if(matched_command) {
                     if(matched_command.string_array) {
@@ -132,10 +140,10 @@ projectham.module = (function($) {
                             combined_command += matched_command.string_array[k] + " ";
                         }
 
-                        appView.saveCommand(combined_command);
+                        if(app_started) appView.saveCommand(combined_command);
 
                     } else {
-                        appView.saveCommand(matched_command.correct);
+                        if(app_started) appView.saveCommand(matched_command.correct);
                     }
 
                     if(matched_command.has_parameters) {
@@ -148,11 +156,22 @@ projectham.module = (function($) {
                         executeCommand(matched_command);
                     }
 
+                    mic.css("color", "green");
+
+                    setTimeout(function () {
+                        mic.css("color", "#0084b4");
+                    }, 500);
                 } else {
-                    appView.saveCommand(final_transcript);
+                    if(app_started) appView.saveCommand(final_transcript);
+
+                    mic.css("color", "darkred");
+
+                    setTimeout(function () {
+                        mic.css("color", "#0084b4");
+                    }, 500);
                 }
 
-                final_span.innerHTML = '';
+                interim_span.innerHTML = '';
 
                 final_transcript = '';
             }
@@ -208,9 +227,7 @@ projectham.module = (function($) {
 
     startApp = function() {
         app_started = true;
-
-        listening.css('background-color', 'green');
-
+        mic.css({opacity: 1});
         console.log('app started');
     };
 
@@ -280,18 +297,177 @@ projectham.module = (function($) {
         $(".add-filter").trigger('click');
     };
 
+    showAlternativeInfo = function() {
+        var chrome = $("#chrome");
+        var not_chrome = $("#not-chrome");
+        chrome.css({
+            opacity: 0.15
+        });
+
+        not_chrome.show();
+    };
+
+    initAudioContext = function() {
+        audioContext = new AudioContext();
+        console.log("audio is starting up ...");
+        BUFF_SIZE = 16384;
+        if (!navigator.getUserMedia) navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+        if (navigator.getUserMedia) {
+            navigator.getUserMedia(
+                {audio: true},
+                function (stream) {
+                    start_microphone(stream);
+                }, function (e) {
+                    alert('Error capturing audio.');
+                });
+        } else {
+            alert('getUserMedia not supported in this browser.');
+        }
+
+        var twoPi = 2 * Math.PI;
+        var objectsCount = 32;
+        var radius = 25;
+        var j = 0;
+        for (var k = 0; k < objectsCount; k++) {
+            $("#bars").append("<div class='bar'></div>");
+        }
+
+        bars = $(".bar");
+        var change = twoPi / objectsCount;
+        for (var i = -Math.PI; i < Math.PI; i += change) {
+            var x = radius * Math.cos(i);
+            var y = radius * Math.sin(i);
+
+            // rotation of object in radians 
+            var rotation = i;
+            bars.eq(j).css({
+                transform: "rotate(" + (rotation - 1.5707963267949) + "rad)",
+                left: x,
+                top: y
+            });
+
+            j++;
+        }
+    };
+
+    function process_microphone_buffer(event) {  // PCM audio data in time domain
+        var i, N, inp, microphone_output_buffer;
+
+        microphone_output_buffer = event.inputBuffer.getChannelData(0); // just mono - 1 channel for now
+    }
+
+    function start_microphone(stream){
+        gain_node = audioContext.createGain();
+        gain_node.connect( audioContext.destination );
+
+        microphone_stream = audioContext.createMediaStreamSource(stream);
+        //microphone_stream.connect(gain_node); // comment out to disconnect output speakers
+        // ... everything else will work OK this
+        // eliminates possibility of feedback squealing
+        // or leave it in and turn down the volume
+
+        script_processor_node = audioContext.createScriptProcessor(BUFF_SIZE, 1, 1);
+        script_processor_node.onaudioprocess = process_microphone_buffer; // callback
+
+        microphone_stream.connect(script_processor_node);
+
+        // --- setup FFT
+
+        script_processor_fft_node = audioContext.createScriptProcessor(2048, 1, 1);
+        script_processor_fft_node.connect(gain_node);
+
+        analyserNode = audioContext.createAnalyser();
+        analyserNode.smoothingTimeConstant = 0;
+        analyserNode.fftSize = 2048;
+
+        microphone_stream.connect(analyserNode);
+
+        analyserNode.connect(script_processor_fft_node);
+
+        script_processor_fft_node.onaudioprocess = function() { // FFT in frequency domain
+            // get the average for the first channel
+            var fft_array = new Uint8Array(analyserNode.frequencyBinCount);
+            analyserNode.getByteFrequencyData(fft_array);
+
+            if(app_started) drawSpectrum(fft_array);
+        }
+    }
+
+    function stop_microphone() {
+        script_processor_fft_node.onaudioprocess = function() {}
+    }
+
+    function drawSpectrum(array) {
+        var bars = $(".bar");
+        for(var i = 0; i < (array.length / 2); i++) {
+            var value = array[i] / 4 > 8 ? array[i] / 4 : 0;
+
+            if(i < 16) bars.eq(0).css({height: value+"px"});
+            else if(i < 32) bars.eq(1).css({height: value+"px"});
+            else if(i < 48) bars.eq(2).css({height: value+"px"});
+            else if(i < 64) bars.eq(3).css({height: value+"px"});
+            else if(i < 80) bars.eq(4).css({height: value+"px"});
+            else if(i < 96) bars.eq(5).css({height: value+"px"});
+            else if(i < 112) bars.eq(6).css({height: value+"px"});
+            else if(i < 128) bars.eq(7).css({height: value+"px"});
+            else if(i < 144) bars.eq(8).css({height: value+"px"});
+            else if(i < 160) bars.eq(9).css({height: value+"px"});
+            else if(i < 186) bars.eq(10).css({height: value+"px"});
+            else if(i < 192) bars.eq(11).css({height: value+"px"});
+            else if(i < 208) bars.eq(12).css({height: value+"px"});
+            else if(i < 224) bars.eq(13).css({height: value+"px"});
+            else if(i < 240) bars.eq(14).css({height: value+"px"});
+            else if(i < 256) bars.eq(15).css({height: value+"px"});
+            else if(i < 272) bars.eq(16).css({height: value+"px"});
+            else if(i < 288) bars.eq(17).css({height: value+"px"});
+            else if(i < 304) bars.eq(18).css({height: value+"px"});
+            else if(i < 320) bars.eq(19).css({height: value+"px"});
+            else if(i < 336) bars.eq(20).css({height: value+"px"});
+            else if(i < 352) bars.eq(21).css({height: value+"px"});
+            else if(i < 368) bars.eq(22).css({height: value+"px"});
+            else if(i < 384) bars.eq(23).css({height: value+"px"});
+            else if(i < 400) bars.eq(24).css({height: value+"px"});
+            else if(i < 416) bars.eq(25).css({height: value+"px"});
+            else if(i < 432) bars.eq(26).css({height: value+"px"});
+            else if(i < 448) bars.eq(27).css({height: value+"px"});
+            else if(i < 466) bars.eq(28).css({height: value+"px"});
+            else if(i < 480) bars.eq(29).css({height: value+"px"});
+            else if(i < 496) bars.eq(30).css({height: value+"px"});
+            else if(i < 512) bars.eq(31).css({height: value+"px"});
+        }
+    }
+
+    toggleAudioFunc = function() {
+        if(app_started) {
+            stopApp();
+        } else {
+            startApp();
+        }
+    };
+
+    stopApp = function() {
+        bars.css({height: '0'});
+        app_started = false;
+        $('#final_span').html('');
+        $('#interim_span').html('');
+        mic.css({opacity: 0.5})
+    };
+
     init = function() {
-        appStarted = false;
         restart = true;
 
         appView = new projectham.AppView();
 
         console.log(appView);
 
-        box = $('.move');
-        listening = $('#listening');
-
-        initRecognition();
+        if(/chrome/.test(navigator.userAgent.toLowerCase())) {
+            initRecognition();
+            initAudioContext();
+            mic = $("#mic");
+            mic.on('click', toggleAudioFunc);
+        } else {
+            showAlternativeInfo();
+        }
 
         //------- benni starts here --------
         gv = new projectham.GlobeView();
@@ -373,7 +549,7 @@ projectham.module = (function($) {
         },*/
 
         'start_app': {
-            'correct': 'listen',
+            'correct': 'app started',
             'function': startApp,
             'has_parameters': false,
             'possibilities': {
@@ -488,6 +664,15 @@ projectham.module = (function($) {
             'has_parameters': false,
             'possibilities': {
                 0: 'stop stream'
+            }
+        },
+
+        'stop_listening': {
+            'correct': 'stop listening',
+            'function': stopApp,
+            'has_parameters': false,
+            'possibilities': {
+                0: 'stop listening'
             }
         }
     };

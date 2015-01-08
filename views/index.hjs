@@ -39,7 +39,7 @@
 </header>
 <main>
     <div id="filter-box" class="main-box">
-        <img src="img/ui/hashtag.png" alt="Hashtag" class="ui-img">
+        <p class="ui-img">&#xe600;</p>
         <h2>Filter By</h2>
 
         <div id="filters" class="on-stream-started table"></div>
@@ -136,20 +136,28 @@
     <div id="globe"></div>
 
     <div id="web-speech-box" class="main-box">
-        <div id="results">
-            <span class="final" id="final_span"></span>
-            <span class="interim" id="interim_span"></span>
-        </div>
-        <img src="img/ui/mic.png" alt="Mic" class="ui-img">
-        <h2>That's what you said</h2>
-        <!--<div id="listening"></div>-->
-        <ul id="commands">
-            <li>Say "listen" to start the speech recognition</li>
-        </ul>
+        <div id="chrome">
+            <div id="results">
+                <span class="final" id="final_span"></span>
+                <span class="interim" id="interim_span"></span>
+            </div>
 
-        <div class="more-info">
-            <p>This Web Experience uses Speech Recognition.</p>
-            <p><a href="#" id="open-web-speech-info-box">Learn more</a></p>
+            <div id="bars"></div>
+
+            <p class="ui-img" id="mic">&#xe601;</p>
+            <h2>That's what you said</h2>
+            <!--<div id="listening"></div>-->
+            <ul id="commands">
+                <li>Say "listen" to start the speech recognition</li>
+            </ul>
+
+            <div class="more-info">
+                <p>This Web Experience uses Speech Recognition.</p>
+                <p><a href="#" id="open-web-speech-info-box">Learn more</a></p>
+            </div>
+        </div>
+        <div id="not-chrome">
+            <p>Your browser does not support speech recognition. Switch to <a href="https://www.google.de/chrome/browser/desktop/">Google Chrome</a> to enjoy the full experience of Project Ham!</p>
         </div>
     </div>
 
