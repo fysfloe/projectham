@@ -37,6 +37,7 @@ projectham.module = (function($) {
         stopApp,
         convertToInt,
         isInt,
+        recognition,
 
         startApp,
         move,
@@ -64,7 +65,7 @@ projectham.module = (function($) {
         var recognizing = false;
         var ignore_onend = true;
         var start_timestamp;
-        var recognition = new webkitSpeechRecognition();
+        recognition = new webkitSpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
 
@@ -155,8 +156,10 @@ projectham.module = (function($) {
                     executeCommand(matched_command);
                     setMicColor('green');
                 } else {
-                    if(app_started) appView.saveCommand(final_transcript);
-                    setMicColor('red');
+                    if(app_started) {
+                        appView.saveCommand(final_transcript);
+                        setMicColor('red');
+                    }
                 }
 
                 final_transcript = '';
@@ -243,7 +246,18 @@ projectham.module = (function($) {
     startApp = function() {
         app_started = true;
         mic.css({opacity: 1});
+        aborted = false;
+        final_transcript = '';
         console.log('app started');
+    };
+
+    stopApp = function() {
+        bars.css({height: '0'});
+        app_started = false;
+        $('#final_span').html('');
+        $('#interim_span').html('');
+        final_transcript = null;
+        mic.css({opacity: 0.5})
     };
 
     rotate = function(parameters) {
@@ -518,14 +532,6 @@ projectham.module = (function($) {
         } else {
             startApp();
         }
-    };
-
-    stopApp = function() {
-        bars.css({height: '0'});
-        app_started = false;
-        $('#final_span').html('');
-        $('#interim_span').html('');
-        mic.css({opacity: 0.5})
     };
 
     seperateView = function(parameters) {
