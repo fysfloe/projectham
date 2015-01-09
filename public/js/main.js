@@ -532,7 +532,7 @@ projectham.module = (function($) {
             console.log(item, loaded, total);
         };
 
-        $(renderContainer).append(gv.render({
+        $(renderContainer).prepend(gv.render({
             width: $('#globe').innerWidth(),
             height: $('#globe').innerHeight(),
             mapSrc: 'img/world_map.png',

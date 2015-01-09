@@ -4,7 +4,6 @@
 var projectham = projectham || {};
 
 projectham.GlobeView = Backbone.View.extend({
-
     /*
      INIT
      */
@@ -165,7 +164,8 @@ projectham.GlobeView = Backbone.View.extend({
         if (window.WebGlRenderingContext || document.createElement('canvas').getContext('experimental-webgl')) {
             this.renderer = new THREE.WebGLRenderer({
                 antialias: false,
-                sortObjects: true
+                sortObjects: true,
+                preserveDrawingBuffer: true
             });
         } else {
             this.renderer = new THREE.CanvasRenderer();
@@ -441,6 +441,83 @@ projectham.GlobeView = Backbone.View.extend({
 
     },
 
+    generateScreenshot: function () {
+        //var canvas = $('#globe canvas');
+        var img = new Image(),
+            canvas = document.createElement('canvas'),
+            filter1 = new Image(),
+            filter2 = new Image(),
+            filter3 = new Image(),
+            fLength = 12,
+            _this = this;
+
+        filter1.src = './img/ui/colors/blue.png';
+        filter2.src = './img/ui/colors/orange.png';
+        filter3.src = './img/ui/colors/green.png';
+
+
+        img.src = _this.renderer.domElement.toDataURL("image/png");
+
+        canvas.width = 1024;
+        canvas.height = 768;
+
+        var newWidth = img.width * (canvas.height/img.height);
+
+        var context = canvas.getContext('2d');
+        context.fillRect(0,0,canvas.width, canvas.height);
+        context.drawImage(img, 0, 0, img.width,    img.height, (canvas.width - newWidth) / 2, 0, newWidth, canvas.height);  // destination rectangle
+
+        if(this.filters._0){
+            context.drawImage(filter1, 0, 0, filter1.width, filter1.width, 30, 645, 68, 68);  // destination rectangle
+            context.fillStyle = "white";
+            context.font = "normal normal 300 16px 'Bebas Neue'";
+            context.textAlign="center";
+
+            context.fillText(this.filters._0.name.length <= 14 ? this.filters._0.name : this.filters._0.name.substring(0, fLength) + "...", 64, 735);
+
+            if(this.filters._1){
+                context.drawImage(filter2, 0, 0, filter2.width, filter2.width, 116, 645, 68, 68);  // destination rectangle
+                context.fillText(this.filters._1.name.length <= 14 ? this.filters._1.name : this.filters._1.name.substring(0, fLength) + "...", 150, 735);
+
+                if(this.filters._2){
+                    context.drawImage(filter3, 0, 0, filter3.width, filter3.width, 202, 645, 68, 68);  // destination rectangle
+                    context.fillText(this.filters._2.name.length <= 14 ? this.filters._2.name : this.filters._2.name.substring(0, fLength) + "...", 236, 735);
+
+                }
+            }
+        }
+
+        context.font = "normal normal 300 16px 'Bebas Neue'";
+        context.textAlign="end";
+        context.fillStyle = "white";
+
+        context.fillText("total", 829, 735);
+        context.fillText("retweets", 909, 735);
+        context.fillText("Replies", 994, 735);
+
+        // DRAW STATS
+        context.fillStyle = "#0084B4";
+        context.font = "normal normal 300 40px 'Bebas Neue'";
+
+        context.fillText($('#overall').text(), 829, 713);
+        context.fillText($('#retweets').text(), 909, 713);
+        context.fillText($('#replies').text(), 994, 713);
+
+        // DRAW HEADING
+        context.fillStyle = "white";
+        context.textAlign="start";
+        context.font = "normal normal 600 37px 'Bebas Neue'";
+        context.fillText("Project Ham", 221, 64);
+
+        context.fillStyle = "#0084B4";
+        context.font = "normal normal 300 37px 'Bebas Neue'";
+        context.fillText("My Twitter Live Stream Experience", 388, 64);
+
+
+
+        this.controls.enabled = true;
+        console.log(canvas.toDataURL());
+    },
 
     /*
      EVENT BUS HANDLER
@@ -469,6 +546,14 @@ projectham.GlobeView = Backbone.View.extend({
 
         eventBus.on("zoom", function (dir) {
             _this.controls.zoom(dir, 0.03);
+        });
+
+        eventBus.on("takeScreenshot", function () {
+            _this.zoomOutToOrigin(function(){
+                _this.controls.enabled = false;
+                _this.generateScreenshot();
+            });
+
         });
 
         eventBus.on("scale", function () {
@@ -980,6 +1065,13 @@ projectham.GlobeView = Backbone.View.extend({
 
     },
 
+    zoomOutToOrigin: function(callback){
+        this.controls.zoom('reset', 0.03);
+        $("#overlay").addClass('flash');
+        setTimeout(function(){ $("#overlay").removeClass('flash') }, 400);
+        callback && setTimeout(function(){callback()}, 500);
+    },
+
 
     /*
      HELPER METHODS
@@ -1016,6 +1108,21 @@ projectham.GlobeView = Backbone.View.extend({
 
         return axis;
 
+    },
+
+    scaleSize: function (maxW, maxH, currW, currH) {
+
+        var ratio = currH / currW;
+
+        if (currW >= maxW && ratio <= 1) {
+            currW = maxW;
+            currH = currW * ratio;
+        } else if (currH >= maxH) {
+            currH = maxH;
+            currW = currH / ratio;
+        }
+
+        return [currW, currH];
     },
 
 

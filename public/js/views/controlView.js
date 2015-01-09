@@ -18,6 +18,7 @@ projectham.ControlView = Backbone.View.extend({
         "click #change": 'changeView',
         "click #fadeIn": 'fadeIn',
         "click #fadeOut": 'fadeOut',
+        "click #screenshot": 'screenshot',
         "keypress #searchField": 'detectEnter'
     },
 
@@ -78,6 +79,10 @@ projectham.ControlView = Backbone.View.extend({
 
     fadeOut: function () {
         eventBus.trigger('toggleVisibility', 1);
+    },
+
+    screenshot: function () {
+        eventBus.trigger('takeScreenshot');
     }
 
 });

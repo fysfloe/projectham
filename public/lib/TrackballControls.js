@@ -31,7 +31,7 @@ THREE.TrackballControls = function (object, domElement, viewObject) {
     this.dynamicDampingFactor = 0.2;
 
     this.minDistance = 7;
-    this.maxDistance = 25;
+    this.maxDistance = 20;
 
     this.keys = [65 /*A*/, 83 /*S*/, 68 /*D*/];
 
@@ -310,6 +310,9 @@ THREE.TrackballControls = function (object, domElement, viewObject) {
             _zoomStart.y += 3 * level;
         } else if (direction.toLowerCase() == 'out') {
             _zoomStart.y -= 3 * level;
+        } else if(direction.toLowerCase() == 'reset'){
+            _this.object.position.setLength(15);
+
         } else {
             console.log("No direction given");
         }
