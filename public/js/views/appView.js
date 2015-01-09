@@ -209,6 +209,7 @@ projectham.AppView = Backbone.View.extend({
             this.preFilterList.hide();
             this.addPreFilterButton.hide();
             this.trends.hide();
+            this.filterInputDiv.hide();
 
             if (!this.socket) {
                 this.socket = io.connect('http://localhost:3001/');
