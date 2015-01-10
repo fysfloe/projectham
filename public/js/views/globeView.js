@@ -513,10 +513,17 @@ projectham.GlobeView = Backbone.View.extend({
         context.font = "normal normal 300 37px 'Bebas Neue'";
         context.fillText("My Twitter Live Stream Experience", 388, 64);
 
-
-
         this.controls.enabled = true;
-        console.log(canvas.toDataURL());
+
+        var filename = Math.floor(Date.now() / 1000) + "_" + (Math.floor(Math.random() * 1000)).toString().hashCode() + ".png";
+
+        $.post( 'save-image/' + filename, {
+            base64: canvas.toDataURL('image/png')
+        }, function(success) {
+            alert(success);
+        }).fail(function() {
+            alert( 'An error occurred.' );
+        });
     },
 
     /*
@@ -1209,6 +1216,15 @@ projectham.GlobeView = Backbone.View.extend({
                 break;
         }
     }
-
-
 });
+
+String.prototype.hashCode = function() {
+    var hash = 0;
+    if (this.length == 0) return hash;
+    for (i = 0; i < this.length; i++) {
+        char = this.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+};
