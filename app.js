@@ -23,6 +23,7 @@ var trends = require('./routes/trends');
 // DB
 var monk = require('monk');
 var db = monk('localhost:27017/projectham');
+//var db = monk('mongodb://projham_mongoadmin:twacoosDo@localhost:20870/projectham?authSource=admin'); todo: use for production on uberspace
 
 var twit;
 
@@ -68,17 +69,7 @@ var app = express();
 
 // all environments
 app.set('views', __dirname + '/views');
-app.set('origins', 'http://localhost:*');
 app.set('view engine', 'hjs');
-
-// Add headers
-app.use(function (req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    next();
-});
 
 //app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));

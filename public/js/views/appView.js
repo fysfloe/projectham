@@ -19,7 +19,6 @@ projectham.AppView = Backbone.View.extend({
 
     placeHolder: '<div class="table-cell add-filter"><figure><figcaption>Add Filter</figcaption><img src="img/ui/plus.png" alt="Plus"></figure></div>',
 
-
     initialize: function () {
 
         this.filterCount = 0;
@@ -212,6 +211,7 @@ projectham.AppView = Backbone.View.extend({
 
             if (!this.socket) {
                 this.socket = io.connect('http://localhost:3001/');
+                //this.socket = io.connect('http://185.26.156.28:64720/'); todo: use for production on uberspace
                 window.socket = this.socket;
             }
 
@@ -579,7 +579,7 @@ projectham.AppView = Backbone.View.extend({
         var tds = $('table#trends td:last-child span');
         var i = 0;
 
-        $.get("data/trends_example_formatted.json", function (data) {
+        $.get("/trends", function (data) {
             var trends = data[data.length - 1].trends[0].trends;
 
             tds.each(function () {
