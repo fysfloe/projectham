@@ -3,15 +3,44 @@ var express = require('express'),
     twitter = require('twitter'),
     request = require("request"),
     geocoder = require("node-geocoder"),
-    debug = require('debug')('project_ham');
+    debug = require('debug')('project_ham'),
+    fs = require('fs'),
+    sys = require('sys'),
+    path = require('path');
 
 var io = require('socket.io').listen(3001, {log: false});
-io.set('origins', 'http://localhost:*');
+//var io = require('socket.io').listen(64720, {log: false}); todo: use for production on uberspace
 
 var twit,
     currentStream,
     clients = [],
     filters = [];
+
+router.post('/save-image/:filename', function(req, res) {
+
+    try {
+
+        var savePath = path.join(__dirname, '../public/uploads/');
+
+        try {
+            fs.mkdirSync(savePath);
+        } catch(e) {
+            if ( e.code != 'EEXIST' ) throw e;
+        }
+
+        // strip off the data: url prefix to get just the base64-encoded bytes
+        var data = req.body.base64.replace(/^data:image\/\w+;base64,/, "");
+        var buf = new Buffer(data, 'base64');
+        fs.writeFile(savePath + req.params.filename, buf);
+
+        res.writeHead(200, {'Content-Type': 'text/plain'});
+        res.end('success');
+
+    } catch(e) {
+        res.writeHead(500, {'Content-Type': 'text/plain'});
+        res.end('error');
+    }
+});
 
 router.get('/', function(req, res) {
 
@@ -118,7 +147,7 @@ io.sockets.on('connection', function (socket) {
 
             socket.disconnect();
         }
-    })
+    });
 });
 
 var resetCounters = function() {

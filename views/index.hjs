@@ -4,6 +4,7 @@
     <title>{{ title }}</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="style.css" type="text/css">
+    <link rel="stylesheet" href="bennystyle.css" type="text/css">
 
     <script src="lib/socket.io.js"></script>
     <script src="lib/underscore-min.js"></script>
@@ -103,6 +104,7 @@
         </div>
 
         <button id="stop-stream" class="ui-bg-color on-stream-started">Stop Stream</button>
+        <button id="screenshot" class="ui-bg-color">Take screenshot</button>
 
         <table id="trends">
             <h3>Current Trends</h3>
@@ -133,7 +135,9 @@
             <p><a href="#" id="open-twitter-info-box">Learn more</a></p>
         </div>
     </div>
-    <div id="globe"></div>
+    <div id="globe">
+        <div id="overlay"></div>
+    </div>
 
     <div id="web-speech-box" class="main-box">
         <div id="chrome">
@@ -203,7 +207,7 @@
 <script src="js/views/appView.js"></script>
 <script src="js/main.js"></script>
 
-<!-- ---------------- Custom Shader Code ------------------------ -->
+<!------------------ Custom Shader Code -------------------------->
 <script id="vertexShader" type="x-shader/x-vertex">
 uniform vec3 viewVector;
 uniform float c;
