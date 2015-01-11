@@ -261,7 +261,7 @@ projectham.module = (function($) {
     };
 
     rotate = function(parameters) {
-        var direction = parameters[1];
+        var direction = parameters[0];
 
         cv.rotateGlobe(direction);
     };
@@ -284,7 +284,7 @@ projectham.module = (function($) {
     };
 
     zoom = function(parameters) {
-        var direction = parameters[1];
+        var direction = parameters[0];
 
         cv.zoom(direction);
     };
