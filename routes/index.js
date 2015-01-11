@@ -54,14 +54,16 @@ router.get('/', function(req, res) {
         try {
             userCollection.findOne({ ip: ip }).on('success', function(doc) { // check if IP already exists
                 if(!doc) {
-                    require("node-geocoder").getGeocoder('freegeoip', 'http').geocode(ip, function(err, geores) {
-                        console.log(geores);
-                        if(!err && geores) {
-                            userCollection.insert({ip: ip, lat: geores[0].latitude, lng: geores[0].longitude, date: new Date().toLocaleString()})
+                    request('http://www.telize.com/geoip/' + ip, function (error, response, body) {
+                        if (!error && response.statusCode == 200) {
+                            body = JSON.parse(body);
+                            body.datetime = new Date().toUTCString();
+                            userCollection.insert(body);
                         } else {
-                            console.log(err);
+                            console.log(error);
                         }
                     });
+
                 } else {
                     console.log("IP already exists:", doc);
                 }
