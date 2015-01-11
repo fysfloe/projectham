@@ -44,9 +44,9 @@ projectham.GlobeView = Backbone.View.extend({
         //this.camera.lookAt(new THREE.Vector3(10.443329520636075, 10.010497358953545, 4.0173981090580995));
         this.camera.position.set(10.443329520636075, 10.010497358953545, -4.0173981090580995);
 
+        //this.ambientLight = new THREE.AmbientLight(0x090c10);
+        this.ambientLight = new THREE.AmbientLight(0x1a232f); // TODO Mac Display
 
-        this.ambientLight = new THREE.AmbientLight(0x090c10);
-        //this.ambientLight = new THREE.AmbientLight(0x333333);
         this.scene.add(this.ambientLight);
 
         this.spotLight = new THREE.SpotLight(0xffffff, 7);
@@ -104,7 +104,8 @@ projectham.GlobeView = Backbone.View.extend({
                 uniforms: {
                     "c": {type: "f", value: 0.4},
                     "p": {type: "f", value: 6.0},
-                    glowColor: {type: "c", value: new THREE.Color(0x5ea9e6)},
+                    //  glowColor: {type: "c", value: new THREE.Color(0x5ea9e6)},
+                    glowColor: {type: "c", value: new THREE.Color(0x68bbff)}, // TODO Mac Display
                     viewVector: {type: "v3", value: this.camera.position}
                 },
                 vertexShader: document.getElementById('vertexShader').textContent,
@@ -119,7 +120,8 @@ projectham.GlobeView = Backbone.View.extend({
                 uniforms: {
                     "c": {type: "f", value: 1.0},
                     "p": {type: "f", value: 3.5},
-                    glowColor: {type: "c", value: new THREE.Color(0x5ea9e6)},
+                    //  glowColor: {type: "c", value: new THREE.Color(0x5ea9e6)},
+                    glowColor: {type: "c", value: new THREE.Color(0x68bbff)}, // TODO Mac Display
                     viewVector: {type: "v3", value: this.camera.position}
                 },
                 vertexShader: document.getElementById('vertexShader').textContent,
@@ -147,7 +149,8 @@ projectham.GlobeView = Backbone.View.extend({
         this.spaceSphere = new THREE.Mesh(
             new THREE.SphereGeometry(1000, 64, 64),
             new THREE.MeshBasicMaterial({
-                color: 0x333333,
+                // color: 0x333333,
+                color: 0x555555,
                 map: this.BGtexture,
                 side: THREE.BackSide,
                 transparent: false,
