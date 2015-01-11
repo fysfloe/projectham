@@ -17,9 +17,10 @@ projectham.module = (function($) {
         ignore_onend,
         restart,
         mic,
+        fullscreenButton,
+        toolButton,
         final_transcript,
 
-        commands,
         app_started,
 
         // benni starts here
@@ -36,6 +37,7 @@ projectham.module = (function($) {
         stopApp,
         convertToInt,
         isInt,
+        recognition,
 
         startApp,
         move,
@@ -48,14 +50,22 @@ projectham.module = (function($) {
         addFilter,
         startStream,
         stopStream,
-        addTrend;
+        addTrend,
+        seperateView,
+        endSeperateView,
+        showFilter,
+        hideFilter,
+        fullscreen,
+        exitFullscreen,
+        showTools,
+        hideTools;
 
     initRecognition = function() {
         final_transcript = '';
         var recognizing = false;
         var ignore_onend = true;
         var start_timestamp;
-        var recognition = new webkitSpeechRecognition();
+        recognition = new webkitSpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
 
@@ -86,6 +96,8 @@ projectham.module = (function($) {
 
         recognition.onend = function() {
             console.log('ended');
+
+            mic.css('opacity', 0.5);
 
             app_started = false;
 
@@ -122,7 +134,7 @@ projectham.module = (function($) {
                 if (event.results[i].isFinal) {
                     final_transcript = (event.results[i][0].transcript).trim();
                 } else {
-                    interim_transcript = event.results[i][0].transcript;
+                    interim_transcript += event.results[i][0].transcript;
                 }
             }
 
@@ -131,50 +143,24 @@ projectham.module = (function($) {
                 interim_span.innerHTML = interim_transcript;
             }
 
-            if(final_transcript) {
+            if(final_transcript) {  // when recognition is final
                 var matched_command = matchCommand(final_transcript);
 
-                if(matched_command) {
-                    if(matched_command.string_array) {
-                        var combined_command = matched_command.correct + " ";
-                        for(var k = matched_command.num_keywords; k < matched_command.string_array.length; k++) {
-                            if (!matched_command.string_array.hasOwnProperty(k)) continue;
-
-                            combined_command += matched_command.string_array[k] + " ";
-                        }
-
-                        if(app_started) appView.saveCommand(combined_command);
-
+                if(matched_command) {   // a command has been found within the commands object
+                    if(matched_command.has_parameters) {
+                        if(app_started) appView.saveCommand(matched_command.correct + " " + matched_command.parameters.join(' '));
                     } else {
                         if(app_started) appView.saveCommand(matched_command.correct);
                     }
 
-                    if(matched_command.has_parameters) {
-                        matched_command.parameters = {};
-                        for(var j = matched_command.num_keywords; j < matched_command.string_array.length; j++) {
-                            matched_command.parameters[j] = matched_command.string_array[j];
-                        }
-                        executeCommand(matched_command, matched_command.parameters);
-                    } else {
-                        executeCommand(matched_command);
-                    }
-
-                    mic.css("color", "green");
-
-                    setTimeout(function () {
-                        mic.css("color", "#0084b4");
-                    }, 500);
+                    executeCommand(matched_command);
+                    setMicColor('green');
                 } else {
-                    if(app_started) appView.saveCommand(final_transcript);
-
-                    mic.css("color", "darkred");
-
-                    setTimeout(function () {
-                        mic.css("color", "#0084b4");
-                    }, 500);
+                    if(app_started) {
+                        appView.saveCommand(final_transcript);
+                        setMicColor('red');
+                    }
                 }
-
-                interim_span.innerHTML = '';
 
                 final_transcript = '';
             }
@@ -192,50 +178,90 @@ projectham.module = (function($) {
         }
     };
 
-    executeCommand = function(command, parameters) {
-        command.function(parameters);
+    function setMicColor(color) {
+        mic.css('color', color);
+        setTimeout(function () {
+            mic.css("color", "#0084b4");
+        }, 500);
+    }
+
+    executeCommand = function(command) {
+        command.function(command.parameters);
     };
 
     matchCommand = function(command) {
         // if app has been started via command "ok ham", the commands will be devided into a keyword (first position of array) and parameters
         // the keyword has to be within the commands object
-        if(app_started) {
+        var string_array = command.split(' '),
+            keyword = [],
+            obj,
+            parameters;
 
-            var string_array = command.split(' ');
-            var keyword = string_array[0] + " " + string_array[1];
+        // fill the keyword array with the different possibilities, so that it looks like this ['this', 'this is', 'this is it']
+        for(var i = 0; i < maxKeyWordLength() && i < string_array.length; i++) {
+            if(i == 0) keyword[i] = string_array[i];
+            else keyword[i] = keyword[i-1] + " " + string_array[i];
+        }
 
-            console.log(string_array);
+        // search for the keywords in the commands object (beginning with the longest possibility 'this is it')
+        for(var j = keyword.length - 1; j >= 0; j--) {
+            obj = hasCommand(keyword[j]);
 
-            var obj = hasCommand(keyword);
-
-            if(!obj) {
-                keyword = string_array[0];
-                obj = hasCommand(keyword);
-                obj.num_keywords = 1;
-            } else {
-                obj.num_keywords = 2;
+            if(obj) {
+                if(j < string_array.length) obj.parameters = [];
+                for(var k = j+1; k < string_array.length; k++) {
+                    obj.parameters.push(string_array[k]);
+                }
+                break;
             }
-
-            obj.string_array = string_array;
-
-            //obj.string_array[0] = obj.correct;
-
-            return obj;
         }
-        // otherwise we are looking for the whole string in the commands array
-        else {
-            return hasCommand(command);
-        }
+
+        return obj;
     };
+
+    function hasCommand(value) {
+        for(var i in commands) {
+            if (!commands.hasOwnProperty(i)) continue;
+            for(var j in commands[i]) {
+                if (!commands[i].hasOwnProperty(j)) continue;
+
+                for(var k in commands[i].possibilities) {
+                    if (!commands[i].possibilities.hasOwnProperty(k)) continue;
+
+                    if(commands[i].possibilities[k] == value.toLowerCase()) {
+                        return {
+                            'correct': commands[i].correct,
+                            'function': commands[i].function,
+                            'has_parameters': commands[i].has_parameters
+                        };
+                    }
+                }
+
+            }
+        }
+
+        return false;
+    }
 
     startApp = function() {
         app_started = true;
         mic.css({opacity: 1});
+        aborted = false;
+        final_transcript = '';
         console.log('app started');
     };
 
+    stopApp = function() {
+        bars.css({height: '0'});
+        app_started = false;
+        $('#final_span').html('');
+        $('#interim_span').html('');
+        final_transcript = null;
+        mic.css({opacity: 0.5})
+    };
+
     rotate = function(parameters) {
-        var direction = parameters[1];
+        var direction = parameters[0];
 
         cv.rotateGlobe(direction);
     };
@@ -258,7 +284,7 @@ projectham.module = (function($) {
     };
 
     zoom = function(parameters) {
-        var direction = parameters[1];
+        var direction = parameters[0];
 
         cv.zoom(direction);
     };
@@ -266,12 +292,19 @@ projectham.module = (function($) {
     filterBy = function(parameters) {
         var filter = '';
 
-        for(var i in parameters) {
-            if (!parameters.hasOwnProperty(i)) continue;
-            filter += parameters[i] + " ";
-        }
+        console.log(parameters);
+        var possibilities = ['trend', 'trent'];
 
-        appView.filterInput.val(filter);
+        if(possibilities.indexOf(parameters[0].toLowerCase()) != -1) {
+            addTrend(parameters, true);
+        } else {
+            for(var i in parameters) {
+                if (!parameters.hasOwnProperty(i)) continue;
+                filter += parameters[i] + " ";
+            }
+
+            appView.filterInput.val(filter);
+        }
     };
 
     addPreFilter = function() {
@@ -294,12 +327,10 @@ projectham.module = (function($) {
         }
     };
 
-    addTrend = function(parameters) {
-        var trend = parameters[2];
+    addTrend = function(parameters, filterBy) {
+        var trend = parameters[1];
 
         trend = convertToInt(trend);
-
-        console.log(trend);
 
         if(trend) {
             $("table#trends tr:nth-child("+trend+") td:last-child").trigger('click');
@@ -308,30 +339,35 @@ projectham.module = (function($) {
 
     convertToInt = function(convert) {
         if(typeof convert == 'string' || convert instanceof String) {
-            console.log('string');
-
             switch(convert) {
                 case 'one':
+                case '1':
                     convert = 1;
                     break;
                 case 'two':
+                case '2':
                 case 'to':
                     convert = 2;
                     break;
                 case 'three':
+                case '3':
                     convert = 3;
                     break;
                 case 'four':
+                case '4':
                 case 'for':
                     convert = 4;
                     break;
                 case 'five':
+                case '5':
                     convert = 5;
                     break;
                 default:
                     break;
             }
         }
+
+        console.log(convert);
 
         convert = parseInt(convert);
 
@@ -498,12 +534,57 @@ projectham.module = (function($) {
         }
     };
 
-    stopApp = function() {
-        bars.css({height: '0'});
-        app_started = false;
-        $('#final_span').html('');
-        $('#interim_span').html('');
-        mic.css({opacity: 0.5})
+    seperateView = function(parameters) {
+        if(appView.state == 1) {
+            if(parameters.length < 1) return;
+
+            var filterNo = parameters[Object.keys(parameters)];
+            filterNo = convertToInt(filterNo);
+
+            console.log(parameters);
+            console.log(filterNo);
+
+            if(isInt(filterNo)) {
+                var filter = $('#filters .table-cell:nth-child('+filterNo+')');
+                filter.find('.sv-options .solo').trigger('click');
+            }
+        }
+    };
+
+    endSeperateView = function() {
+        $('.end-solo').trigger('click');
+    };
+
+    hideFilter = function(parameters) {
+        if(appView.state == 1) {
+            if(parameters.length < 1) return;
+
+            var filterNo = parameters[Object.keys(parameters)];
+            filterNo = convertToInt(filterNo);
+
+            if(isInt(filterNo)) {
+                var filter = $('#filters .table-cell:nth-child('+filterNo+')');
+                if(filter.find('figure').hasClass('visible')) {
+                    filter.find('.sv-options .visibility').trigger('click');
+                }
+            }
+        }
+    };
+
+    showFilter = function(parameters) {
+        if(appView.state == 1) {
+            if(parameters.length < 1) return;
+
+            var filterNo = parameters[Object.keys(parameters)];
+            filterNo = convertToInt(filterNo);
+
+            if(isInt(filterNo)) {
+                var filter = $('#filters .table-cell:nth-child('+filterNo+')');
+                if(!filter.find('figure').hasClass('visible')) {
+                    filter.find('.sv-options .visibility').trigger('click');
+                }
+            }
+        }
     };
 
     init = function() {
@@ -521,6 +602,9 @@ projectham.module = (function($) {
         } else {
             showAlternativeInfo();
         }
+
+        fullscreenButton = $('#fullscreen');
+        toolButton = $('#tools');
 
         //------- benni starts here --------
         gv = new projectham.GlobeView();
@@ -551,7 +635,34 @@ projectham.module = (function($) {
 
     };
 
-    function hasCommand(value) {
+    fullscreen = function() {
+        if(appView.fullscreenState == 0) {
+            fullscreenButton.trigger('click');
+        }
+    };
+
+    exitFullscreen = function() {
+        if(appView.fullscreenState == 1) {
+            fullscreenButton.trigger('click');
+        }
+    };
+
+    showTools = function() {
+        if(appView.sidebarState == 1) {
+            toolButton.trigger('click');
+        }
+    };
+
+    hideTools = function() {
+        if(appView.sidebarState == 0) {
+            toolButton.trigger('click');
+        }
+    };
+
+    function maxKeyWordLength() {
+        var curNum = 0,
+            num = 0;
+
         for(var i in commands) {
             if (!commands.hasOwnProperty(i)) continue;
             for(var j in commands[i]) {
@@ -560,19 +671,17 @@ projectham.module = (function($) {
                 for(var k in commands[i].possibilities) {
                     if (!commands[i].possibilities.hasOwnProperty(k)) continue;
 
-                    if(commands[i].possibilities[k] == value.toLowerCase()) {
-                        return {
-                            'correct': commands[i].correct,
-                            'function': commands[i].function,
-                            'has_parameters': commands[i].has_parameters
-                        };
+                    curNum = commands[i].possibilities[k].split(' ').length;
+
+                    if(curNum > num) {
+                        num = curNum;
                     }
                 }
 
             }
         }
 
-        return false;
+        return num;
     }
 
     /*
@@ -584,169 +693,260 @@ projectham.module = (function($) {
     ];
     */
 
-    commands = {
+    /**
+     * Created by floe on 09.01.15.
+     */
+
+    var commands = {
         /*'start_app': {
-            'correct': 'ok ham',
-            'function': startApp,
-            'has_parameters': false,
-            'possibilities': {
-                0: 'ok ham',
-                1: 'okay ham',
-                2: 'ok hand',
-                3: 'okay hand',
-                4: 'ok m',
-                5: 'okay m',
-                6: 'okay have',
-                7: 'ok have'
-            }
-        },*/
+         'correct': 'ok ham',
+         'function': startApp,
+         'has_parameters': false,
+         'possibilities': {
+         0: 'ok ham',
+         1: 'okay ham',
+         2: 'ok hand',
+         3: 'okay hand',
+         4: 'ok m',
+         5: 'okay m',
+         6: 'okay have',
+         7: 'ok have'
+         }
+         },*/
 
         'start_app': {
             'correct': 'app started',
             'function': startApp,
             'has_parameters': false,
-            'possibilities': {
-                0: 'listen',
-                1: 'yeah baby give me a listen',
-                2: 'yo listen',
-                3: 'yo listen up'
-            }
-        },
-
-        'move': {
-            'correct': 'move',
-            'function': move,
-            'has_parameters': true,
-            'possibilities': {
-                0: 'move',
-                1: 'mu',
-                2: ''
-            }
+            'possibilities': [
+                'listen',
+                'yeah baby give me a listen',
+                'yo listen',
+                'yo listen up'
+            ]
         },
 
         'rotate': {
             'correct': 'rotate',
             'function': rotate,
             'has_parameters': true,
-            'possibilities': {
-                0: 'rotate',
-                1: 'rot',
-                2: ''
-            }
+            'possibilities': [
+                'rotate',
+                'rot'
+            ]
         },
 
         'go_to': {
             'correct': 'go to',
             'function': goTo,
             'has_parameters': true,
-            'possibilities': {
-                0: 'go to',
-                1: 'show me',
-                2: 'jump to'
-            }
+            'possibilities': [
+                'go to',
+                'show me',
+                'jump to'
+            ]
         },
 
         'reset': {
             'correct': 'reset',
             'function': reset,
             'has_parameters': false,
-            'possibilities': {
-                0: 'reset'
-            }
+            'possibilities': [
+                'reset'
+            ]
         },
 
         'zoom': {
             'correct': 'zoom',
             'function': zoom,
             'has_parameters': true,
-            'possibilities': {
-                0: 'zoom'
-            }
+            'possibilities': [
+                'zoom'
+            ]
         },
 
         'filter_by': {
             'correct': 'filter by',
             'function': filterBy,
             'has_parameters': true,
-            'possibilities': {
-                0: 'filter by'
-            }
+            'possibilities': [
+                'filter by'
+            ]
         },
 
         'add_filter': {
             'correct': 'add filter',
             'function': addFilter,
             'has_parameters': false,
-            'possibilities': {
-                0: 'add filter',
-                1: 'and filter',
-                2: 'ad filter',
-                3: 'at filter',
-                4: 'ass filter',
-                5: 'new filter'
-            }
+            'possibilities': [
+                'add filter',
+                'and filter',
+                'ad filter',
+                'at filter',
+                'ass filter',
+                'new filter'
+            ]
         },
 
         'add_trend': {
             'correct': 'add trend',
             'function': addTrend,
             'has_parameters': true,
-            'possibilities': {
-                0: 'add trend',
-                1: 'at trend',
-                2: 'add trent',
-                3: 'at trent',
-                4: 'add friend',
-                5: 'at friend',
-                6: 'add friends',
-                7: 'at friends',
-                8: 'add trends',
-                9: 'at trends'
-            }
+            'possibilities': [
+                'add trend',
+                'at trend',
+                'add trent',
+                'at trent',
+                'add friend',
+                'at friend',
+                'add friends',
+                'at friends',
+                'add trends',
+                'at trends'
+            ]
         },
 
         'add_preFilter': {
             'correct': 'add',
             'function': addPreFilter,
             'has_parameters': false,
-            'possibilities': {
-                0: 'add',
-                1: 'and',
-                2: 'ad',
-                3: 'at',
-                4: 'ass',
-                5: 'plus'
-            }
+            'possibilities': [
+                'add',
+                'and',
+                'ad',
+                'at',
+                'ass',
+                'plus'
+            ]
         },
 
         'start_stream': {
             'correct': 'start stream',
             'function': startStream,
             'has_parameters': false,
-            'possibilities': {
-                0: 'start stream',
-                1: 'start',
-                2: 'startstream'
-            }
+            'possibilities': [
+                'start stream',
+                'startstream'
+            ]
         },
 
         'stop_stream': {
             'correct': 'stop stream',
             'function': stopStream,
             'has_parameters': false,
-            'possibilities': {
-                0: 'stop stream',
-                1: 'stopstream'
-            }
+            'possibilities': [
+                'stop stream',
+                'stopstream'
+            ]
         },
 
         'stop_listening': {
             'correct': 'stop listening',
             'function': stopApp,
             'has_parameters': false,
-            'possibilities': {
-                0: 'stop listening'
-            }
+            'possibilities': [
+                'stop listening'
+            ]
+        },
+
+        'solo': {
+            'correct': 'solo',
+            'function': seperateView,
+            'has_parameters': true,
+            'possibilities': [
+                'solo',
+                'solo filter',
+                'solo number',
+                'solo view',
+                'show only',
+                'show only filter',
+                'show only filter number'
+            ]
+        },
+
+        'end_solo': {
+            'correct': 'end solo',
+            'function': endSeperateView,
+            'has_parameters': true,
+            'possibilities': [
+                'end solo',
+                'and solo',
+                'quit solo',
+                'show all'
+            ]
+        },
+
+        'hide': {
+            'correct': 'hide',
+            'function': hideFilter,
+            'has_parameters': true,
+            'possibilities': [
+                'hide',
+                'hide filter',
+                'hide filter number',
+                'hide number'
+            ]
+        },
+
+        'show': {
+            'correct': 'show',
+            'function': showFilter,
+            'has_parameters': true,
+            'possibilities': [
+                'show',
+                'show filter',
+                'show filter number',
+                'show number'
+            ]
+        },
+
+        'fullscreen': {
+            'correct': 'fullscreen',
+            'function': fullscreen,
+            'has_parameters': false,
+            'possibilities': [
+                'fullscreen',
+                'full screen',
+                'go fullscreen',
+                'go full screen',
+                'start fullscreen',
+                'start full screen'
+            ]
+        },
+
+        'exit_fullscreen': {
+            'correct': 'exit fullscreen',
+            'function': exitFullscreen,
+            'has_parameters': false,
+            'possibilities': [
+                'exit fullscreen',
+                'exit full screen',
+                'stop fullscreen',
+                'stop full screen',
+                'end fullscreen',
+                'end full screen'
+            ]
+        },
+
+        'hide_tools': {
+            'correct': 'hide tools',
+            'function': hideTools,
+            'has_parameters': false,
+            'possibilities': [
+                'hide tools',
+                'hyde tools',
+                'height tools'
+            ]
+        },
+
+        'show_tools': {
+            'correct': 'show tools',
+            'function': showTools,
+            'has_parameters': false,
+            'possibilities': [
+                'show tools',
+                'show tunes'
+            ]
         }
     };
 

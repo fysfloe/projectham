@@ -205,6 +205,7 @@
 <script src="js/views/tweetView.js"></script>
 
 <script src="js/views/appView.js"></script>
+<script src="js/commands.js"></script>
 <script src="js/main.js"></script>
 
 <!------------------ Custom Shader Code -------------------------->
