@@ -75,6 +75,8 @@ var app = express();
 app.set('views', __dirname + '/views');
 app.set('view engine', 'hjs');
 
+app.enable('trust proxy');
+
 //app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
 app.use(bodyParser.json({limit: '5mb'}));
