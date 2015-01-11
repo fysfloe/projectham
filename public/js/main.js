@@ -415,7 +415,7 @@ projectham.module = (function($) {
 
         var twoPi = 2 * Math.PI;
         var objectsCount = 32;
-        var radius = 25;
+        var radius = 22;
         var j = 0;
         for (var k = 0; k < objectsCount; k++) {
             $("#bars").append("<div class='bar'></div>");

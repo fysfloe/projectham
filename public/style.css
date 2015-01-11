@@ -52,14 +52,13 @@ body, html, main {
     max-height: 100%;
     margin: 0;
     padding: 0;
-    font-family: "BebasNeue", "Helvetica Neue", Arial, sans-serif;
+    font-family: "Roboto", "Helvetica Neue", Arial, sans-serif;
     color: white;
     background: black;
     overflow: hidden;
-
-    /* Better Font Rendering =========== */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-size: 0.95em;
 }
 
 .clear {
@@ -93,7 +92,8 @@ body, html, main {
 }
 
 button, input, textarea {
-    font-family: "BebasNeue", "Helvetica Neue", Arial, sans-serif;
+    font-family: "Roboto", "Helvetica Neue", Arial, sans-serif;
+    border: none;
 }
 
 div {
@@ -123,8 +123,10 @@ input:focus, button:focus {
 }
 
 h3 {
+    font-family: "BebasNeue", "Roboto", "Helvetica Neue", Arial, sans-serif;
     margin: 2em 0 0.5em;
     color: #0084b4;
+    font-size: 1.4em;
 }
 
 /*************************************************
@@ -140,7 +142,8 @@ header {
 }
 
 header > h1 {
-    font-size: 2.3em;
+    font-family: 'BebasNeue', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 2.4em;
     font-weight: 600;
 }
 
@@ -168,9 +171,9 @@ button#tools:hover {
 }
 
 button#tools span {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
     font-weight: 400;
-    font-size: 0.7em;
+    font-size: 0.6em;
 }
 
 button#fullscreen {
@@ -197,14 +200,15 @@ button#fullscreen:hover {
 
 .main-box {
     position: absolute;
-    width: 16em;
+    width: 15em;
     z-index: 2;
     top: 36%;
     padding: 0 3em;
 }
 
 .main-box h2 {
-    font-size: 1.4em;
+    font-size: 1.6em;
+    font-family: "BebasNeue", "Roboto", "Helvetica Neue", Arial, sans-serif;
 }
 
 .ui-img {
@@ -303,32 +307,34 @@ button#fullscreen:hover {
     font-size: 2.5em;
 }
 
-#counts figure figcaption {
-    font-weight: 200;
-}
-
 input#i-add-filter {
     padding: 0.5em 0;
     border: 0;
     border-bottom: 1px solid white;
     background: none;
-    font-family: "BebasNeue", "Helvetica Neue", sans-serif;
-    min-width: 12em;
-    font-size: 1em;
+    font-family: "Roboto", "Helvetica Neue", sans-serif;
+    min-width: 15em;
     float: left;
     color: white;
+    font-size: 0.9em;
 }
 
 button#b-add-filter1, button#b-add-filter2 {
+    color: white;
     background: none;
-    border: none;
-    width: 4em;
-    display: block;
+    height: 2.8em;
     float: right;
+    opacity: 0.4;
+
+    transition: opacity 0.2s ease;
 }
 
-button#b-add-filter1 img, button#b-add-filter2 img {
-    width: 100%;
+button#b-add-filter1:hover, button#b-add-filter2:hover {
+    opacity: 1;
+}
+
+button#screenshot {
+    display: none;
 }
 
 div#err-msg {
@@ -337,12 +343,12 @@ div#err-msg {
     margin-top: 1em;
 }
 
-button#start-stream, button#stop-stream  {
+button#start-stream, button#stop-stream {
     display: block;
     border: none;
     background: #0084b4;
     color: white;
-    width: 12em;
+    width: 13.5em;
     margin: 1em 0;
     padding: 0.5em 0;
     font-size: 1em;
@@ -350,7 +356,9 @@ button#start-stream, button#stop-stream  {
 }
 
 div#counts {
-    margin-top: 3em;
+    margin-top: 2em;
+    font-family: "BebasNeue", "Roboto", "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.1em;
 }
 
 button#stop-stream {
@@ -432,7 +440,9 @@ div#filter-ratio div:nth-child(3) {
 
 table#trends {
     border-collapse: collapse;
-    width: 12em;
+    width: 100%;
+    font-size: 0.95em;
+    table-layout: fixed;
 }
 
 table#trends tr {
@@ -457,6 +467,7 @@ table#trends td {
 
 table#trends td:first-child {
     text-align: center;
+    width: 1em;
 }
 
 table#trends td:last-child:after {
@@ -464,14 +475,17 @@ table#trends td:last-child:after {
     float: right;
     opacity: 0.4;
     margin-right: 0.3em;
+    margin-top: 0.1em;
 
     transition: opacity 0.2s ease;
 }
 
 table#trends td:last-child span {
-    max-width: 8em;
+    max-width: 11em;
     overflow: hidden;
-    display: inline-flex;
+    display: inline-block;
+    text-overflow: ellipsis;
+    margin-top: 0.1em;
 }
 
 #filters .table-cell:not(.add-filter):hover .sv-options {
@@ -567,6 +581,7 @@ table#trends td:last-child span {
 #commands {
     list-style: none;
     padding-left: 2em;
+    font-size: 0.95em;
 }
 
 #commands li:nth-child(2) {

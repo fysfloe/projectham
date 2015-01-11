@@ -73,8 +73,8 @@
 
         <div id="filter-input-div">
             <input type="text" name="i-add-filter" id="i-add-filter" placeholder='Type your filter or say "filter by"'>
-            <button id="b-add-filter1"><img src="img/ui/plus_circle.png" alt="+"></button>
-            <button id="b-add-filter2" class="on-stream-started"><img src="img/ui/plus_circle.png" alt="+"></button>
+            <button id="b-add-filter1">+</button>
+            <button id="b-add-filter2" class="on-stream-started">+</button>
             <div id="err-msg" class="clear"></div>
         </div>
 
