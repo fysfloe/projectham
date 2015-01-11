@@ -25,6 +25,9 @@ var monk = require('monk');
 var db = monk('localhost:27017/projectham');
 //var db = monk('mongodb://projham_mongoadmin:twacoosDo@localhost:20870/projectham?authSource=admin'); todo: use for production on uberspace
 
+var trendsCollection = db.get('trendslist'); // get trends collection
+trendsCollection.ensureIndex( { datetime: 1 }, { expireAfterSeconds: 2400 });
+
 var twit;
 
 var CronJob = require('cron').CronJob;
@@ -32,8 +35,6 @@ var job = new CronJob({
     cronTime: '00 */10 * * * *',
     onTick: function() {
         // Run the job
-
-        var trendsCollection = db.get('trendslist'); // get trends collection
 
         if(!twit) {
             twit = new twitter({
@@ -49,7 +50,10 @@ var job = new CronJob({
             twit.get('/trends/place.json', {id: 1}, function(data, res) {
                 try {
                     if(res.statusCode == 200) {
-                        trendsCollection.insert({trends: data, datetime: new Date().toUTCString()});
+                        trendsCollection.insert({
+                            trends: data,
+                            datetime: new Date()
+                        });
                         console.log("Just got the latest trends from twitter.");
                     }
                 } catch(e) {
