@@ -29,7 +29,7 @@ projectham.AppView = Backbone.View.extend({
 
         localStorage.clear();
 
-        this.trends = $('#trends');
+        this.trends = $('#trends, #trends-heading');
         this.trends.show();
 
         this.fullscreenButton = $('#fullscreen');
@@ -291,6 +291,7 @@ projectham.AppView = Backbone.View.extend({
     },
 
     stopStream: function () {
+        this.filterBoxH2.html('Filtered by');
         this.socket.emit('close');
         this.socket = null;
 
@@ -499,7 +500,7 @@ projectham.AppView = Backbone.View.extend({
             });
 
             this.sidebarState = 1;
-            this.toolsButton.find('span').html('Show Tools');
+            this.toolsButton.find('span').html('Show Controls');
 
         } else if (this.sidebarState == 1) {
             this.filterBox.animate({
@@ -518,7 +519,7 @@ projectham.AppView = Backbone.View.extend({
             });
 
             this.sidebarState = 0;
-            this.toolsButton.find('span').html('Hide Tools');
+            this.toolsButton.find('span').html('Hide Controls');
         }
     },
 

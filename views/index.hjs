@@ -34,7 +34,7 @@
 </head>
 <body>
 <header>
-    <button id="tools">&#xe602; <span>Hide Tools</span></button>
+    <button id="tools">&#xe602; <span>Hide Controls</span></button>
     <h1>Project Ham <span>A Twitter Live Stream Web Experience</span></h1>
     <button id="fullscreen">&#xe601;</button>
 </header>
@@ -106,8 +106,8 @@
         <button id="stop-stream" class="ui-bg-color on-stream-started">Stop Stream</button>
         <button id="screenshot" class="ui-bg-color">Take screenshot</button>
 
+        <h3 id="trends-heading">Current Trends Worldwide</h3>
         <table id="trends">
-            <h3>Current Trends</h3>
             <tr>
                 <td>1</td>
                 <td><span></span></td>
@@ -169,7 +169,7 @@
 
 <footer>
     <div class="more-info">
-        <p>This Web Experience uses GeoNames.</p>
+        <p>This Web Experience uses Open Geo Data.</p>
         <p><a href="#" id="open-geo-info-box">Learn more</a></p>
     </div>
     <div>
