@@ -34,9 +34,12 @@
 </head>
 <body>
 <header>
-    <button id="tools">&#xe602; <span>Hide Controls</span></button>
     <h1>Project Ham <span>A Twitter Live Stream Web Experience</span></h1>
-    <button id="fullscreen">&#xe601;</button>
+    <div id="tools">
+        <button id="reset" title="Reset Globe">&#xe605;</button>
+        <button id="controls" title="Hide Controls">&#xe602;</button>
+        <button id="fullscreen" title="Fullscreen">&#xe601;</button>
+    </div>
 </header>
 <main>
     <div id="filter-box" class="main-box">

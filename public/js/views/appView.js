@@ -33,12 +33,11 @@ projectham.AppView = Backbone.View.extend({
         this.trends.show();
 
         this.fullscreenButton = $('#fullscreen');
+        this.controlsButton = $('#controls');
         this.fullscreenState = 0;
+        this.sidebarState = 0;
 
         this.addFullScreenEventHandler();
-
-        this.toolsButton = $('#tools');
-        this.sidebarState = 0;
 
         this.filterBox = $('#filter-box');
         this.webspeechBox = $('#web-speech-box');
@@ -130,7 +129,7 @@ projectham.AppView = Backbone.View.extend({
     events: {
         'click #b-add-filter2': 'addFilterDuringStream',
         'click #fullscreen': 'toggleFullscreen',
-        'click #tools': 'toggleSidebars',
+        'click #controls': 'toggleSidebars',
         'click #b-add-filter1': 'addFilter',
         'click #start-stream': 'startStream',
         'click .add-filter': function () {
@@ -144,7 +143,10 @@ projectham.AppView = Backbone.View.extend({
         },
         'click .solo': 'separateView',
         'click .visibility': 'toggleVisibility',
-        'click .end-solo': 'endSeparateView'
+        'click .end-solo': 'endSeparateView',
+        'click #reset': function() {
+            eventBus.trigger('reset');
+        }
     },
 
     saveCommand: function (command) {
@@ -512,9 +514,9 @@ projectham.AppView = Backbone.View.extend({
             });
 
             this.sidebarState = 1;
-            this.toolsButton.find('span').html('Show Controls');
+            this.controlsButton.attr('title', 'Show Controls');
 
-            this.webspeechBox.addClass('hidden-tools');
+            this.webspeechBox.addClass('hidden-controls');
 
         } else if (this.sidebarState == 1) {
             this.filterBox.animate({
@@ -533,9 +535,9 @@ projectham.AppView = Backbone.View.extend({
             });
 
             this.sidebarState = 0;
-            this.toolsButton.find('span').html('Hide Controls');
+            this.controlsButton.attr('title', 'Hide Controls');
 
-            this.webspeechBox.removeClass('hidden-tools');
+            this.webspeechBox.removeClass('hidden-controls');
         }
     },
 
@@ -557,6 +559,7 @@ projectham.AppView = Backbone.View.extend({
             }
 
             this.fullscreenButton.html('&#xe600;');
+            this.fullscreenButton.attr('title', 'Exit Fullscreen');
             this.fullscreenState = 1;
 
         } else if (this.fullscreenState == 1) {
@@ -569,6 +572,7 @@ projectham.AppView = Backbone.View.extend({
             }
 
             this.fullscreenButton.html('&#xe601;');
+            this.fullscreenButton.attr('title', 'Fullscreen');
             this.fullscreenState = 0;
         }
     },
