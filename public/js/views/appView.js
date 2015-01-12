@@ -60,6 +60,18 @@ projectham.AppView = Backbone.View.extend({
         this.filterCounts = [3];
         this.filterCounts[0] = this.filterCounts[1] = this.filterCounts[2] = this.overallCount = 0;
 
+        this.replyCount = 0;
+        this.retweetCount = 0;
+
+        this.DOM_overall = $('#overall');
+        this.DOM_retweets = $('#retweets');
+        this.DOM_replies = $('#replies');
+
+        this.totalTweets = $('#total-tweets'); // heading switches from total to tweets on separate view
+
+        this.soloMode = false;
+        this.stats = {};
+
         this.filterDiv.html("");
 
         for (var i = 0; i < 3; i++) {
@@ -218,18 +230,13 @@ projectham.AppView = Backbone.View.extend({
 
             this.socket.emit('filter', this.prepareFilters());
 
-            var retweetCount = 0,
-                locationByTweetCount = 0,
+            var locationByTweetCount = 0,
                 locationByUserCount = 0,
-                replyCount = 0,
                 replyToParentCount = 0,
                 connectionCount = 0,
                 hashtagCount = 0,
                 _this = this;
 
-            var DOM_overall = $('#overall'),
-                DOM_retweets = $('#retweets'),
-                DOM_replies = $('#replies');
             //DOM_locationsUser = $('#locationsUser'),
             //DOM_locationsTweet = $('#locationsTweet'),
             //DOM_repliesToParent = $('#repliesToParent'),
@@ -242,14 +249,26 @@ projectham.AppView = Backbone.View.extend({
             });
 
             this.socket.on('tweet', function (tweet) {
-                DOM_overall.text(++_this.overallCount);
+                if(_this.soloMode) {
+                    eventBus.trigger('checkStats');
+
+                    eventBus.on('soloStats', function(stats) {
+                        _this.stats = stats;
+
+                        _this.DOM_overall.text(stats.tweets);
+                        _this.DOM_replies.text(stats.replies);
+                        _this.DOM_retweets.text(stats.retweets);
+                    });
+                }
+
+                _this.overallCount++;
+
+                _this.DOM_overall.text(!_this.soloMode ? _this.overallCount : _this.stats.tweets);
+
                 if (tweet.type == 'retweet') {
-                    DOM_retweets.text(++retweetCount);
+                    _this.DOM_retweets.text(!_this.soloMode ? ++_this.retweetCount : _this.stats.retweets);
                 } else if (tweet.type == 'reply') {
-                    DOM_replies.text(++replyCount);
-                    /*if (tweet.parent_id) {
-                     DOM_repliesToParent.text(++replyToParentCount);
-                     }*/
+                    _this.DOM_replies.text(!_this.soloMode ? ++_this.replyCount : _this.stats.replies);
                 }
 
                 /*if (tweet.location.type == 'user_geo') {
@@ -396,21 +415,15 @@ projectham.AppView = Backbone.View.extend({
             curWidths = [];
 
         this.filterRatioDivs.each(function() {
-            overallWidth += _this.filterCounts[i]/_this.overallCount*100;
-
-            var width = _this.filterCounts[i]/_this.overallCount*100 - 0.5;
+            var width = _this.filterCounts[i]/_this.overallCount*100;
             curWidths[i] = width;
 
             $(this).width(width + "%");
+            overallWidth += curWidths[i];
             i++;
         });
 
-        if(overallWidth < 100) {
-            addWidth = (100 - overallWidth)/this.filterRatioDivs.length;
-            this.filterRatioDivs.each(function() {
-                $(this).width((curWidths[i] + addWidth) + "%");
-            });
-        }
+        console.log(curWidths);
 
         eventBus.trigger('newTweet', tweet);
     },
@@ -631,17 +644,19 @@ projectham.AppView = Backbone.View.extend({
 
         eventBus.trigger('soloMode', id);
 
-        this.filterBoxH2.html(filter + '<span class="end-solo">&#xe603;</span>');
+        this.soloMode = true;
 
-        this.filterDiv.fadeOut(500, function() {
-            _this.filterSoloDiv.fadeIn(500);
-        });
+        this.totalTweets.text('Tweets');
+        this.filterBoxH2.html(filter + '<span class="end-solo">&#xe603;</span>');
+        this.filterRatio.hide();
+        this.filterDiv.hide();
+        this.filterSoloDiv.show();
     },
 
     endSeparateView: function(ev) {
-        console.log(ev);
         var model,
             id,
+            _this = this,
             filter = this.currentSepFilter;
 
         model = this.filters.find(function(m) {
@@ -651,11 +666,15 @@ projectham.AppView = Backbone.View.extend({
         id = this.filters.indexOf(model);
 
         eventBus.trigger('soloMode', id);
-        
+
+        this.totalTweets.text('Total');
         this.filterBoxH2.html('Filtered by');
+
+        this.soloMode = false;
 
         this.filterSoloDiv.hide();
         this.filterDiv.show();
+        this.filterRatio.show();
     },
 
     toggleVisibility: function(ev) {

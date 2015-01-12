@@ -294,6 +294,7 @@ projectham.GlobeView = Backbone.View.extend({
                 _this.scene.remove(filter.tweets);
                 geom.merge(filter.tweets.geometry);
                 filter.tweets = new THREE.Mesh(geom, filter.tweetMaterial);
+                filter.tweetsCount++;
                 _this.scene.add(filter.tweets);
             } else if (tweet.type == "retweet") {
                 filter.retweets.geometry.merge(cube.geometry, cube.matrix);
@@ -301,12 +302,14 @@ projectham.GlobeView = Backbone.View.extend({
                 geom.merge(filter.retweets.geometry);
                 filter.retweets = new THREE.Mesh(geom, filter.retweetMaterial);
                 _this.scene.add(filter.retweets);
+                filter.retweetsCount++;
             } else if (tweet.type == "reply") {
                 filter.replies.geometry.merge(cube.geometry, cube.matrix);
                 _this.scene.remove(filter.replies);
                 geom.merge(filter.replies.geometry);
                 filter.replies = new THREE.Mesh(geom, filter.replyMaterial);
                 _this.scene.add(filter.replies);
+                filter.repliesCount++;
             } else {
                 return;
             }
@@ -640,9 +643,8 @@ projectham.GlobeView = Backbone.View.extend({
         });
 
         eventBus.on("soloMode", function (id) {
-            console.log(id);
             var filter = _this.getFilter(id);
-            console.log(_this.filters);
+
             if (filter.isDetailView) {
                 $.each(_this.filters, function (key, value) {
                     console.log(value);
@@ -651,6 +653,16 @@ projectham.GlobeView = Backbone.View.extend({
                     }
                 });
             } else {
+                eventBus.on("checkStats", function() {
+                    var stats = {
+                        'tweets': filter.tweetsCount,
+                        'retweets': filter.retweetsCount,
+                        'replies': filter.repliesCount
+                    };
+
+                    eventBus.trigger('soloStats', stats);
+                });
+
                 $.each(_this.filters, function (key, value) {
                     console.log(value);
                     if (value && value.id != filter.id && value.isVisible) {

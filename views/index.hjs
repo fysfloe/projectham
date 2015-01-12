@@ -66,8 +66,7 @@
             </div>
         </div>
 
-        <div id="filter-ratio" class="on-stream-started">
-        </div>
+        <div id="filter-ratio" class="on-stream-started"></div>
 
         <ul id="preFilterList"></ul>
 
@@ -86,7 +85,7 @@
             <div class="table-cell">
                 <figure>
                     <span id="overall">0</span>
-                    <figcaption>Total</figcaption>
+                    <figcaption id="total-tweets">Total</figcaption>
                 </figure>
             </div>
             <div class="table-cell">
