@@ -490,8 +490,7 @@ projectham.AppView = Backbone.View.extend({
             });
 
             this.webspeechBox.animate({
-                opacity: 0,
-                right: '-20em'
+                top: '90%'
             });
 
             this.footer.animate({
@@ -502,6 +501,8 @@ projectham.AppView = Backbone.View.extend({
             this.sidebarState = 1;
             this.toolsButton.find('span').html('Show Controls');
 
+            this.webspeechBox.addClass('hidden-tools');
+
         } else if (this.sidebarState == 1) {
             this.filterBox.animate({
                 opacity: 1,
@@ -510,7 +511,7 @@ projectham.AppView = Backbone.View.extend({
 
             this.webspeechBox.animate({
                 opacity: 1,
-                right: '0'
+                top: '36%'
             });
 
             this.footer.animate({
@@ -520,6 +521,8 @@ projectham.AppView = Backbone.View.extend({
 
             this.sidebarState = 0;
             this.toolsButton.find('span').html('Hide Controls');
+
+            this.webspeechBox.removeClass('hidden-tools');
         }
     },
 

@@ -639,6 +639,14 @@ table#trends td:last-child span {
     cursor: pointer;
 }
 
+#web-speech-box.hidden-tools {
+    top: 90%;
+}
+
+#web-speech-box.hidden-tools .more-info, #web-speech-box.hidden-tools h2, #web-speech-box.hidden-tools #commands {
+    display: none;
+}
+
 /*************************************************
     footer
  *************************************************/
