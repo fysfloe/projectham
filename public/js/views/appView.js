@@ -146,6 +146,10 @@ projectham.AppView = Backbone.View.extend({
                 _this.errBox.addClass('tryagain');
                 _this.action.html('Try Again<span class="icon">&#xe606;</span>')
             }
+            if (action == 'startstream') {
+                _this.errBox.addClass('startstream');
+                _this.action.html('Start Stream');
+            }
 
             _this.errBox.show();
         });
@@ -161,10 +165,6 @@ projectham.AppView = Backbone.View.extend({
             _this.errBox.show();
         });
 
-
-        eventBus.trigger('success', 'We saved your screenshot.', 'share');
-
-
         console.log('initialized');
     },
 
@@ -174,6 +174,7 @@ projectham.AppView = Backbone.View.extend({
         'click #controls': 'toggleSidebars',
         'click #b-add-filter1': 'addFilter',
         'click #start-stream': 'startStream',
+        'click .startstream': 'startStream',
         'click .add-filter': function () {
             this.filterErrMsg.html('');
             this.filterInputDiv.show();
@@ -265,6 +266,7 @@ projectham.AppView = Backbone.View.extend({
 
             this.filterErrMsg.html('Please type a filter first.');
         } else {
+            this.filterCounts[0] = this.filterCounts[1] = this.filterCounts[2] = this.overallCount = 0;
             this.showExtendedInfo();
             this.filterBoxH2.html('Filtered by');
             this.state = 1;
@@ -380,11 +382,15 @@ projectham.AppView = Backbone.View.extend({
 
     addFilter: function (filter) {
         if (this.filters.length >= 3) {
-            console.log('maximum filter number reached');
+            eventBus.trigger('error', 'You reached the maximum filter number. It\'s time to start the stream now!', 'startstream');
         } else {
             var saveFilter = typeof filter === 'string' ? filter : this.htmlEntities(this.filterInput.val());
 
-            if (saveFilter) {
+            var model = this.filters.find(function(m) {
+                return m.get('filter').toLowerCase() == saveFilter.toLowerCase();
+            });
+
+            if(!model && saveFilter) {
                 this.filterErrMsg.html('');
 
                 this.prependListItem('preFilterList', '<li>' + saveFilter + '</li>', 'append');
@@ -407,6 +413,8 @@ projectham.AppView = Backbone.View.extend({
                         break;
                 }
 
+
+
                 this.filters.create({
                     filter: saveFilter,
                     color: color
@@ -424,7 +432,7 @@ projectham.AppView = Backbone.View.extend({
 
                 eventBus.trigger('addFilter', this.filters);
             } else {
-                this.filterErrMsg.html('Please type a filter.');
+                this.filterErrMsg.html('Please type a filter that doesn\'t yet exist.');
             }
         }
     },

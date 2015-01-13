@@ -445,8 +445,9 @@ button#screenshot {
 
 div#filterErrMsg {
     font-size: 0.8em;
-    color: red;
-    margin-top: 1em;
+    color: rgba(255,0,0,0.9);
+    position: relative;
+    top: 0.5em;
 }
 
 button#start-stream, button#stop-stream {
