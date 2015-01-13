@@ -42,6 +42,17 @@
     </div>
 </header>
 <main>
+    <div id="errBox" class="with-action">
+        <div>
+            <h2>Oh no...</h2>
+            <p id="errMsg">This is a custom error message.</p>
+        </div>
+        <div id="action">
+            <p>Reload<span class="icon">&#xe606;</span></p>
+        </div>
+
+    </div>
+
     <div id="filter-box" class="main-box">
         <p class="ui-img">&#xe600;</p>
         <h2>Filter By</h2>
@@ -77,7 +88,7 @@
             <input type="text" name="i-add-filter" id="i-add-filter" placeholder='Type your filter or say "filter by"'>
             <button id="b-add-filter1">+</button>
             <button id="b-add-filter2" class="on-stream-started">+</button>
-            <div id="err-msg" class="clear"></div>
+            <div id="filterErrMsg" class="clear"></div>
         </div>
 
         <div class="clear"></div>

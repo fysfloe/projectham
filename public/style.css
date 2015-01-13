@@ -42,6 +42,20 @@
 }
 
 /*************************************************
+    smaller screens
+ *************************************************/
+
+@media screen and (max-width: 1280px) {
+    body, html, main {
+        font-size: 0.9em !important;
+    }
+
+    .main-box {
+        top: 25% !important;
+    }
+}
+
+/*************************************************
     general
  *************************************************/
 
@@ -118,6 +132,7 @@ a {
 
 a:hover {
     text-decoration: underline;
+    cursor: pointer;
 }
 
 p {
@@ -134,6 +149,10 @@ h3 {
     margin: 2em 0 0.5em;
     color: #0084b4;
     font-size: 1.4em;
+}
+
+.icon {
+    font-family: 'icomoon', sans-serif;
 }
 
 /*************************************************
@@ -194,6 +213,87 @@ header > h1 span {
 }
 
 /*************************************************
+    error-box
+ *************************************************/
+
+div#errBox {
+    width: 30%;
+    position: absolute;
+    overflow: hidden;
+    top: 30%;
+    left: 35%;
+    z-index: 1000;
+    background: rgba(0,0,0,0.7);
+    box-shadow: 1em 1em 10em rgba(0,0,0,0.8);
+    box-sizing: border-box;
+    padding: 2.7em 2em 2em;
+    border: 1px solid darkred;
+    display: none;
+    min-height: 10em;
+    text-align: center;
+}
+
+div#errBox.with-action::after {
+    position: absolute;
+    height: 100%;
+    content: '';
+    background: rgba(0,0,0,0.3);
+    display: block;
+    top: 0;
+    left: 0;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+#errBox h2 {
+    margin-top: 0;
+    margin-bottom: 0.35em;
+}
+
+#errBox.with-action:hover {
+    cursor: pointer;
+}
+
+#errBox > div:first-child {
+    position: relative;
+    left: 0;
+    opacity: 1;
+
+    transition: all 0.3s ease;
+}
+
+#errBox.with-action:hover > div:first-child {
+    left: 100%;
+    opacity: 0;
+}
+
+#action {
+    position: absolute;
+    top: 4em;
+    z-index: 1000;
+    color: white;
+    font-size: 1.3em;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    left: -60%;
+    width: 20%;
+}
+
+#action .icon {
+    margin-left: 0.5em;
+    font-weight: 100;
+    font-size: 0.93em;
+}
+
+#errBox.with-action:hover #action {
+    left: 40%;
+}
+
+#errBox.with-action:hover::after {
+    width: 100%;
+}
+
+/*************************************************
     main-box
  *************************************************/
 
@@ -201,7 +301,7 @@ header > h1 span {
     position: absolute;
     width: 15em;
     z-index: 2;
-    top: 36%;
+    top: 30%;
     padding: 0 3em;
 }
 
@@ -339,7 +439,7 @@ button#screenshot {
     display: none;
 }
 
-div#err-msg {
+div#filterErrMsg {
     font-size: 0.8em;
     color: red;
     margin-top: 1em;

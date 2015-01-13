@@ -407,36 +407,38 @@ projectham.module = (function($) {
                 function (stream) {
                     start_microphone(stream);
                 }, function (e) {
-                    alert('Error capturing audio.');
+                    eventBus.trigger('error', 'You didn\'t allow us to use your microphone. Why is that? Click allow at the top of the page and reload afterwards or just go on without using speech recognition.', 'reload');
                 });
+
+            var twoPi = 2 * Math.PI;
+            var objectsCount = 32;
+            var radius = 22;
+            var j = 0;
+            for (var k = 0; k < objectsCount; k++) {
+                $("#bars").append("<div class='bar'></div>");
+            }
+
+            bars = $(".bar");
+            var change = twoPi / objectsCount;
+            for (var i = -Math.PI; i < Math.PI; i += change) {
+                var x = radius * Math.cos(i);
+                var y = radius * Math.sin(i);
+
+                // rotation of object in radians 
+                var rotation = i;
+                bars.eq(j).css({
+                    transform: "rotate(" + (rotation - 1.5707963267949) + "rad)",
+                    left: x,
+                    top: y
+                });
+
+                j++;
+            }
         } else {
-            alert('getUserMedia not supported in this browser.');
+            eventBus.trigger('error', 'Your browser does not support speech recognition. Switch to <a href="https://www.google.de/chrome/browser/desktop/">Google Chrome</a> to enjoy the full experience of Project Ham or just go on without using speech recognition.');
         }
 
-        var twoPi = 2 * Math.PI;
-        var objectsCount = 32;
-        var radius = 22;
-        var j = 0;
-        for (var k = 0; k < objectsCount; k++) {
-            $("#bars").append("<div class='bar'></div>");
-        }
 
-        bars = $(".bar");
-        var change = twoPi / objectsCount;
-        for (var i = -Math.PI; i < Math.PI; i += change) {
-            var x = radius * Math.cos(i);
-            var y = radius * Math.sin(i);
-
-            // rotation of object in radians 
-            var rotation = i;
-            bars.eq(j).css({
-                transform: "rotate(" + (rotation - 1.5707963267949) + "rad)",
-                left: x,
-                top: y
-            });
-
-            j++;
-        }
     };
 
     function process_microphone_buffer(event) {  // PCM audio data in time domain

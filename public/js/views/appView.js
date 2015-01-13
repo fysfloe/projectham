@@ -41,6 +41,9 @@ projectham.AppView = Backbone.View.extend({
 
         this.filterBox = $('#filter-box');
         this.webspeechBox = $('#web-speech-box');
+        this.errBox = $('#errBox');
+        this.errMsgText = $('#errMsg');
+        this.customButton = $('#customButton');
         this.footer = $('footer');
 
         this.filterDiv = $('#filters');
@@ -53,7 +56,8 @@ projectham.AppView = Backbone.View.extend({
         this.preFilterList = $('#preFilterList');
         this.addPreFilterButton = $('#b-add-filter1');
         this.addFilterButton = $('#b-add-filter2');
-        this.filterErrMsg = $('#err-msg');
+        this.filterErrMsg = $('#filterErrMsg');
+        this.action = $('#action');
         this.filterRatio = $('#filter-ratio');
         this.filterRatio.html('');
         this.filterCounts = [3];
@@ -93,7 +97,8 @@ projectham.AppView = Backbone.View.extend({
         this.preFilterList.html('');
         this.preFilterList.show();
 
-        this.errMsg('');
+        this.filterErrMsg.html('');
+        this.errBox.hide();
 
         this.getTrends();
 
@@ -123,6 +128,27 @@ projectham.AppView = Backbone.View.extend({
             _this.socket = null;
         };
 
+        eventBus.on('error', function (e, action) {
+            console.log(_this.errBox.show());
+
+            _this.errMsgText.html(e);
+            _this.errBox.show();
+            if(!action || action == 'none') {
+                _this.errBox.removeClass('with-action');
+                _this.action.hide();
+            } else {
+                _this.errBox.addClass('with-action');
+            }
+            if (action == 'reload') {
+                _this.errBox.addClass('reload');
+                _this.action.html('Reload<span class="icon">&#xe606;</span>');
+            }
+            if (action == 'tryagain') {
+                _this.errBox.addClass('tryagain');
+                _this.action.html('Try Again<span class="icon">&#xe606;</span>')
+            }
+        });
+
         console.log('initialized');
     },
 
@@ -133,7 +159,7 @@ projectham.AppView = Backbone.View.extend({
         'click #b-add-filter1': 'addFilter',
         'click #start-stream': 'startStream',
         'click .add-filter': function () {
-            this.errMsg('');
+            this.filterErrMsg.html('');
             this.filterInputDiv.show();
         },
         'click #stop-stream': 'stopStream',
@@ -146,6 +172,15 @@ projectham.AppView = Backbone.View.extend({
         'click .end-solo': 'endSeparateView',
         'click #reset': function() {
             eventBus.trigger('reset');
+        },
+        'click :not(#errBox)': function() {
+            this.errBox.hide();
+        },
+        'click .reload': function() {
+            location.reload();
+        },
+        'click .tryagain': function() {
+
         }
     },
 
@@ -209,7 +244,7 @@ projectham.AppView = Backbone.View.extend({
         if (this.filters.length == 0 && !this.filterInput.val()) {
             console.log('type a filter first!');
 
-            this.errMsg('Please type a filter first.');
+            this.filterErrMsg.html('Please type a filter first.');
         } else {
             this.showExtendedInfo();
             this.filterBoxH2.html('Filtered by');
@@ -302,7 +337,7 @@ projectham.AppView = Backbone.View.extend({
             });
 
             this.socket.on('err', function (error) {
-                alert("Sorry buddy, an error has occured:\n" + error);
+                eventBus.trigger('error', 'There was an error with the Twitter Stream. Don\'t know how to solve it? Us neither. Just try it again later.');
                 console.trace('Module A'); // [1]
                 console.error(error.stack); // [2]
             });
@@ -319,10 +354,6 @@ projectham.AppView = Backbone.View.extend({
         this.initialize();
     },
 
-    errMsg: function (e) {
-        this.filterErrMsg.html(e);
-    },
-
     showExtendedInfo: function () {
         $('.on-stream-started').show();
         $('#start-stream').hide();
@@ -335,7 +366,7 @@ projectham.AppView = Backbone.View.extend({
             var saveFilter = typeof filter === 'string' ? filter : this.htmlEntities(this.filterInput.val());
 
             if (saveFilter) {
-                this.errMsg('');
+                this.filterErrMsg.html('');
 
                 this.prependListItem('preFilterList', '<li>' + saveFilter + '</li>', 'append');
                 //this.preFilterList.append('<li>'+preparedFilter+'</li>');
@@ -374,7 +405,7 @@ projectham.AppView = Backbone.View.extend({
 
                 eventBus.trigger('addFilter', this.filters);
             } else {
-                this.errMsg('Please type a filter.');
+                this.filterErrMsg.html('Please type a filter.');
             }
         }
     },
