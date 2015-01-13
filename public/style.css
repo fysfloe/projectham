@@ -216,7 +216,7 @@ header > h1 span {
     error-box
  *************************************************/
 
-div#errBox {
+#errBox {
     width: 30%;
     position: absolute;
     overflow: hidden;
@@ -233,7 +233,11 @@ div#errBox {
     text-align: center;
 }
 
-div#errBox.with-action::after {
+#errBox.success {
+    border: 1px solid green;
+}
+
+#errBox.with-action::after {
     position: absolute;
     height: 100%;
     content: '';

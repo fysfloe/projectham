@@ -526,9 +526,9 @@ projectham.GlobeView = Backbone.View.extend({
         $.post( 'save-image/' + filename, {
             base64: canvas.toDataURL('image/png')
         }, function(success) {
-            alert(success);
+            eventBus.trigger('success', 'Awesome! Your screenshot has been saved.', 'share');
         }).fail(function() {
-            alert( 'An error occurred.' );
+            eventBus.trigger('error', 'We couldn\'t save your screenshot. Why not try it again?', 'tryagain');
         });
     },
 

@@ -129,10 +129,9 @@ projectham.AppView = Backbone.View.extend({
         };
 
         eventBus.on('error', function (e, action) {
-            console.log(_this.errBox.show());
-
             _this.errMsgText.html(e);
-            _this.errBox.show();
+            _this.errBox.removeClass('success');
+            _this.errBox.find('h2').html('Oh no...');
             if(!action || action == 'none') {
                 _this.errBox.removeClass('with-action');
                 _this.action.hide();
@@ -147,7 +146,24 @@ projectham.AppView = Backbone.View.extend({
                 _this.errBox.addClass('tryagain');
                 _this.action.html('Try Again<span class="icon">&#xe606;</span>')
             }
+
+            _this.errBox.show();
         });
+
+        eventBus.on('success', function (m, action) {
+            _this.errMsgText.html(m);
+            _this.errBox.removeClass('with-action');
+            _this.errBox.find('h2').html('Yiha!');
+            if(action == 'share') {
+                _this.errMsgText.append(' <div class="fb-share-button" data-href="https://developers.facebook.com/docs/plugins/" data-layout="button"></div>')
+            }
+            _this.errBox.addClass('success');
+            _this.errBox.show();
+        });
+
+
+        eventBus.trigger('success', 'We saved your screenshot.', 'share');
+
 
         console.log('initialized');
     },
@@ -175,6 +191,9 @@ projectham.AppView = Backbone.View.extend({
         },
         'click :not(#errBox)': function() {
             this.errBox.hide();
+        },
+        'click #errBox': function(event) {
+            event.stopPropagation();
         },
         'click .reload': function() {
             location.reload();
