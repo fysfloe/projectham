@@ -367,8 +367,6 @@ projectham.module = (function($) {
             }
         }
 
-        console.log(convert);
-
         convert = parseInt(convert);
 
         if(isInt(convert)) {
@@ -540,15 +538,23 @@ projectham.module = (function($) {
         if(appView.state == 1) {
             if(parameters.length < 1) return;
 
-            var filterNo = parameters[Object.keys(parameters)];
-            filterNo = convertToInt(filterNo);
+            var filter = parameters[Object.keys(parameters)];
+            var filterNo = convertToInt(filter);
 
-            console.log(parameters);
-            console.log(filterNo);
+            var DOM_filter;
 
             if(isInt(filterNo)) {
-                var filter = $('#filters .table-cell:nth-child('+filterNo+')');
-                filter.find('.sv-options .solo').trigger('click');
+                DOM_filter = $('#filters .table-cell:nth-child('+filterNo+')');
+                DOM_filter.find('.sv-options .solo').trigger('click');
+            } else {
+                var model = appView.filters.find(function(m) {
+                    return m.get('filter').toLowerCase() == filter.toLowerCase();
+                });
+
+                if(model) {
+                    DOM_filter = $('#filters .table-cell:nth-child('+(appView.filters.indexOf(model)+1)+')');
+                    DOM_filter.find('.sv-options .solo').trigger('click');
+                }
             }
         }
     };
@@ -561,13 +567,26 @@ projectham.module = (function($) {
         if(appView.state == 1) {
             if(parameters.length < 1) return;
 
-            var filterNo = parameters[Object.keys(parameters)];
-            filterNo = convertToInt(filterNo);
+            var filter = parameters[Object.keys(parameters)];
+            var filterNo = convertToInt(filter);
+
+            var DOM_filter;
 
             if(isInt(filterNo)) {
-                var filter = $('#filters .table-cell:nth-child('+filterNo+')');
-                if(filter.find('figure').hasClass('visible')) {
-                    filter.find('.sv-options .visibility').trigger('click');
+                DOM_filter = $('#filters .table-cell:nth-child('+filterNo+')');
+                if(DOM_filter.find('figure').hasClass('visible')) {
+                    DOM_filter.find('.sv-options .visibility').trigger('click');
+                }
+            } else {
+                var model = appView.filters.find(function(m) {
+                    return m.get('filter').toLowerCase() == filter.toLowerCase();
+                });
+
+                if(model) {
+                    DOM_filter = $('#filters .table-cell:nth-child('+(appView.filters.indexOf(model)+1)+')');
+                    if(DOM_filter.find('figure').hasClass('visible')) {
+                        DOM_filter.find('.sv-options .visibility').trigger('click');
+                    }
                 }
             }
         }
@@ -577,13 +596,26 @@ projectham.module = (function($) {
         if(appView.state == 1) {
             if(parameters.length < 1) return;
 
-            var filterNo = parameters[Object.keys(parameters)];
-            filterNo = convertToInt(filterNo);
+            var filter = parameters[Object.keys(parameters)];
+            var filterNo = convertToInt(filter);
+
+            var DOM_filter;
 
             if(isInt(filterNo)) {
-                var filter = $('#filters .table-cell:nth-child('+filterNo+')');
-                if(!filter.find('figure').hasClass('visible')) {
-                    filter.find('.sv-options .visibility').trigger('click');
+                DOM_filter = $('#filters .table-cell:nth-child('+filterNo+')');
+                if(!DOM_filter.find('figure').hasClass('visible')) {
+                    DOM_filter.find('.sv-options .visibility').trigger('click');
+                }
+            } else {
+                var model = appView.filters.find(function(m) {
+                    return m.get('filter').toLowerCase() == filter.toLowerCase();
+                });
+
+                if(model) {
+                    DOM_filter = $('#filters .table-cell:nth-child('+(appView.filters.indexOf(model)+1)+')');
+                    if(!DOM_filter.find('figure').hasClass('visible')) {
+                        DOM_filter.find('.sv-options .visibility').trigger('click');
+                    }
                 }
             }
         }

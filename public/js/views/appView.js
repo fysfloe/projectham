@@ -483,8 +483,6 @@ projectham.AppView = Backbone.View.extend({
             i++;
         });
 
-        console.log(curWidths);
-
         eventBus.trigger('newTweet', tweet);
     },
 
