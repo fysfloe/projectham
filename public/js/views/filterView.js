@@ -9,6 +9,7 @@ projectham.FilterView = Backbone.View.extend({
     
     initialize: function() {
         console.log(this.model);
+        this.listenTo(this.model, 'remove', this.remove);
         this.listenTo(this.model, 'change:filter', this.render);
     },
     
