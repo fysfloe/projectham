@@ -246,7 +246,6 @@ projectham.module = (function($) {
     startApp = function() {
         app_started = true;
         mic.css({opacity: 1});
-        aborted = false;
         final_transcript = '';
         console.log('app started');
     };

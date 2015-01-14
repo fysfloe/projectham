@@ -9,18 +9,13 @@ projectham.FilterView = Backbone.View.extend({
     
     initialize: function() {
         console.log(this.model);
-        this.listenTo(this.model, 'change:content', this.render);
+        this.listenTo(this.model, 'change:filter', this.render);
     },
     
     template: _.template($('#filterTemplate').html()),
     
-    render: function(image) {
-        var extendedModel = this.model.toJSON();
-
-        extendedModel.src = image.src;
-        extendedModel.alt = image.alt;
-
-        this.$el.html(this.template(extendedModel));
+    render: function() {
+        this.$el.html(this.template(this.model.toJSON()));
         return this;
     }
 });

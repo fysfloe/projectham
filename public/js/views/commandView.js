@@ -8,7 +8,7 @@ projectham.CommandView = Backbone.View.extend({
     },
     
     initialize: function() {
-        this.listenTo(this.model, 'change:content', this.render);
+        this.listenTo(this.model, 'change:command', this.render);
     },
     
     template: _.template($('#commandTemplate').html()),

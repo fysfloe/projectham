@@ -482,6 +482,18 @@ ul#preFilterList li {
     line-height: 1.5;
 }
 
+#preFilterList .edit {
+    display: none;
+}
+
+#preFilterList li.editing .edit {
+    display: inline;
+}
+
+#preFilterList li.editing .view {
+    display: none;
+}
+
 #filters figure, #filter-solo figure {
     margin: 0;
     text-align: center;

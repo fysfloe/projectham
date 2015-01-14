@@ -266,6 +266,10 @@ projectham.AppView = Backbone.View.extend({
 
             this.filterErrMsg.html('Please type a filter first.');
         } else {
+            this.filters.fetch();
+            this.filters.each(function (filter) {
+                console.log(filter);
+            });
             this.filterCounts[0] = this.filterCounts[1] = this.filterCounts[2] = this.overallCount = 0;
             this.showExtendedInfo();
             this.filterBoxH2.html('Filtered by');
@@ -393,10 +397,6 @@ projectham.AppView = Backbone.View.extend({
             if(!model && saveFilter) {
                 this.filterErrMsg.html('');
 
-                this.prependListItem('preFilterList', '<li>' + saveFilter + '</li>', 'append');
-                //this.preFilterList.append('<li>'+preparedFilter+'</li>');
-
-
                 var color;
 
                 switch (this.filters.length) {
@@ -413,11 +413,11 @@ projectham.AppView = Backbone.View.extend({
                         break;
                 }
 
-
-
                 this.filters.create({
                     filter: saveFilter,
-                    color: color
+                    color: color,
+                    src: this.image[this.filterCount].src,
+                    alt: this.image[this.filterCount].alt
                 });
 
                 this.filterInput.val("");
@@ -438,10 +438,15 @@ projectham.AppView = Backbone.View.extend({
     },
 
     printFilter: function (filter) {
-        var filterView;
+        var filterView,
+            preFilterView;
 
         filterView = new projectham.FilterView({model: filter});
-        this.$('#filters div:nth-child(' + (this.filterCount + 1) + ')').before(filterView.render(this.image[this.filterCount]).el);
+        preFilterView = new projectham.PreFilterView({model: filter});
+
+        this.$('#filters div:nth-child(' + (this.filterCount + 1) + ')').before(filterView.render().el);
+
+        this.prependListItem('preFilterList', preFilterView.render().el, 'append');
         this.filterCount++;
 
         this.$('#filters .add-filter:last-child').remove();

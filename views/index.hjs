@@ -4,7 +4,6 @@
     <title>{{ title }}</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="style.css" type="text/css">
-    <link rel="stylesheet" href="bennystyle.css" type="text/css">
 
     <script src="lib/socket.io.js"></script>
     <script src="lib/underscore-min.js"></script>
@@ -21,6 +20,12 @@
 
     <script type="text/template" id="commandTemplate">
         <span class="view"><%= command %></span>
+    </script>
+
+    <script type="text/template" id="preFilterTemplate">
+        <span class="view"><%= filter %></span>
+        <input class="edit" type="text" value="<%= filter %>">
+        <button class="delbut">x</button>
     </script>
 
     <script type="text/template" id="filterTemplate">
@@ -214,6 +219,7 @@
 <script src="js/models/filter.js"></script>
 <script src="js/collections/filterList.js"></script>
 <script src="js/views/filterView.js"></script>
+<script src="js/views/prefilterView.js"></script>
 
 <!-- Julian -->
 <script src="js/models/tweet.js"></script>
