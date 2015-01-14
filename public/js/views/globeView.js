@@ -12,6 +12,8 @@ projectham.GlobeView = Backbone.View.extend({
         this.lineVar = 3;
         _.bindAll(this, 'render', '_updateScene', 'latLongToVector3', 'buildAxes', 'displayTweet');
         this.filters = {};
+
+
     },
 
 
@@ -30,10 +32,14 @@ projectham.GlobeView = Backbone.View.extend({
         this.specularColor = options.specularColor || 'white';
         this.shininessInt = options.shininessInt || 4;
 
-        this.manager = new THREE.LoadingManager();
-        this.manager.onProgress = function (item, loaded, total) {
+
+        THREE.DefaultLoadingManager.onLoad = function(){
+            _this.animateGlobe();
+        }
+        THREE.DefaultLoadingManager.onProgress = function (item, loaded, total) {
 
             console.log(item, loaded, total);
+
 
         };
 
@@ -96,6 +102,7 @@ projectham.GlobeView = Backbone.View.extend({
             this.globeMaterialFront
         );
 
+        this.globeFront.translateY(-50);
         this.scene.add(this.globeFront);
         //this.scene.add(this.globeWire);
 
@@ -134,12 +141,14 @@ projectham.GlobeView = Backbone.View.extend({
 
         var ballGeometry = new THREE.SphereGeometry(6, 32, 16);
         var ballGeometry2 = new THREE.SphereGeometry(5.03, 50, 50);
-        var ball = new THREE.Mesh(ballGeometry, customMaterial);
-        var ball2 = new THREE.Mesh(ballGeometry2, customMaterial2);
+        this.ball = new THREE.Mesh(ballGeometry, customMaterial);
+        this.ball2 = new THREE.Mesh(ballGeometry2, customMaterial2);
 
+        this.ball.translateY(-50);
+        this.ball2.translateY(-50);
 
-        this.scene.add(ball2);
-        this.scene.add(ball);
+        this.scene.add(this.ball2);
+        this.scene.add(this.ball);
 
         //Initialize Background ("Space")
         this.BGtexture = THREE.ImageUtils.loadTexture(this.bgSrc);
@@ -215,6 +224,23 @@ projectham.GlobeView = Backbone.View.extend({
         this.spotLight.position.copy(this.camera.position);
         this.renderer.render(this.scene, this.camera);
         //this.composer.render();
+
+    },
+
+    animateGlobe: function(){
+        var _this = this;
+        var position = { x: -50};
+        var target = {x: 0};
+        var globeTween = new TWEEN.Tween(position).to(target, 5000);
+
+        console.log(this.globeFront);
+        globeTween.onUpdate(function(){
+            _this.globeFront.position.y = (position.x);
+            _this.ball.position. y = (position.x);
+            _this.ball2.position.y = (position.x);
+        });
+
+        globeTween.start();
 
     },
 
