@@ -687,8 +687,10 @@ table#trends td:last-child span {
 #results {
     margin-right: 1.5em;
     display: inline-block;
-    max-width: 10.8em;
+    max-width: 9.7em;
     overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .interim {
@@ -739,7 +741,6 @@ table#trends td:last-child span {
 
 #mic {
     opacity: 0.5;
-
     transition: 0.2s all;
 }
 

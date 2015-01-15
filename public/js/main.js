@@ -19,7 +19,6 @@ projectham.module = (function($) {
         mic,
         fullscreenButton,
         toolButton,
-        final_transcript,
 
         app_started,
 
@@ -38,6 +37,8 @@ projectham.module = (function($) {
         convertToInt,
         isInt,
         recognition,
+        onresultWhenStarted,
+        onresultWhenNotStarted,
 
         startApp,
         move,
@@ -61,7 +62,6 @@ projectham.module = (function($) {
         hideTools;
 
     initRecognition = function() {
-        final_transcript = '';
         var recognizing = false;
         var ignore_onend = true;
         var start_timestamp;
@@ -96,13 +96,9 @@ projectham.module = (function($) {
 
         recognition.onend = function() {
             console.log('ended');
-
             mic.css('opacity', 0.5);
-
             app_started = false;
-
             if(restart) recognition.start();
-
             recognizing = false;
             if (ignore_onend) {
                 return;
@@ -121,8 +117,25 @@ projectham.module = (function($) {
             }
         };
 
+        onresultWhenNotStarted();
+
+        if (recognizing) {
+            recognition.stop();
+        } else {
+            final_transcript = '';
+            recognition.lang = 'en';
+            recognition.start();
+            ignore_onend = false;
+            final_span.innerHTML = '';
+            interim_span.innerHTML = '';
+        }
+    };
+
+    onresultWhenStarted = function() {
         recognition.onresult = function(event) {
+            var final_transcript = '';
             var interim_transcript = '';
+
             if (typeof(event.results) == 'undefined') {
                 recognition.onend = null;
                 recognition.stop();
@@ -138,44 +151,54 @@ projectham.module = (function($) {
                 }
             }
 
-            if(app_started) {
-                final_span.innerHTML = final_transcript;
-                interim_span.innerHTML = interim_transcript;
-            }
+            final_span.innerHTML = final_transcript;
+            interim_span.innerHTML = interim_transcript;
 
             if(final_transcript) {  // when recognition is final
                 var matched_command = matchCommand(final_transcript);
 
                 if(matched_command) {   // a command has been found within the commands object
                     if(matched_command.has_parameters) {
-                        if(app_started) appView.saveCommand(matched_command.correct + " " + matched_command.parameters.join(' '));
+                        appView.saveCommand(matched_command.correct + " " + matched_command.parameters.join(' '));
                     } else {
-                        if(app_started) appView.saveCommand(matched_command.correct);
+                        appView.saveCommand(matched_command.correct);
                     }
 
                     executeCommand(matched_command);
                     setMicColor('green');
                 } else {
-                    if(app_started) {
-                        appView.saveCommand(final_transcript);
-                        setMicColor('red');
-                    }
+                    appView.saveCommand(final_transcript);
+                    setMicColor('red');
                 }
 
                 final_transcript = '';
             }
-        };
 
-        if (recognizing) {
-            recognition.stop();
-        } else {
-            final_transcript = '';
-            recognition.lang = 'en';
-            recognition.start();
-            ignore_onend = false;
-            final_span.innerHTML = '';
-            interim_span.innerHTML = '';
+            console.log('s');
         }
+    };
+
+    onresultWhenNotStarted = function() {
+        recognition.onresult = function(event) {
+            var final_transcript = '';
+
+            eventBus.trigger('goodToGo', false);
+
+            for(var i = event.resultIndex; i < event.results.length; ++i) {
+                if(event.results[i].isFinal) {
+                    final_transcript = (event.results[i][0].transcript).trim();
+                }
+            }
+
+            if(final_transcript) {
+                if(commands.start_app.possibilities.indexOf(final_transcript) != -1) {
+                    commands.start_app.function();
+                    eventBus.trigger('goodToGo', true);
+                }
+            }
+
+            console.log('ns');
+        };
     };
 
     function setMicColor(color) {
@@ -246,8 +269,8 @@ projectham.module = (function($) {
     startApp = function() {
         app_started = true;
         mic.css({opacity: 1});
-        final_transcript = '';
         console.log('app started');
+        setTimeout(onresultWhenStarted, 1500);
     };
 
     stopApp = function() {
@@ -255,7 +278,7 @@ projectham.module = (function($) {
         app_started = false;
         $('#final_span').html('');
         $('#interim_span').html('');
-        final_transcript = null;
+        onresultWhenNotStarted();
         mic.css({opacity: 0.5})
     };
 
@@ -729,6 +752,9 @@ projectham.module = (function($) {
     /**
      * Created by floe on 09.01.15.
      */
+    var startCommand = {
+
+    };
 
     var commands = {
         /*'start_app': {
