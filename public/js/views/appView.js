@@ -7,64 +7,125 @@ projectham.AppView = Backbone.View.extend({
 
     image: [{
         'src': 'blue.png',
-        'alt': 'Blue'
+        'alt': 'Blue',
+        'color': 0x4099FF
     }, {
         'src': 'orange.png',
-        'alt': 'Orange'
+        'alt': 'Orange',
+        'color': 0xE28C10
     }, {
         'src': 'green.png',
-        'alt': 'Green'
+        'alt': 'Green',
+        'color': 0x81D056
     }
     ],
 
     placeHolder: '<div class="table-cell add-filter"><figure><figcaption>Add Filter</figcaption><img src="img/ui/plus.png" alt="Plus"></figure></div>',
 
+    events: {
+        'click #b-add-filter2': 'addFilterDuringStream',
+        'click #fullscreen': 'toggleFullscreen',
+        'click #controls': 'toggleSidebars',
+        'click #b-add-filter1': 'addFilter',
+        'click #start-stream': 'startStream',
+        'click .startstream': 'startStream',
+        'click #stop-stream': 'stopStream',
+        'keyup #i-add-filter': 'checkEnter',
+        'click .solo': 'separateView',
+        'click .visibility': 'toggleVisibility',
+        'click .end-solo': 'endSeparateView',
+
+        'click .add-filter': function () {
+            this.filterErrMsg.html('');
+            this.filterInputDiv.show();
+        },
+
+        'click table#trends td:last-child': function (ev) {
+            this.filterInput.val($(ev.target).text());
+        },
+
+        'click #reset': function() {
+            eventBus.trigger('reset');
+        },
+
+        'click :not(#errBox)': function() {
+            this.errBox.hide();
+        },
+        'click #errBox': function(event) {
+            event.stopPropagation();
+        },
+
+        'click .reload': function() {
+            location.reload();
+        },
+
+        'click .tryagain': function() {}
+    },
+
     initialize: function () {
-
-        this.filterCount = 0;
-        this.state = 0;
-
-        $('.on-stream-started').hide();
-        $('#start-stream').show();
+        /*************************************************
+             backbone stuff
+         *************************************************/
 
         localStorage.clear();
 
-        this.trends = $('#trends, #trends-heading');
-        this.trends.show();
+        this.commands = new projectham.CommandList();
+        this.filters = new projectham.FilterList();
+        this.tweets = new projectham.TweetList();
+        this.connections = new projectham.ConnectionList();
+        this.hashtags = new projectham.HashtagList();
+        this.users = new projectham.UserList();
 
-        this.fullscreenButton = $('#fullscreen');
-        this.controlsButton = $('#controls');
-        this.fullscreenState = 0;
-        this.sidebarState = 0;
+        this.listenTo(this.commands, 'add', this.printCommand);
+        this.listenTo(this.filters, 'add', this.printFilter);
+        this.listenTo(this.filters, 'remove', this.rearrangeFilters);
+        this.listenTo(this.tweets, 'add', this.displayTweets);
+        this.listenTo(this.connections, 'add', this.displayConnections);
+        this.listenTo(this.hashtags, 'change', this.printHashtags);
 
-        this.addFullScreenEventHandler();
+        this.commands.fetch();
+        this.filters.fetch();
+        this.users.fetch();
 
-        this.filterBox = $('#filter-box');
-        this.webspeechBox = $('#web-speech-box');
-        this.errBox = $('#errBox');
-        this.errMsgText = $('#errMsg');
-        this.customButton = $('#customButton');
-        this.footer = $('footer');
+        /*************************************************
+             helpers
+         *************************************************/
 
-        this.filterDiv = $('#filters');
-        this.filterSoloDiv = $('#filter-solo');
-
-        this.filterBoxH2 = this.filterBox.find('h2');
-
-        this.filterSoloDiv.hide();
-
-        this.preFilterList = $('#preFilterList');
-        this.addPreFilterButton = $('#b-add-filter1');
-        this.addFilterButton = $('#b-add-filter2');
-        this.filterErrMsg = $('#filterErrMsg');
-        this.action = $('#action');
-        this.filterRatio = $('#filter-ratio');
-        this.filterRatio.html('');
-        this.filterCounts = [3];
+        this.filterCount = 0;       // number of initialized filters
+        this.state = 0;             // stream not yet started
+        this.filterCounts = [3];    // counts for every filter (tweets, retweets, replies)
         this.filterCounts[0] = this.filterCounts[1] = this.filterCounts[2] = this.overallCount = 0;
-
+        this.fullscreenState = 0;   // 0: not fullscreen, 1: fullscreen
+        this.sidebarState = 0;      // 0: show, 1: hide
         this.replyCount = 0;
         this.retweetCount = 0;
+        this.soloMode = false;
+        this.stats = {};
+        this.currentSepFilter = '';
+
+        /*************************************************
+             DOM elements
+         *************************************************/
+
+        // controls
+        this.fullscreenButton = $('#fullscreen');
+        this.controlsButton = $('#controls');
+
+        // filter-box
+        this.filterBox = $('#filter-box');
+        this.filterBoxH2 = this.filterBox.find('h2');
+        this.trends = $('#trends, #trends-heading');
+        this.filterDiv = $('#filters');
+        this.filterSoloDiv = $('#filter-solo');
+        this.preFilterList = $('#preFilterList');
+
+        this.filterInput = $("#i-add-filter");
+        this.filterInputDiv = $("#filter-input-div");
+        this.addPreFilterButton = $('#b-add-filter1');
+        this.addFilterButton = $('#b-add-filter2');
+
+        this.filterErrMsg = $('#filterErrMsg');
+        this.filterRatio = $('#filter-ratio');
 
         this.DOM_overall = $('#overall');
         this.DOM_retweets = $('#retweets');
@@ -72,51 +133,46 @@ projectham.AppView = Backbone.View.extend({
 
         this.totalTweets = $('#total-tweets'); // heading switches from total to tweets on separate view
 
-        this.soloMode = false;
-        this.stats = {};
+        // web-speech-box
+        this.webspeechBox = $('#web-speech-box');
 
-        this.filterDiv.html("");
+        // error/success box
+        this.errBox = $('#errBox');
+        this.errMsgText = $('#errMsg');
+        this.action = $('#action');
 
-        for (var i = 0; i < 3; i++) {
-            this.filterDiv.append(this.placeHolder);
-        }
+        this.footer = $('footer');
 
-        this.commands = new projectham.CommandList();
-        this.listenTo(this.commands, 'add', this.printCommand);
-        this.commands.fetch();
+        /*************************************************
+             manipulate elements
+         *************************************************/
 
-        this.filters = new projectham.FilterList();
-        this.listenTo(this.filters, 'add', this.printFilter);
-        this.filters.fetch();
+        $('.on-stream-started').hide();
+        $('#start-stream').show();
+        this.trends.show();
 
-        this.filterInput = $("#i-add-filter");
-        this.filterInputDiv = $("#filter-input-div");
-
+        this.filterSoloDiv.hide();
         this.filterInputDiv.show();
         this.addPreFilterButton.show();
         this.preFilterList.html('');
         this.preFilterList.show();
 
+        this.filterDiv.html('');
+        this.filterRatio.html('');
+
         this.filterErrMsg.html('');
         this.errBox.hide();
 
+        for (var i = 0; i < 3; i++) {
+            this.filterDiv.append(this.placeHolder);
+        }
+
+        this.addFullScreenEventHandler();
         this.getTrends();
 
-        //------------- Benni
-
-        this.currentSepFilter = '';
-        //------------- Julian
-
-        this.tweets = new projectham.TweetList();
-        this.connections = new projectham.ConnectionList();
-        this.hashtags = new projectham.HashtagList();
-        this.users = new projectham.UserList();
-
-        this.listenTo(this.tweets, 'add', this.displayTweets);
-        this.listenTo(this.connections, 'add', this.displayConnections);
-        this.listenTo(this.hashtags, 'change', this.printHashtags);
-
-        this.users.fetch();
+        /*************************************************
+             eventBus events
+         *************************************************/
 
         var _this = this;
         this.socket = null;
@@ -166,42 +222,6 @@ projectham.AppView = Backbone.View.extend({
         });
 
         console.log('initialized');
-    },
-
-    events: {
-        'click #b-add-filter2': 'addFilterDuringStream',
-        'click #fullscreen': 'toggleFullscreen',
-        'click #controls': 'toggleSidebars',
-        'click #b-add-filter1': 'addFilter',
-        'click #start-stream': 'startStream',
-        'click .startstream': 'startStream',
-        'click .add-filter': function () {
-            this.filterErrMsg.html('');
-            this.filterInputDiv.show();
-        },
-        'click #stop-stream': 'stopStream',
-        'keyup #i-add-filter': 'checkEnter',
-        'click table#trends td:last-child': function (ev) {
-            this.filterInput.val($(ev.target).text());
-        },
-        'click .solo': 'separateView',
-        'click .visibility': 'toggleVisibility',
-        'click .end-solo': 'endSeparateView',
-        'click #reset': function() {
-            eventBus.trigger('reset');
-        },
-        'click :not(#errBox)': function() {
-            this.errBox.hide();
-        },
-        'click #errBox': function(event) {
-            event.stopPropagation();
-        },
-        'click .reload': function() {
-            location.reload();
-        },
-        'click .tryagain': function() {
-
-        }
     },
 
     saveCommand: function (command) {
@@ -260,16 +280,26 @@ projectham.AppView = Backbone.View.extend({
         }
     },
 
+    rearrangeFilters: function() {
+        this.filterDiv.append(this.placeHolder);
+
+        this.filterCount--;
+        var _this = this;
+
+        this.filters.each(function(filter) {
+            filter.set('src', _this.image[_this.filters.indexOf(filter)].src);
+            filter.set('alt', _this.image[_this.filters.indexOf(filter)].alt);
+            filter.set('color', _this.image[_this.filters.indexOf(filter)].color);
+        });
+    },
+
     startStream: function () {
         if (this.filters.length == 0 && !this.filterInput.val()) {
             console.log('type a filter first!');
 
             this.filterErrMsg.html('Please type a filter first.');
         } else {
-            this.filters.fetch();
-            this.filters.each(function (filter) {
-                console.log(filter);
-            });
+            //this.filters.fetch();
             this.filterCounts[0] = this.filterCounts[1] = this.filterCounts[2] = this.overallCount = 0;
             this.showExtendedInfo();
             this.filterBoxH2.html('Filtered by');
@@ -292,21 +322,9 @@ projectham.AppView = Backbone.View.extend({
 
             this.socket.emit('filter', this.prepareFilters());
 
-            var locationByTweetCount = 0,
-                locationByUserCount = 0,
-                replyToParentCount = 0,
-                connectionCount = 0,
-                hashtagCount = 0,
-                _this = this;
-
-            //DOM_locationsUser = $('#locationsUser'),
-            //DOM_locationsTweet = $('#locationsTweet'),
-            //DOM_repliesToParent = $('#repliesToParent'),
-            //DOM_connections = $('#connections'),
-            //DOM_hashtags = $('#hashtags');
+            var _this = this;
 
             this.socket.on('conn', function (conn) {
-                ///DOM_connections.text(++connectionCount);
                 _this.saveConnection(conn);
             });
 
@@ -333,12 +351,6 @@ projectham.AppView = Backbone.View.extend({
                     _this.DOM_replies.text(!_this.soloMode ? ++_this.replyCount : _this.stats.replies);
                 }
 
-                /*if (tweet.location.type == 'user_geo') {
-                 DOM_locationsUser.text(++locationByUserCount);
-                 } else if (tweet.location.type == 'tweet_geo') {
-                 DOM_locationsTweet.text(++locationByTweetCount);
-                 }*/
-
                 if (!$.isEmptyObject(tweet.hashtags)) {
                     $.each(tweet.hashtags, function () {
                         var foundHashtag = _this.hashtags.findWhere({text: this.text.toLowerCase().trim()});
@@ -353,7 +365,6 @@ projectham.AppView = Backbone.View.extend({
                             _this.saveHashtag({
                                 text: this.text.toLowerCase().trim()
                             });
-                            //DOM_hashtags.text(++hashtagCount);
                         }
                     });
                 }
@@ -397,25 +408,9 @@ projectham.AppView = Backbone.View.extend({
             if(!model && saveFilter) {
                 this.filterErrMsg.html('');
 
-                var color;
-
-                switch (this.filters.length) {
-                    case 0:
-                        color = 0x4099FF;
-                        break;
-                    case 1:
-                        color = 0xE28C10;
-                        break;
-                    case 2:
-                        color = 0x81D056;
-                        break;
-                    default:
-                        break;
-                }
-
                 this.filters.create({
                     filter: saveFilter,
-                    color: color,
+                    color: this.image[this.filterCount].color,
                     src: this.image[this.filterCount].src,
                     alt: this.image[this.filterCount].alt
                 });
@@ -427,8 +422,6 @@ projectham.AppView = Backbone.View.extend({
 
                 this.filterRatio.append('<div>');
                 this.filterRatioDivs = this.filterRatio.find('div');
-
-                console.log(this.filters);
 
                 eventBus.trigger('addFilter', this.filters);
             } else {

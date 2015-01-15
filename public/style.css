@@ -488,6 +488,15 @@ ul#preFilterList li {
 
 #preFilterList li.editing .edit {
     display: inline;
+    background: none;
+    color: white;
+    font-size: 0.9em;
+    width: 10em;
+    border-bottom: 1px solid white;
+}
+
+#preFilterList li.editing button {
+    display: none;
 }
 
 #preFilterList li.editing .view {
@@ -665,6 +674,59 @@ table#trends td:last-child span {
 
 #filters .table-cell:hover {
     cursor: pointer;
+}
+
+#preFilterList button {
+    background: none;
+    color: white;
+    font-size: 1.2em;
+    opacity: 0.25;
+    position: relative;
+    transition: all 0.2s ease;
+    top: -0.2em;
+}
+
+#preFilterList button:hover {
+    color: #0084b4;
+    opacity: 1;
+}
+
+#preFilterList li button:first-of-type {
+    margin-right: -0.6em;
+}
+
+#preFilterList li button:first-of-type:hover:after {
+    left: 4.8em;
+}
+
+#preFilterList li button:nth-of-type(2):hover:after {
+    left: 2.8em;
+}
+
+#preFilterList button:hover:after {
+    content: attr(title);
+    font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.7em;
+    position: absolute;
+    line-height: 1;
+    opacity: 1;
+    left: 0.5em;
+    width: 10em;
+    top: 0.5em;
+    text-align: left;
+}
+
+#preFilterList button:after {
+    opacity: 1;
+    color: #0084b4;
+    transition: none;
+}
+
+span.view {
+    max-width: 11em;
+    overflow: hidden;
+    display: inline-block;
+    text-overflow: ellipsis;
 }
 
 /*************************************************

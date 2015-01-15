@@ -6,6 +6,7 @@ projectham.PreFilterView = Backbone.View.extend({
     events: {
         'click .delbut': 'deleteEntry',
         'dblclick .view': 'edit',
+        'click .editbut': 'edit',
         'blur .edit': 'close'
     },
 
@@ -17,8 +18,6 @@ projectham.PreFilterView = Backbone.View.extend({
     template: _.template($('#preFilterTemplate').html()),
 
     render: function() {
-        console.log('rendererer');
-
         this.$el.html(this.template(this.model.toJSON()));
         this.input = this.$('.edit');
         return this;
@@ -26,6 +25,7 @@ projectham.PreFilterView = Backbone.View.extend({
 
     deleteEntry: function() {
         this.model.destroy();
+        eventBus.trigger('deleteFilter');
     },
 
     edit: function() {
