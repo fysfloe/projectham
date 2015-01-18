@@ -180,10 +180,9 @@ projectham.module = (function($) {
 
     onresultWhenNotStarted = function() {
         recognition.onresult = function(event) {
+            console.log(event);
+
             var final_transcript = '';
-
-            eventBus.trigger('goodToGo', false);
-
             for(var i = event.resultIndex; i < event.results.length; ++i) {
                 if(event.results[i].isFinal) {
                     final_transcript = (event.results[i][0].transcript).trim();
@@ -196,8 +195,6 @@ projectham.module = (function($) {
                     eventBus.trigger('goodToGo', true);
                 }
             }
-
-            console.log('ns');
         };
     };
 
@@ -213,8 +210,6 @@ projectham.module = (function($) {
     };
 
     matchCommand = function(command) {
-        // if app has been started via command "ok ham", the commands will be devided into a keyword (first position of array) and parameters
-        // the keyword has to be within the commands object
         var string_array = command.split(' '),
             keyword = [],
             obj,
