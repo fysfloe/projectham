@@ -180,10 +180,9 @@ projectham.module = (function($) {
 
     onresultWhenNotStarted = function() {
         recognition.onresult = function(event) {
+            console.log(event);
+
             var final_transcript = '';
-
-            eventBus.trigger('goodToGo', false);
-
             for(var i = event.resultIndex; i < event.results.length; ++i) {
                 if(event.results[i].isFinal) {
                     final_transcript = (event.results[i][0].transcript).trim();
@@ -196,8 +195,6 @@ projectham.module = (function($) {
                     eventBus.trigger('goodToGo', true);
                 }
             }
-
-            console.log('ns');
         };
     };
 
