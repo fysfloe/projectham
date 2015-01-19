@@ -34,6 +34,7 @@ projectham.AppView = Backbone.View.extend({
         'click .solo': 'separateView',
         'click .visibility': 'toggleVisibility',
         'click .end-solo': 'endSeparateView',
+        'click #help': 'toggleHelp',
 
         'click .add-filter': function () {
             this.filterErrMsg.html('');
@@ -97,6 +98,7 @@ projectham.AppView = Backbone.View.extend({
         this.filterCounts[0] = this.filterCounts[1] = this.filterCounts[2] = this.overallCount = 0;
         this.fullscreenState = 0;   // 0: not fullscreen, 1: fullscreen
         this.sidebarState = 0;      // 0: show, 1: hide
+        this.helpState = 0;         // 0: hide, 1: show
         this.replyCount = 0;
         this.retweetCount = 0;
         this.soloMode = false;
@@ -110,6 +112,8 @@ projectham.AppView = Backbone.View.extend({
         // controls
         this.fullscreenButton = $('#fullscreen');
         this.controlsButton = $('#controls');
+        this.helpOverlay = $('#helpOverlay');
+        this.helpButton = $('#help');
 
         // filter-box
         this.filterBox = $('#filter-box');
@@ -156,6 +160,8 @@ projectham.AppView = Backbone.View.extend({
         this.addPreFilterButton.show();
         this.preFilterList.html('');
         this.preFilterList.show();
+
+        this.helpOverlay.hide();
 
         this.filterDiv.html('');
         this.filterRatio.html('');
@@ -758,5 +764,30 @@ projectham.AppView = Backbone.View.extend({
         }
 
         eventBus.trigger('toggleVisibility', id);
+    },
+
+    toggleHelp: function() {
+        var _this = this;
+
+        if(this.helpState == 0) {
+            this.helpButton.html('&#xe117;');
+            this.helpButton.attr('title', 'Close Help');
+            this.helpState = 1;
+            this.helpOverlay.show();
+            this.helpOverlay.animate({
+                'opacity': 1
+            }, 500);
+            $('.more-info').hide();
+        } else if(this.helpState == 1) {
+            this.helpButton.html('&#xe609;');
+            this.helpButton.attr('title', 'Help');
+            this.helpOverlay.animate({
+                'opacity': 0
+            }, 500, function() {
+                _this.helpOverlay.hide();
+            });
+            this.helpState = 0;
+            $('.more-info').show();
+        }
     }
 });

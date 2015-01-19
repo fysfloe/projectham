@@ -210,8 +210,6 @@ projectham.module = (function($) {
     };
 
     matchCommand = function(command) {
-        // if app has been started via command "ok ham", the commands will be devided into a keyword (first position of array) and parameters
-        // the keyword has to be within the commands object
         var string_array = command.split(' '),
             keyword = [],
             obj,

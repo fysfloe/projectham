@@ -4,6 +4,7 @@
     <title>{{ title }}</title>
     <meta charset="utf-8">
     <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,100,500,700,400italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:400,300,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="style.css" type="text/css">
 
     <script src="lib/socket.io.js"></script>
@@ -42,6 +43,7 @@
 </head>
 <body>
 <header>
+    <button id="help" title="Help">&#xe609;</button>
     <h1>Project Ham <span>A Twitter Live Stream Web Experience</span></h1>
     <div id="tools">
         <button id="reset" title="Reset Globe">&#xe605;</button>
@@ -50,6 +52,33 @@
     </div>
 </header>
 <main>
+    <div id="helpOverlay">
+        <div class="info-box">
+            <img class="arrow" src="img/ui/arrow.png" alt="Arrow">
+            <h2>This is the world</h2>
+            <p>After starting the stream with your filters, the tweets, retweets and replies will become visible on the globe depending on their world destination. You can control the globe with your mouse or by speech. Rotate, zoom or jump to a specific position, do whatever you want!</p>
+        </div>
+        <div class="info-box">
+            <img class="arrow" src="img/ui/arrow.png" alt="Arrow">
+            <h2>Your toolbox</h2>
+            <p>Here are some tools to use while interacting with Project Ham. You can reset the globe position (don't worry, the stream won't stop), hide and show all sidebars or start the fullscreen mode.</p>
+        </div>
+        <div class="info-box">
+            <img class="arrow" src="img/ui/arrow.png" alt="Arrow">
+            <h2>Type your filters</h2>
+            <p>You can type and add up to three filters before starting the stream. The stream will contain tweets, retweets and replies that match your filters. Don't worry, you can also start with just one filter and add some others when the stream is running!</p>
+        </div>
+        <div class="info-box">
+            <img class="arrow" src="img/ui/arrow.png" alt="Arrow">
+            <h2>Use trending topics as filters</h2>
+            <p>The list shows the 5 most trending topics on Twitter worldwide. You can add one of them as your filter by clicking on it.</p>
+        </div>
+        <div class="info-box">
+            <img class="arrow" src="img/ui/arrow.png" alt="Arrow">
+            <h2>Use speech commands</h2>
+            <p>Project Ham is controllable via speech! Start the speech recognition by saying "listen" or by clicking on the microphone. Just try out some commands or <a href="#">view a list</a> of all possible commands.</p>
+        </div>
+    </div>
     <div id="fb-root"></div>
     <script>(function(d, s, id) {
         var js, fjs = d.getElementsByTagName(s)[0];
@@ -162,7 +191,6 @@
 
         <div class="more-info">
             <p>This Web Experience uses a Twitter Stream.</p>
-            <p><a href="#" id="open-twitter-info-box">Learn more</a></p>
         </div>
     </div>
     <div id="globe">
@@ -187,7 +215,6 @@
 
             <div class="more-info">
                 <p>This Web Experience uses Speech Recognition.</p>
-                <p><a href="#" id="open-web-speech-info-box">Learn more</a></p>
             </div>
         </div>
         <div id="not-chrome">
@@ -200,7 +227,6 @@
 <footer>
     <div class="more-info">
         <p>This Web Experience uses Open Geo Data.</p>
-        <p><a href="#" id="open-geo-info-box">Learn more</a></p>
     </div>
     <div>
         &copy; 2015, Project Ham | <a href="#" id="open-imprint">Imprint</a>
