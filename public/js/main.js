@@ -190,8 +190,8 @@ projectham.module = (function($) {
             }
 
             if(final_transcript) {
-                if(commands.start_app.possibilities.indexOf(final_transcript) != -1) {
-                    commands.start_app.function();
+                if(startCommand.possibilities.indexOf(final_transcript) != -1) {
+                    startCommand.function();
                     eventBus.trigger('goodToGo', true);
                 }
             }
@@ -654,6 +654,20 @@ projectham.module = (function($) {
             showAlternativeInfo();
         }
 
+        document.addEventListener( 'keydown', function( ev ) {
+            var keyCode = ev.keyCode || ev.which;
+            if(keyCode === 32 && !app_started) {
+                startApp();
+            }
+        } );
+
+        document.addEventListener( 'keyup', function( ev ) {
+            var keyCode = ev.keyCode || ev.which;
+            if(keyCode === 32 && app_started) {
+                stopApp();
+            }
+        } );
+
         fullscreenButton = $('#fullscreen');
         toolButton = $('#tools');
 
@@ -748,7 +762,15 @@ projectham.module = (function($) {
      * Created by floe on 09.01.15.
      */
     var startCommand = {
-
+        'correct': 'app started',
+        'function': startApp,
+        'has_parameters': false,
+        'possibilities': [
+            'listen',
+            'yeah baby give me a listen',
+            'yo listen',
+            'yo listen up'
+        ]
     };
 
     var commands = {
@@ -767,18 +789,6 @@ projectham.module = (function($) {
          7: 'ok have'
          }
          },*/
-
-        'start_app': {
-            'correct': 'app started',
-            'function': startApp,
-            'has_parameters': false,
-            'possibilities': [
-                'listen',
-                'yeah baby give me a listen',
-                'yo listen',
-                'yo listen up'
-            ]
-        },
 
         'rotate': {
             'correct': 'rotate',
