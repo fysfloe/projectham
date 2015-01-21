@@ -49,13 +49,6 @@ projectham.AppView = Backbone.View.extend({
             eventBus.trigger('reset');
         },
 
-        'click :not(#errBox)': function() {
-            this.errBox.hide();
-        },
-        'click #errBox': function(event) {
-            event.stopPropagation();
-        },
-
         'click .reload': function() {
             location.reload();
         },
@@ -142,6 +135,10 @@ projectham.AppView = Backbone.View.extend({
 
         // error/success box
         this.errBox = $('#errBox');
+        console.log(this.errBox[0]);
+
+        console.log($('#somedialog'));
+        this.dlg = new DialogFx( $('#errBox')[0]) ;
         this.errMsgText = $('#errMsg');
         this.action = $('#action');
 
@@ -167,7 +164,7 @@ projectham.AppView = Backbone.View.extend({
         this.filterRatio.html('');
 
         this.filterErrMsg.html('');
-        this.errBox.hide();
+        //this.errBox.hide();
 
         for (var i = 0; i < 3; i++) {
             this.filterDiv.append(this.placeHolder);
@@ -191,6 +188,8 @@ projectham.AppView = Backbone.View.extend({
         };
 
         eventBus.on('error', function (e, action) {
+            _this.dlg.toggle.bind(_this.dlg)();
+
             _this.errMsgText.html(e);
             _this.errBox.removeClass('success');
             _this.errBox.find('h2').html('Oh no...');
@@ -201,19 +200,19 @@ projectham.AppView = Backbone.View.extend({
                 _this.errBox.addClass('with-action');
             }
             if (action == 'reload') {
-                _this.errBox.addClass('reload');
+                _this.errBox.find('.dialog__content').addClass('reload');
                 _this.action.html('Reload<span class="icon">&#xe606;</span>');
             }
             if (action == 'tryagain') {
-                _this.errBox.addClass('tryagain');
+                _this.errBox.find('.dialog__content').addClass('tryagain');
                 _this.action.html('Try Again<span class="icon">&#xe606;</span>')
             }
             if (action == 'startstream') {
-                _this.errBox.addClass('startstream');
+                _this.errBox.find('.dialog__content').addClass('startstream');
                 _this.action.html('Start Stream');
             }
 
-            _this.errBox.show();
+            //_this.errBox.show();
         });
 
         eventBus.on('success', function (m, action) {

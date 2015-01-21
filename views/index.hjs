@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,100,500,700,400italic' rel='stylesheet' type='text/css'>
     <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:400,300,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="normalize.css" type="text/css">
     <link rel="stylesheet" href="style.css" type="text/css">
 
     <script src="lib/socket.io.js"></script>
@@ -19,6 +20,9 @@
     <script src="lib/TrackballControls.js"></script>
     <script src="lib/tween.js"></script>
     <script src="lib/tweetFilter.js"></script>
+
+    <script src="lib/modernizr.custom.js"></script>
+    <script src="lib/classie.js"></script>
 
     <script type="text/template" id="commandTemplate">
         <span class="view"><%= command %></span>
@@ -88,15 +92,17 @@
         fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));</script>
 
-    <div id="errBox" class="with-action">
-        <div>
-            <h2>Oh no...</h2>
-            <p id="errMsg">This is a custom error message.</p>
+    <div id="errBox" class="with-action dialog">
+        <div class="dialog__overlay"></div>
+        <div class="dialog__content">
+            <div>
+                <h2>Oh no...</h2>
+                <p id="errMsg">This is a custom error message.</p>
+            </div>
+            <div id="action">
+                <p>Reload<span class="icon">&#xe606;</span></p>
+            </div>
         </div>
-        <div id="action">
-            <p>Reload<span class="icon">&#xe606;</span></p>
-        </div>
-
     </div>
 
     <div id="filter-box" class="main-box">
@@ -237,6 +243,7 @@
     var eventBus = _.extend({}, Backbone.Events);
 </script>
 
+
 <!-- Benni -->
 <script src="js/views/globeView.js"></script>
 <script src="js/views/controlView.js"></script>
@@ -261,6 +268,7 @@
 <script src="js/collections/userList.js"></script>
 <script src="js/views/tweetView.js"></script>
 
+<script src="js/dialogFx.js"></script>
 <script src="js/views/appView.js"></script>
 <script src="js/main.js"></script>
 

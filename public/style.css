@@ -271,7 +271,7 @@ img.arrow {
 }
 
 .info-box:nth-child(1) img {
-    top: 16em;
+    top: 18em;
 }
 
 .info-box:nth-child(1) img, .info-box:nth-child(3) img {
@@ -339,27 +339,22 @@ button#start-experience {
  *************************************************/
 
 #errBox {
-    width: 30%;
-    position: absolute;
-    overflow: hidden;
-    top: 30%;
-    left: 35%;
-    z-index: 1000;
-    background: rgba(0,0,0,0.7);
-    box-shadow: 1em 1em 10em rgba(0,0,0,0.8);
-    box-sizing: border-box;
-    padding: 2.7em 2em 2em;
-    border: 1px solid darkred;
-    display: none;
-    min-height: 10em;
-    text-align: center;
+    position: fixed;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 11;
 }
 
 #errBox.success {
     border: 1px solid green;
 }
 
-#errBox.with-action::after {
+#errBox.with-action .dialog__content::after {
     position: absolute;
     height: 100%;
     content: '';
@@ -367,7 +362,7 @@ button#start-experience {
     display: block;
     top: 0;
     left: 0;
-    width: 0%;
+    width: 0;
     transition: width 0.3s ease;
 }
 
@@ -376,11 +371,11 @@ button#start-experience {
     margin-bottom: 0.35em;
 }
 
-#errBox.with-action:hover {
+#errBox.with-action .dialog__content:hover {
     cursor: pointer;
 }
 
-#errBox > div:first-child {
+.dialog__content div:first-child {
     position: relative;
     left: 0;
     opacity: 1;
@@ -388,7 +383,7 @@ button#start-experience {
     transition: all 0.3s ease;
 }
 
-#errBox.with-action:hover > div:first-child {
+#errBox.with-action .dialog__content:hover div:first-child {
     left: 100%;
     opacity: 0;
 }
@@ -411,12 +406,102 @@ button#start-experience {
     font-size: 0.93em;
 }
 
-#errBox.with-action:hover #action {
+#errBox.with-action .dialog__content:hover #action {
     left: 40%;
 }
 
-#errBox.with-action:hover::after {
+#errBox.with-action .dialog__content:hover::after {
     width: 100%;
+}
+
+.dialog,
+.dialog__overlay {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.dialog__overlay {
+    position: absolute;
+    z-index: 1;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    -webkit-transition: opacity 0.3s;
+    transition: opacity 0.3s;
+    -webkit-backface-visibility: hidden;
+}
+
+.dialog--open .dialog__overlay {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.dialog__content {
+    width: 50%;
+    max-width: 560px;
+    min-width: 290px;
+    text-align: center;
+    position: relative;
+    opacity: 0;
+
+    overflow: hidden;
+    z-index: 1000;
+    background: rgba(0,0,0,0.7);
+    box-shadow: 1em 1em 10em rgba(0,0,0,0.8);
+    box-sizing: border-box;
+    padding: 2.7em 2em 2em;
+    border: 1px solid darkred;
+    min-height: 12em;
+}
+
+.dialog--open .dialog__content {
+    pointer-events: auto;
+}
+
+.dialog__overlay {
+    -webkit-transition-duration: 0.4s;
+    transition-duration: 0.4s;
+}
+
+.dialog.dialog--open .dialog__content,
+.dialog.dialog--close .dialog__content {
+    -webkit-animation-duration: 0.4s;
+    animation-duration: 0.4s;
+    -webkit-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+}
+
+.dialog.dialog--open .dialog__content {
+    -webkit-animation-name: anim-open;
+    animation-name: anim-open;
+    -webkit-animation-timing-function: cubic-bezier(0.6,0,0.4,1);
+    animation-timing-function: cubic-bezier(0.6,0,0.4,1);
+}
+
+.dialog.dialog--close .dialog__content {
+    -webkit-animation-name: anim-close;
+    animation-name: anim-close;
+}
+
+@-webkit-keyframes anim-open {
+    0% { opacity: 0; -webkit-transform: scale3d(0, 0, 1); }
+    100% { opacity: 1; -webkit-transform: scale3d(1, 1, 1); }
+}
+
+@keyframes anim-open {
+    0% { opacity: 0; -webkit-transform: scale3d(0, 0, 1); transform: scale3d(0, 0, 1); }
+    100% { opacity: 1; -webkit-transform: scale3d(1, 1, 1); transform: scale3d(1, 1, 1); }
+}
+
+@-webkit-keyframes anim-close {
+    0% { opacity: 1; }
+    100% { opacity: 0; -webkit-transform: scale3d(0.5, 0.5, 1); }
+}
+
+@keyframes anim-close {
+    0% { opacity: 1; }
+    100% { opacity: 0; -webkit-transform: scale3d(0.5, 0.5, 1); transform: scale3d(0.5, 0.5, 1); }
 }
 
 /*************************************************
