@@ -24,6 +24,8 @@
     <script src="lib/modernizr.custom.js"></script>
     <script src="lib/classie.js"></script>
 
+    <script src="lib/buffer-loader.js"></script>
+
     <script type="text/template" id="commandTemplate">
         <span class="view"><%= command %></span>
     </script>

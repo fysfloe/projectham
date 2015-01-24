@@ -22,6 +22,9 @@ projectham.module = (function($) {
 
         app_started,
 
+        bufferLoader = null,
+        sources = [],
+
         // benni starts here
         gv,
         cv;
@@ -166,9 +169,11 @@ projectham.module = (function($) {
 
                     executeCommand(matched_command);
                     setMicColor('green');
+                    playSound(0);
                 } else {
                     appView.saveCommand(final_transcript);
                     setMicColor('red');
+                    playSound(1);
                 }
 
                 final_transcript = '';
@@ -453,8 +458,30 @@ projectham.module = (function($) {
             eventBus.trigger('error', 'Your browser does not support speech recognition. Switch to <a href="https://www.google.de/chrome/browser/desktop/">Google Chrome</a> to enjoy the full experience of Project Ham or just go on without using speech recognition.');
         }
 
+        bufferLoader = new BufferLoader(
+            audioContext,
+            [
+                '../sounds/command_correct.wav',
+                '../sounds/buzzer.wav',
+            ],
+            finishedLoading
+        );
 
+        bufferLoader.load();
     };
+
+    function playSound(i) {
+        var source = audioContext.createBufferSource();
+        source.buffer = sources[i];
+        source.connect(audioContext.destination);
+        source.start(0);
+    }
+
+    function finishedLoading(bufferList) {
+        for(var i in bufferList) {
+            sources[i] = bufferList[i];
+        }
+    }
 
     function process_microphone_buffer(event) {  // PCM audio data in time domain
         var i, N, inp, microphone_output_buffer;
