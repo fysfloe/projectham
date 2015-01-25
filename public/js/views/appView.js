@@ -244,10 +244,6 @@ projectham.AppView = Backbone.View.extend({
         });
 
         console.log('initialized');
-
-
-        // testing!
-        this.noNewFilters();
     },
 
     saveCommand: function (command) {
@@ -490,8 +486,6 @@ projectham.AppView = Backbone.View.extend({
     },
 
     noNewFilters: function() {
-        console.log('inna');
-
         eventBus.trigger('error', 'There are so many people using Tweezee at the moment. That\'s why you can\'t type any new filters. But don\'t worry, you can still start a stream with some filters that are already in use. Just choose them from the list.');
         this.filterInputDiv.hide();
         this.trends.hide();

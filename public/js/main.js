@@ -63,7 +63,10 @@ projectham.module = (function($) {
         fullscreen,
         exitFullscreen,
         showTools,
-        hideTools;
+        hideTools,
+        findFilter,
+        editFilter,
+        deleteFilter;
 
     initRecognition = function() {
         var recognizing = false;
@@ -639,31 +642,66 @@ projectham.module = (function($) {
 
     showFilter = function(parameters) {
         if(appView.state == 1) {
-            if(parameters.length < 1) return;
+            if(parameters.length < 1) return false;
 
             var filter = parameters[Object.keys(parameters)];
-            var filterNo = convertToInt(filter);
+            var DOM_filter = findFilter(filter);
 
-            var DOM_filter;
-
-            if(isInt(filterNo)) {
-                DOM_filter = $('#filters .table-cell:nth-child('+filterNo+')');
-                if(!DOM_filter.find('figure').hasClass('visible')) {
-                    DOM_filter.find('.sv-options .visibility').trigger('click');
-                }
-            } else {
-                var model = appView.filters.find(function(m) {
-                    return m.get('filter').toLowerCase() == filter.toLowerCase();
-                });
-
-                if(model) {
-                    DOM_filter = $('#filters .table-cell:nth-child('+(appView.filters.indexOf(model)+1)+')');
-                    if(!DOM_filter.find('figure').hasClass('visible')) {
-                        DOM_filter.find('.sv-options .visibility').trigger('click');
-                    }
-                }
+            if(!DOM_filter.find('figure').hasClass('visible')) {
+                DOM_filter.find('.sv-options .visibility').trigger('click');
             }
         }
+    };
+
+    editFilter = function(parameters) {
+        if(appView.state == 0) {
+            if(parameters.length < 1) return false;
+
+            var filter = parameters[Object.keys(parameters)];
+            var DOM_filter = findFilter(filter);
+
+            if(DOM_filter) {
+                DOM_filter.find('button.editbut').trigger('click');
+            } else {
+                return false;
+            }
+        }
+    };
+
+    deleteFilter = function(parameters) {
+        if(appView.state == 0) {
+            if(parameters.length < 1) return false;
+
+            var filter = parameters[Object.keys(parameters)];
+            var DOM_filter = findFilter(filter);
+
+            if(DOM_filter) {
+                DOM_filter.find('button.delbut').trigger('click');
+            } else {
+                return false;
+            }
+        }
+    };
+
+    findFilter = function(filter) {
+        var filterNo,
+            DOM_filter;
+
+        filterNo = convertToInt(filter);
+
+        if(isInt(filterNo)) {
+            DOM_filter = appView.state == 0 ? $('#preFilterList li:nth-child('+filterNo+')') : $('#filters .table-cell:nth-child('+filterNo+')');
+        } else {
+            var model = appView.filters.find(function(m) {
+                return m.get('filter').toLowerCase() == filter.toLowerCase();
+            });
+
+            if(model) {
+                DOM_filter = appView.state == 0 ? $('#preFilterList li:nth-child('+(appView.filters.indexOf(model)+1)+')') : $('#filters .table-cell:nth-child('+(appView.filters.indexOf(model)+1)+')');
+            }
+        }
+
+        return DOM_filter;
     };
 
     init = function() {
@@ -1045,6 +1083,25 @@ projectham.module = (function($) {
             'possibilities': [
                 'show tools',
                 'show tunes'
+            ]
+        },
+
+        'edit_filter': {
+            'correct': 'edit filter',
+            'function': editFilter,
+            'has_parameters': true,
+            'possibilities': [
+                'edit filter'
+            ]
+        },
+
+        'delete_filter': {
+            'correct': 'delete filter',
+            'function': deleteFilter,
+            'has_parameters': true,
+            'possibilities': [
+                'delete filter',
+                'remove filter'
             ]
         }
     };
