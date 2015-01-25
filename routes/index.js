@@ -74,7 +74,7 @@ router.get('/', function(req, res) {
         }
     }
 
-    res.render('index', { title: 'Project Ham' });
+    res.render('index', { title: 'Tweezee' });
 });
 
 var overallCount = 0,

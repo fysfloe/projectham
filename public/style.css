@@ -630,10 +630,10 @@ input#i-add-filter {
     font-size: 0.9em;
 }
 
-button#b-add-filter1, button#b-add-filter2 {
+button#b-add-filter, button#b-add-filter2 {
     color: white;
     background: none;
-    height: 2.8em;
+    height: 2.3em;
     float: right;
     opacity: 0.4;
     transition: opacity 0.2s ease;
@@ -642,7 +642,7 @@ button#b-add-filter1, button#b-add-filter2 {
     right: 0;
 }
 
-button#b-add-filter1:hover, button#b-add-filter2:hover {
+button#b-add-filter:hover, button#b-add-filter2:hover {
     opacity: 1;
 }
 
@@ -774,30 +774,30 @@ div#filter-ratio div:nth-child(3) {
     box-shadow: 0 0 15px #81D056;
 }
 
-table#trends {
+table#trends, ul#running-filters {
     border-collapse: collapse;
     width: 100%;
     font-size: 0.95em;
     table-layout: fixed;
 }
 
-table#trends tr {
+table#trends tr, ul#running-filters li {
     border-bottom: 1px solid rgba(255,255,255,0.2);
 }
 
-table#trends td:last-child:hover {
+table#trends td:last-child:hover, ul#running-filters li:hover {
     cursor: pointer;
 }
 
-table#trends td:last-child:hover:after {
+table#trends td:last-child:hover:after, ul#running-filters li:hover:after {
     opacity: 1;
 }
 
-table#trends tr:last-child {
+table#trends tr:last-child, ul#running-filters li:last-child {
     border: none;
 }
 
-table#trends td {
+table#trends td, ul#running-filters li {
     padding: 0.4em;
 }
 
@@ -806,7 +806,7 @@ table#trends td:first-child {
     width: 1em;
 }
 
-table#trends td:last-child:after {
+table#trends td:last-child:after, ul#running-filters li:after {
     content: '+';
     float: right;
     opacity: 0.4;
@@ -816,13 +816,28 @@ table#trends td:last-child:after {
     transition: opacity 0.2s ease;
 }
 
-table#trends td:last-child span {
+table#trends td:last-child span, ul#running-filters li {
     max-width: 11em;
     overflow: hidden;
-    display: inline-block;
     text-overflow: ellipsis;
     margin-top: 0.1em;
     white-space: nowrap;
+}
+
+table#trends td:last-child span {
+    display: inline-block;
+}
+
+ul#running-filters {
+    list-style: none;
+    max-height: 12em;
+    overflow: scroll;
+    padding: 0;
+}
+
+ul#running-filters li {
+    display: block;
+    min-width: 94.5%;
 }
 
 #filters .table-cell:not(.add-filter):hover .sv-options {

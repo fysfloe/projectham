@@ -42,6 +42,7 @@ projectham.module = (function($) {
         recognition,
         onresultWhenStarted,
         onresultWhenNotStarted,
+        playSound,
 
         startApp,
         move,
@@ -195,7 +196,7 @@ projectham.module = (function($) {
             }
 
             if(final_transcript) {
-                if(startCommand.possibilities.indexOf(final_transcript) != -1) {
+                if(startCommand.possibilities.indexOf(final_transcript.toLowerCase()) != -1) {
                     startCommand.function();
                     eventBus.trigger('goodToGo', true);
                 }
@@ -314,7 +315,6 @@ projectham.module = (function($) {
     filterBy = function(parameters) {
         var filter = '';
 
-        console.log(parameters);
         var possibilities = ['trend', 'trent'];
 
         if(possibilities.indexOf(parameters[0].toLowerCase()) != -1) {
@@ -326,14 +326,15 @@ projectham.module = (function($) {
             }
 
             appView.filterInput.val(filter);
+            appView.addFilterButton.trigger('click');
         }
     };
 
-    addPreFilter = function() {
+    /*addPreFilter = function() {
         if(appView.filterInput.val()) {
             appView.state == 0 ? appView.addPreFilterButton.trigger('click') : appView.addFilterButton.trigger('click');
         }
-    };
+    };*/
 
     startStream = function() {
         appView.startStream();
@@ -470,12 +471,12 @@ projectham.module = (function($) {
         bufferLoader.load();
     };
 
-    function playSound(i) {
+    playSound = function(i) {
         var source = audioContext.createBufferSource();
         source.buffer = sources[i];
         source.connect(audioContext.destination);
         source.start(0);
-    }
+    };
 
     function finishedLoading(bufferList) {
         for(var i in bufferList) {
@@ -683,14 +684,14 @@ projectham.module = (function($) {
 
         document.addEventListener( 'keydown', function( ev ) {
             var keyCode = ev.keyCode || ev.which;
-            if(keyCode === 32 && !app_started) {
+            if(keyCode === 32 && !app_started && !appView.filterInput.is(":focus")) {
                 startApp();
             }
         } );
 
         document.addEventListener( 'keyup', function( ev ) {
             var keyCode = ev.keyCode || ev.which;
-            if(keyCode === 32 && app_started) {
+            if(keyCode === 32 && app_started && !appView.filterInput.is(":focus")) {
                 stopApp();
             }
         } );
@@ -796,7 +797,14 @@ projectham.module = (function($) {
             'listen',
             'yeah baby give me a listen',
             'yo listen',
-            'yo listen up'
+            'yo listen up',
+            'hate weezy',
+            'hey sweetie',
+            'hate wheatley',
+            'hate we',
+            'hate we be',
+            'hate week',
+            'hey crazy'
         ]
     };
 
@@ -897,7 +905,7 @@ projectham.module = (function($) {
             ]
         },
 
-        'add_preFilter': {
+        /*'add_preFilter': {
             'correct': 'add',
             'function': addPreFilter,
             'has_parameters': false,
@@ -909,7 +917,7 @@ projectham.module = (function($) {
                 'ass',
                 'plus'
             ]
-        },
+        },*/
 
         'start_stream': {
             'correct': 'start stream',

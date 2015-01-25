@@ -50,7 +50,7 @@
 <body>
 <header>
     <button id="help" title="Help">&#xe609;</button>
-    <h1>Project Ham <span>A Twitter Live Stream Web Experience</span></h1>
+    <h1>Tweezee <span>A Twitter Live Stream Web Experience</span></h1>
     <div id="tools">
         <button id="reset" title="Reset Globe">&#xe605;</button>
         <button id="controls" title="Hide Controls">&#xe602;</button>
@@ -67,7 +67,7 @@
         <div class="info-box">
             <img class="arrow" src="img/ui/arrow.png" alt="Arrow">
             <h2>Your toolbox</h2>
-            <p>Here are some tools to use while interacting with Project Ham. You can reset the globe position (don't worry, the stream won't stop), hide and show all sidebars or start the fullscreen mode.</p>
+            <p>Here are some tools to use while interacting with Tweezee. You can reset the globe position (don't worry, the stream won't stop), hide and show all sidebars or start the fullscreen mode.</p>
         </div>
         <div class="info-box">
             <img class="arrow" src="img/ui/arrow.png" alt="Arrow">
@@ -82,7 +82,7 @@
         <div class="info-box">
             <img class="arrow" src="img/ui/arrow.png" alt="Arrow">
             <h2>Use speech commands</h2>
-            <p>Project Ham is controllable via speech! Start the speech recognition by saying "listen" or by clicking on the microphone. Just try out some commands or <a href="#">view a list</a> of all possible commands.</p>
+            <p>Tweezee is controllable via speech! Start the speech recognition by saying "listen" or by clicking on the microphone. Just try out some commands or <a href="#">view a list</a> of all possible commands.</p>
         </div>
     </div>
     <div id="fb-root"></div>
@@ -110,6 +110,10 @@
     <div id="filter-box" class="main-box">
         <p class="ui-img">&#xe600;</p>
         <h2>Filter By</h2>
+
+        <div id="no-new-filters-msg">
+            Please choose some filters from the list below.
+        </div>
 
         <div id="filters" class="on-stream-started table"></div>
 
@@ -140,10 +144,12 @@
 
         <div id="filter-input-div">
             <input type="text" name="i-add-filter" id="i-add-filter" placeholder='Type your filter or say "filter by"'>
-            <button id="b-add-filter1">+</button>
-            <button id="b-add-filter2" class="on-stream-started">+</button>
-            <div id="filterErrMsg" class="clear"></div>
+            <button id="b-add-filter">+</button>
+            <!--<button id="b-add-filter2" class="on-stream-started">+</button>-->
+
         </div>
+
+        <div id="filterErrMsg" class="clear"></div>
 
         <div class="clear"></div>
 
@@ -173,29 +179,49 @@
         <button id="stop-stream" class="ui-bg-color on-stream-started">Stop Stream</button>
         <button id="screenshot" class="ui-bg-color">Take screenshot</button>
 
-        <h3 id="trends-heading">Current Trends Worldwide</h3>
-        <table id="trends">
-            <tr>
-                <td>1</td>
-                <td><span></span></td>
-            </tr>
-            <tr>
-                <td>2</td>
-                <td><span></span></td>
-            </tr>
-            <tr>
-                <td>3</td>
-                <td><span></span></td>
-            </tr>
-            <tr>
-                <td>4</td>
-                <td><span></span></td>
-            </tr>
-            <tr>
-                <td>5</td>
-                <td><span></span></td>
-            </tr>
-        </table>
+        <div id="trends-div">
+            <h3 id="trends-heading">Current Trends Worldwide</h3>
+            <table id="trends">
+                <tr>
+                    <td>1</td>
+                    <td><span></span></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td><span></span></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td><span></span></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td><span></span></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td><span></span></td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="running-filters-div">
+            <h3 id="running-filters-heading">Currently Used Filters</h3>
+            <ul id="running-filters">
+                <li>Obama</li>
+                <li>Putin</li>
+                <li>Love</li>
+                <li>Hate</li>
+                <li>War</li>
+                <li>Peace</li>
+                <li>Shit</li>
+                <li>Fuck</li>
+                <li>What</li>
+                <li>Me</li>
+                <li>Yeah</li>
+                <li>Baby</li>
+            </ul>
+        </div>
 
         <div class="more-info">
             <p>This Web Experience uses a Twitter Stream.</p>
@@ -226,7 +252,7 @@
             </div>
         </div>
         <div id="not-chrome">
-            <p>Your browser does not support speech recognition. Switch to <a href="https://www.google.de/chrome/browser/desktop/">Google Chrome</a> to enjoy the full experience of Project Ham!</p>
+            <p>Your browser does not support speech recognition. Switch to <a href="https://www.google.de/chrome/browser/desktop/">Google Chrome</a> to enjoy the full experience of Tweezee!</p>
         </div>
     </div>
 
@@ -237,7 +263,7 @@
         <p>This Web Experience uses Open Geo Data.</p>
     </div>
     <div>
-        &copy; 2015, Project Ham | <a href="#" id="open-imprint">Imprint</a>
+        &copy; 2015, Tweezee | <a href="#" id="open-imprint">Imprint</a>
     </div>
 </footer>
 

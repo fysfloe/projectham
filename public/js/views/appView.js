@@ -23,10 +23,10 @@ projectham.AppView = Backbone.View.extend({
     placeHolder: '<div class="table-cell add-filter"><figure><figcaption>Add Filter</figcaption><img src="img/ui/plus.png" alt="Plus"></figure></div>',
 
     events: {
-        'click #b-add-filter2': 'addFilterDuringStream',
+        //'click #b-add-filter2': 'addFilterDuringStream',
         'click #fullscreen': 'toggleFullscreen',
         'click #controls': 'toggleSidebars',
-        'click #b-add-filter1': 'addFilter',
+        'click #b-add-filter': 'addFilter',
         'click #start-stream': 'startStream',
         'click .startstream': 'startStream',
         'click #stop-stream': 'stopStream',
@@ -38,11 +38,19 @@ projectham.AppView = Backbone.View.extend({
 
         'click .add-filter': function () {
             this.filterErrMsg.html('');
-            this.filterInputDiv.show();
+            this.runningFilters.slideDown();
+            //this.filterInputDiv.show();
         },
 
         'click table#trends td:last-child': function (ev) {
-            this.filterInput.val($(ev.target).text());
+            this.addFilter($(ev.target).text());
+        },
+
+        'click ul#running-filters li': function (ev) {
+            this.addFilter($(ev.target).text());
+            if(this.state == 1) {
+                this.runningFilters.slideUp();
+            }
         },
 
         'click #reset': function() {
@@ -112,14 +120,19 @@ projectham.AppView = Backbone.View.extend({
         this.filterBox = $('#filter-box');
         this.filterBoxH2 = this.filterBox.find('h2');
         this.trends = $('#trends, #trends-heading');
+
+        this.runningFilters = $('#running-filters-div');
+        this.runningFiltersHeading = this.runningFilters.find('h3');
+        this.noNewFilterMsg = $('#no-new-filters-msg');
+
         this.filterDiv = $('#filters');
         this.filterSoloDiv = $('#filter-solo');
         this.preFilterList = $('#preFilterList');
 
         this.filterInput = $("#i-add-filter");
         this.filterInputDiv = $("#filter-input-div");
-        this.addPreFilterButton = $('#b-add-filter1');
-        this.addFilterButton = $('#b-add-filter2');
+        //this.addPreFilterButton = $('#b-add-filter1');
+        this.addFilterButton = $('#b-add-filter');
 
         this.filterErrMsg = $('#filterErrMsg');
         this.filterRatio = $('#filter-ratio');
@@ -152,9 +165,13 @@ projectham.AppView = Backbone.View.extend({
         $('#start-stream').show();
         this.trends.show();
 
+        this.filterInputDiv.show();
+        this.runningFiltersHeading.html('Currently Used Filters');
+        this.noNewFilterMsg.hide();
+
         this.filterSoloDiv.hide();
         this.filterInputDiv.show();
-        this.addPreFilterButton.show();
+        //this.addPreFilterButton.show();
         this.preFilterList.html('');
         this.preFilterList.show();
 
@@ -227,6 +244,10 @@ projectham.AppView = Backbone.View.extend({
         });
 
         console.log('initialized');
+
+
+        // testing!
+        this.noNewFilters();
     },
 
     saveCommand: function (command) {
@@ -300,9 +321,7 @@ projectham.AppView = Backbone.View.extend({
 
     startStream: function () {
         if (this.filters.length == 0 && !this.filterInput.val()) {
-            console.log('type a filter first!');
-
-            this.filterErrMsg.html('Please type a filter first.');
+            this.filterErrMsg.html('Please choose a filter first.');
         } else {
             //this.filters.fetch();
             this.filterCounts[0] = this.filterCounts[1] = this.filterCounts[2] = this.overallCount = 0;
@@ -315,8 +334,10 @@ projectham.AppView = Backbone.View.extend({
             }
 
             this.preFilterList.hide();
-            this.addPreFilterButton.hide();
+            //this.addPreFilterButton.hide();
             this.trends.hide();
+            this.runningFilters.hide();
+            this.noNewFilterMsg.hide();
             this.filterInputDiv.hide();
 
             if (!this.socket) {
@@ -430,7 +451,7 @@ projectham.AppView = Backbone.View.extend({
 
                 eventBus.trigger('addFilter', this.filters);
             } else {
-                this.filterErrMsg.html('Please type a filter that doesn\'t yet exist.');
+                this.filterErrMsg.html('Please choose a filter that doesn\'t yet exist.');
             }
         }
     },
@@ -451,17 +472,31 @@ projectham.AppView = Backbone.View.extend({
     },
 
     checkEnter: function (event) {
+        console.log('foo');
+
         if (event.keyCode == 13) {
-            if (this.state == 0) {
+            /*if (this.state == 0) {
                 this.$("#b-add-filter1").click();
             } else if (this.state == 1) {
                 this.$("#b-add-filter2").click();
-            }
+            }*/
+
+            this.addFilterButton.click();
         }
     },
 
     htmlEntities: function (str) {
         return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    },
+
+    noNewFilters: function() {
+        console.log('inna');
+
+        eventBus.trigger('error', 'There are so many people using Tweezee at the moment. That\'s why you can\'t type any new filters. But don\'t worry, you can still start a stream with some filters that are already in use. Just choose them from the list.');
+        this.filterInputDiv.hide();
+        this.trends.hide();
+        this.noNewFilterMsg.show();
+        this.runningFiltersHeading.html('Currently Available Filters');
     },
 
     // ------------------ Julian
