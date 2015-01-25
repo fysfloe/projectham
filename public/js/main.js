@@ -66,7 +66,8 @@ projectham.module = (function($) {
         hideTools,
         findFilter,
         editFilter,
-        deleteFilter;
+        deleteFilter,
+        chooseFilter;
 
     initRecognition = function() {
         var recognizing = false;
@@ -645,7 +646,7 @@ projectham.module = (function($) {
             if(parameters.length < 1) return false;
 
             var filter = parameters[Object.keys(parameters)];
-            var DOM_filter = findFilter(filter);
+            var DOM_filter = findFilter(filter, '#filters .table-cell', true);
 
             if(!DOM_filter.find('figure').hasClass('visible')) {
                 DOM_filter.find('.sv-options .visibility').trigger('click');
@@ -658,7 +659,7 @@ projectham.module = (function($) {
             if(parameters.length < 1) return false;
 
             var filter = parameters[Object.keys(parameters)];
-            var DOM_filter = findFilter(filter);
+            var DOM_filter = findFilter(filter, '#preFilterList li', true);
 
             if(DOM_filter) {
                 DOM_filter.find('button.editbut').trigger('click');
@@ -673,7 +674,7 @@ projectham.module = (function($) {
             if(parameters.length < 1) return false;
 
             var filter = parameters[Object.keys(parameters)];
-            var DOM_filter = findFilter(filter);
+            var DOM_filter = findFilter(filter, '#preFilterList li', true);
 
             if(DOM_filter) {
                 DOM_filter.find('button.delbut').trigger('click');
@@ -683,21 +684,40 @@ projectham.module = (function($) {
         }
     };
 
-    findFilter = function(filter) {
+    chooseFilter = function(parameters) {
+        if(parameters.length < 1) return false;
+
+        var filter = parameters[Object.keys(parameters)];
+        var DOM_filter = findFilter(filter, '#running-filters li', false);
+
+        if(DOM_filter) {
+            console.log(DOM_filter);
+
+            DOM_filter.trigger('click');
+        } else {
+            return false;
+        }
+    };
+
+    findFilter = function(filter, selector, inCollection) {
         var filterNo,
             DOM_filter;
 
         filterNo = convertToInt(filter);
 
         if(isInt(filterNo)) {
-            DOM_filter = appView.state == 0 ? $('#preFilterList li:nth-child('+filterNo+')') : $('#filters .table-cell:nth-child('+filterNo+')');
+            DOM_filter = $(selector+':nth-child('+filterNo+')');
         } else {
-            var model = appView.filters.find(function(m) {
-                return m.get('filter').toLowerCase() == filter.toLowerCase();
-            });
+            if(inCollection) {
+                var model = appView.filters.find(function(m) {
+                    return m.get('filter').toLowerCase() == filter.toLowerCase();
+                });
 
-            if(model) {
-                DOM_filter = appView.state == 0 ? $('#preFilterList li:nth-child('+(appView.filters.indexOf(model)+1)+')') : $('#filters .table-cell:nth-child('+(appView.filters.indexOf(model)+1)+')');
+                if(model) {
+                    DOM_filter = $(selector+':nth-child('+(appView.filters.indexOf(model)+1)+')');
+                }
+            } else {
+                DOM_filter = $(selector+':nth-child('+(appView.allFilters.indexOf(filter.toLowerCase())+1)+')');
             }
         }
 
@@ -1102,6 +1122,18 @@ projectham.module = (function($) {
             'possibilities': [
                 'delete filter',
                 'remove filter'
+            ]
+        },
+
+        'choose_filter': {
+            'correct': 'choose filter',
+            'function': chooseFilter,
+            'has_parameters': true,
+            'possibilities': [
+                'choose filter',
+                'use filter',
+                'choose',
+                'use'
             ]
         }
     };

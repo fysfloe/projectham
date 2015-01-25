@@ -106,6 +106,8 @@ projectham.AppView = Backbone.View.extend({
         this.stats = {};
         this.currentSepFilter = '';
 
+        this.allFilters = ['obama', 'war', 'piece', 'putin', 'love', 'hate', 'yeah', 'fuck']; // todo: get this from julian, lower case required!
+
         /*************************************************
              DOM elements
          *************************************************/
