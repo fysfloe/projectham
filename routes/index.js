@@ -94,9 +94,9 @@ router.get('/', function(req, res) {
     console.log('Current Filter:', currentFilter);
 
     if(requestCount > requestLimit) {
-        res.render('index', { title: 'Project Ham', limitOk: false, filters: currentFilter });
+        res.render('index', { title: 'Tweezee', limitOk: false, filters: currentFilter });
     } else {
-        res.render('index', { title: 'Project Ham', limitOk: true, filters: currentFilter });
+        res.render('index', { title: 'Tweezee', limitOk: true, filters: currentFilter });
     }
 });
 

@@ -19,9 +19,11 @@ projectham.module = (function($) {
         mic,
         fullscreenButton,
         toolButton,
-        final_transcript,
 
         app_started,
+
+        bufferLoader = null,
+        sources = [],
 
         // benni starts here
         gv,
@@ -38,6 +40,9 @@ projectham.module = (function($) {
         convertToInt,
         isInt,
         recognition,
+        onresultWhenStarted,
+        onresultWhenNotStarted,
+        playSound,
 
         startApp,
         move,
@@ -58,10 +63,13 @@ projectham.module = (function($) {
         fullscreen,
         exitFullscreen,
         showTools,
-        hideTools;
+        hideTools,
+        findFilter,
+        editFilter,
+        deleteFilter,
+        chooseFilter;
 
     initRecognition = function() {
-        final_transcript = '';
         var recognizing = false;
         var ignore_onend = true;
         var start_timestamp;
@@ -96,13 +104,9 @@ projectham.module = (function($) {
 
         recognition.onend = function() {
             console.log('ended');
-
             mic.css('opacity', 0.5);
-
             app_started = false;
-
             if(restart) recognition.start();
-
             recognizing = false;
             if (ignore_onend) {
                 return;
@@ -121,8 +125,25 @@ projectham.module = (function($) {
             }
         };
 
+        onresultWhenNotStarted();
+
+        if (recognizing) {
+            recognition.stop();
+        } else {
+            final_transcript = '';
+            recognition.lang = 'en';
+            recognition.start();
+            ignore_onend = false;
+            final_span.innerHTML = '';
+            interim_span.innerHTML = '';
+        }
+    };
+
+    onresultWhenStarted = function() {
         recognition.onresult = function(event) {
+            var final_transcript = '';
             var interim_transcript = '';
+
             if (typeof(event.results) == 'undefined') {
                 recognition.onend = null;
                 recognition.stop();
@@ -138,44 +159,53 @@ projectham.module = (function($) {
                 }
             }
 
-            if(app_started) {
-                final_span.innerHTML = final_transcript;
-                interim_span.innerHTML = interim_transcript;
-            }
+            final_span.innerHTML = final_transcript;
+            interim_span.innerHTML = interim_transcript;
 
             if(final_transcript) {  // when recognition is final
                 var matched_command = matchCommand(final_transcript);
 
                 if(matched_command) {   // a command has been found within the commands object
                     if(matched_command.has_parameters) {
-                        if(app_started) appView.saveCommand(matched_command.correct + " " + matched_command.parameters.join(' '));
+                        appView.saveCommand(matched_command.correct + " " + matched_command.parameters.join(' '));
                     } else {
-                        if(app_started) appView.saveCommand(matched_command.correct);
+                        appView.saveCommand(matched_command.correct);
                     }
 
                     executeCommand(matched_command);
                     setMicColor('green');
+                    playSound(0);
                 } else {
-                    if(app_started) {
-                        appView.saveCommand(final_transcript);
-                        setMicColor('red');
-                    }
+                    appView.saveCommand(final_transcript);
+                    setMicColor('red');
+                    playSound(1);
                 }
 
                 final_transcript = '';
             }
-        };
 
-        if (recognizing) {
-            recognition.stop();
-        } else {
-            final_transcript = '';
-            recognition.lang = 'en';
-            recognition.start();
-            ignore_onend = false;
-            final_span.innerHTML = '';
-            interim_span.innerHTML = '';
+            console.log('s');
         }
+    };
+
+    onresultWhenNotStarted = function() {
+        recognition.onresult = function(event) {
+            console.log(event);
+
+            var final_transcript = '';
+            for(var i = event.resultIndex; i < event.results.length; ++i) {
+                if(event.results[i].isFinal) {
+                    final_transcript = (event.results[i][0].transcript).trim();
+                }
+            }
+
+            if(final_transcript) {
+                if(startCommand.possibilities.indexOf(final_transcript.toLowerCase()) != -1) {
+                    startCommand.function();
+                    eventBus.trigger('goodToGo', true);
+                }
+            }
+        };
     };
 
     function setMicColor(color) {
@@ -190,8 +220,6 @@ projectham.module = (function($) {
     };
 
     matchCommand = function(command) {
-        // if app has been started via command "ok ham", the commands will be devided into a keyword (first position of array) and parameters
-        // the keyword has to be within the commands object
         var string_array = command.split(' '),
             keyword = [],
             obj,
@@ -246,9 +274,8 @@ projectham.module = (function($) {
     startApp = function() {
         app_started = true;
         mic.css({opacity: 1});
-        aborted = false;
-        final_transcript = '';
         console.log('app started');
+        setTimeout(onresultWhenStarted, 1500);
     };
 
     stopApp = function() {
@@ -256,7 +283,7 @@ projectham.module = (function($) {
         app_started = false;
         $('#final_span').html('');
         $('#interim_span').html('');
-        final_transcript = null;
+        onresultWhenNotStarted();
         mic.css({opacity: 0.5})
     };
 
@@ -292,7 +319,6 @@ projectham.module = (function($) {
     filterBy = function(parameters) {
         var filter = '';
 
-        console.log(parameters);
         var possibilities = ['trend', 'trent'];
 
         if(possibilities.indexOf(parameters[0].toLowerCase()) != -1) {
@@ -304,14 +330,15 @@ projectham.module = (function($) {
             }
 
             appView.filterInput.val(filter);
+            appView.addFilterButton.trigger('click');
         }
     };
 
-    addPreFilter = function() {
+    /*addPreFilter = function() {
         if(appView.filterInput.val()) {
             appView.state == 0 ? appView.addPreFilterButton.trigger('click') : appView.addFilterButton.trigger('click');
         }
-    };
+    };*/
 
     startStream = function() {
         appView.startStream();
@@ -367,8 +394,6 @@ projectham.module = (function($) {
             }
         }
 
-        console.log(convert);
-
         convert = parseInt(convert);
 
         if(isInt(convert)) {
@@ -407,37 +432,61 @@ projectham.module = (function($) {
                 function (stream) {
                     start_microphone(stream);
                 }, function (e) {
-                    alert('Error capturing audio.');
+                    eventBus.trigger('error', 'You didn\'t allow us to use your microphone. Why is that? Click allow at the top of the page and reload afterwards or just go on without using speech recognition.', 'reload');
                 });
+
+            var twoPi = 2 * Math.PI;
+            var objectsCount = 32;
+            var radius = 22;
+            var j = 0;
+            for (var k = 0; k < objectsCount; k++) {
+                $("#bars").append("<div class='bar'></div>");
+            }
+
+            bars = $(".bar");
+            var change = twoPi / objectsCount;
+            for (var i = -Math.PI; i < Math.PI; i += change) {
+                var x = radius * Math.cos(i);
+                var y = radius * Math.sin(i);
+
+                // rotation of object in radians 
+                var rotation = i;
+                bars.eq(j).css({
+                    transform: "rotate(" + (rotation - 1.5707963267949) + "rad)",
+                    left: x,
+                    top: y
+                });
+
+                j++;
+            }
         } else {
-            alert('getUserMedia not supported in this browser.');
+            eventBus.trigger('error', 'Your browser does not support speech recognition. Switch to <a href="https://www.google.de/chrome/browser/desktop/">Google Chrome</a> to enjoy the full experience of Project Ham or just go on without using speech recognition.');
         }
 
-        var twoPi = 2 * Math.PI;
-        var objectsCount = 32;
-        var radius = 25;
-        var j = 0;
-        for (var k = 0; k < objectsCount; k++) {
-            $("#bars").append("<div class='bar'></div>");
-        }
+        bufferLoader = new BufferLoader(
+            audioContext,
+            [
+                '../sounds/command_correct.wav',
+                '../sounds/buzzer.wav',
+            ],
+            finishedLoading
+        );
 
-        bars = $(".bar");
-        var change = twoPi / objectsCount;
-        for (var i = -Math.PI; i < Math.PI; i += change) {
-            var x = radius * Math.cos(i);
-            var y = radius * Math.sin(i);
-
-            // rotation of object in radians 
-            var rotation = i;
-            bars.eq(j).css({
-                transform: "rotate(" + (rotation - 1.5707963267949) + "rad)",
-                left: x,
-                top: y
-            });
-
-            j++;
-        }
+        bufferLoader.load();
     };
+
+    playSound = function(i) {
+        var source = audioContext.createBufferSource();
+        source.buffer = sources[i];
+        source.connect(audioContext.destination);
+        source.start(0);
+    };
+
+    function finishedLoading(bufferList) {
+        for(var i in bufferList) {
+            sources[i] = bufferList[i];
+        }
+    }
 
     function process_microphone_buffer(event) {  // PCM audio data in time domain
         var i, N, inp, microphone_output_buffer;
@@ -538,15 +587,23 @@ projectham.module = (function($) {
         if(appView.state == 1) {
             if(parameters.length < 1) return;
 
-            var filterNo = parameters[Object.keys(parameters)];
-            filterNo = convertToInt(filterNo);
+            var filter = parameters[Object.keys(parameters)];
+            var filterNo = convertToInt(filter);
 
-            console.log(parameters);
-            console.log(filterNo);
+            var DOM_filter;
 
             if(isInt(filterNo)) {
-                var filter = $('#filters .table-cell:nth-child('+filterNo+')');
-                filter.find('.sv-options .solo').trigger('click');
+                DOM_filter = $('#filters .table-cell:nth-child('+filterNo+')');
+                DOM_filter.find('.sv-options .solo').trigger('click');
+            } else {
+                var model = appView.filters.find(function(m) {
+                    return m.get('filter').toLowerCase() == filter.toLowerCase();
+                });
+
+                if(model) {
+                    DOM_filter = $('#filters .table-cell:nth-child('+(appView.filters.indexOf(model)+1)+')');
+                    DOM_filter.find('.sv-options .solo').trigger('click');
+                }
             }
         }
     };
@@ -559,13 +616,26 @@ projectham.module = (function($) {
         if(appView.state == 1) {
             if(parameters.length < 1) return;
 
-            var filterNo = parameters[Object.keys(parameters)];
-            filterNo = convertToInt(filterNo);
+            var filter = parameters[Object.keys(parameters)];
+            var filterNo = convertToInt(filter);
+
+            var DOM_filter;
 
             if(isInt(filterNo)) {
-                var filter = $('#filters .table-cell:nth-child('+filterNo+')');
-                if(filter.find('figure').hasClass('visible')) {
-                    filter.find('.sv-options .visibility').trigger('click');
+                DOM_filter = $('#filters .table-cell:nth-child('+filterNo+')');
+                if(DOM_filter.find('figure').hasClass('visible')) {
+                    DOM_filter.find('.sv-options .visibility').trigger('click');
+                }
+            } else {
+                var model = appView.filters.find(function(m) {
+                    return m.get('filter').toLowerCase() == filter.toLowerCase();
+                });
+
+                if(model) {
+                    DOM_filter = $('#filters .table-cell:nth-child('+(appView.filters.indexOf(model)+1)+')');
+                    if(DOM_filter.find('figure').hasClass('visible')) {
+                        DOM_filter.find('.sv-options .visibility').trigger('click');
+                    }
                 }
             }
         }
@@ -573,18 +643,85 @@ projectham.module = (function($) {
 
     showFilter = function(parameters) {
         if(appView.state == 1) {
-            if(parameters.length < 1) return;
+            if(parameters.length < 1) return false;
 
-            var filterNo = parameters[Object.keys(parameters)];
-            filterNo = convertToInt(filterNo);
+            var filter = parameters[Object.keys(parameters)];
+            var DOM_filter = findFilter(filter, '#filters .table-cell', true);
 
-            if(isInt(filterNo)) {
-                var filter = $('#filters .table-cell:nth-child('+filterNo+')');
-                if(!filter.find('figure').hasClass('visible')) {
-                    filter.find('.sv-options .visibility').trigger('click');
-                }
+            if(!DOM_filter.find('figure').hasClass('visible')) {
+                DOM_filter.find('.sv-options .visibility').trigger('click');
             }
         }
+    };
+
+    editFilter = function(parameters) {
+        if(appView.state == 0) {
+            if(parameters.length < 1) return false;
+
+            var filter = parameters[Object.keys(parameters)];
+            var DOM_filter = findFilter(filter, '#preFilterList li', true);
+
+            if(DOM_filter) {
+                DOM_filter.find('button.editbut').trigger('click');
+            } else {
+                return false;
+            }
+        }
+    };
+
+    deleteFilter = function(parameters) {
+        if(appView.state == 0) {
+            if(parameters.length < 1) return false;
+
+            var filter = parameters[Object.keys(parameters)];
+            var DOM_filter = findFilter(filter, '#preFilterList li', true);
+
+            if(DOM_filter) {
+                DOM_filter.find('button.delbut').trigger('click');
+            } else {
+                return false;
+            }
+        }
+    };
+
+    chooseFilter = function(parameters) {
+        if(parameters.length < 1) return false;
+
+        var filter = parameters[Object.keys(parameters)];
+        var DOM_filter = findFilter(filter, '#running-filters li', false);
+
+        if(DOM_filter) {
+            console.log(DOM_filter);
+
+            DOM_filter.trigger('click');
+        } else {
+            return false;
+        }
+    };
+
+    findFilter = function(filter, selector, inCollection) {
+        var filterNo,
+            DOM_filter;
+
+        filterNo = convertToInt(filter);
+
+        if(isInt(filterNo)) {
+            DOM_filter = $(selector+':nth-child('+filterNo+')');
+        } else {
+            if(inCollection) {
+                var model = appView.filters.find(function(m) {
+                    return m.get('filter').toLowerCase() == filter.toLowerCase();
+                });
+
+                if(model) {
+                    DOM_filter = $(selector+':nth-child('+(appView.filters.indexOf(model)+1)+')');
+                }
+            } else {
+                DOM_filter = $(selector+':nth-child('+(appView.allFilters.indexOf(filter.toLowerCase())+1)+')');
+            }
+        }
+
+        return DOM_filter;
     };
 
     init = function() {
@@ -602,6 +739,20 @@ projectham.module = (function($) {
         } else {
             showAlternativeInfo();
         }
+
+        document.addEventListener( 'keydown', function( ev ) {
+            var keyCode = ev.keyCode || ev.which;
+            if(keyCode === 32 && !app_started && !appView.filterInput.is(":focus")) {
+                startApp();
+            }
+        } );
+
+        document.addEventListener( 'keyup', function( ev ) {
+            var keyCode = ev.keyCode || ev.which;
+            if(keyCode === 32 && app_started && !appView.filterInput.is(":focus")) {
+                stopApp();
+            }
+        } );
 
         fullscreenButton = $('#fullscreen');
         toolButton = $('#tools');
@@ -696,6 +847,24 @@ projectham.module = (function($) {
     /**
      * Created by floe on 09.01.15.
      */
+    var startCommand = {
+        'correct': 'app started',
+        'function': startApp,
+        'has_parameters': false,
+        'possibilities': [
+            'listen',
+            'yeah baby give me a listen',
+            'yo listen',
+            'yo listen up',
+            'hate weezy',
+            'hey sweetie',
+            'hate wheatley',
+            'hate we',
+            'hate we be',
+            'hate week',
+            'hey crazy'
+        ]
+    };
 
     var commands = {
         /*'start_app': {
@@ -713,18 +882,6 @@ projectham.module = (function($) {
          7: 'ok have'
          }
          },*/
-
-        'start_app': {
-            'correct': 'app started',
-            'function': startApp,
-            'has_parameters': false,
-            'possibilities': [
-                'listen',
-                'yeah baby give me a listen',
-                'yo listen',
-                'yo listen up'
-            ]
-        },
 
         'rotate': {
             'correct': 'rotate',
@@ -806,7 +963,7 @@ projectham.module = (function($) {
             ]
         },
 
-        'add_preFilter': {
+        /*'add_preFilter': {
             'correct': 'add',
             'function': addPreFilter,
             'has_parameters': false,
@@ -818,7 +975,7 @@ projectham.module = (function($) {
                 'ass',
                 'plus'
             ]
-        },
+        },*/
 
         'start_stream': {
             'correct': 'start stream',
@@ -946,6 +1103,37 @@ projectham.module = (function($) {
             'possibilities': [
                 'show tools',
                 'show tunes'
+            ]
+        },
+
+        'edit_filter': {
+            'correct': 'edit filter',
+            'function': editFilter,
+            'has_parameters': true,
+            'possibilities': [
+                'edit filter'
+            ]
+        },
+
+        'delete_filter': {
+            'correct': 'delete filter',
+            'function': deleteFilter,
+            'has_parameters': true,
+            'possibilities': [
+                'delete filter',
+                'remove filter'
+            ]
+        },
+
+        'choose_filter': {
+            'correct': 'choose filter',
+            'function': chooseFilter,
+            'has_parameters': true,
+            'possibilities': [
+                'choose filter',
+                'use filter',
+                'choose',
+                'use'
             ]
         }
     };

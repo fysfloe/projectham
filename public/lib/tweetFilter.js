@@ -14,12 +14,16 @@ projectham.GlobeFilter = function (name, color, id) {
 
     this.retweets = new THREE.Mesh();
     this.retweets.name = "retweets_"+id;
+    this.retweetsCount = 0;
 
     this.tweets = new THREE.Mesh();
     this.tweets.name = "tweets_"+id;
+    this.tweetsCount = 0;
 
     this.replies = new THREE.Mesh();
     this.replies.name = "replies_"+id;
+    this.repliesCount = 0;
+
 
     this.alphaMap = THREE.ImageUtils.loadTexture('img/alpha_map_cube2.png')
 
