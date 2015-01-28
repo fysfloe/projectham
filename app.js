@@ -30,6 +30,7 @@ trendsCollection.ensureIndex( { datetime: 1 }, { expireAfterSeconds: 2400 });
 
 var twit;
 
+// get global trends every 10 minutes
 var CronJob = require('cron').CronJob;
 var job = new CronJob({
     cronTime: '00 */10 * * * *',

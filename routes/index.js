@@ -14,7 +14,23 @@ var io = require('socket.io').listen(3001, {log: false});
 var twit,
     currentStream,
     clients = [],
-    filters = [];
+    filters = [],
+    requestCount = 0,
+    requestLimit = 10;
+
+// reset request counter every 10 minutes
+var CronJob = require('cron').CronJob;
+var resetLimiter = new CronJob({
+    cronTime: '30 */10 * * * *', // every 10 minutes on sec 30
+    onTick: function() {
+        // Run the job, reset counter
+        requestCount = 0;
+
+        console.log("Request count resetted.");
+    },
+    start: false
+});
+resetLimiter.start();
 
 router.post('/save-image/:filename', function(req, res) {
 
@@ -74,7 +90,14 @@ router.get('/', function(req, res) {
         }
     }
 
-    res.render('index', { title: 'Project Ham' });
+    var currentFilter = uniqueArray(filterToString(filters).split(','));
+    console.log('Current Filter:', currentFilter);
+
+    if(requestCount > requestLimit) {
+        res.render('index', { title: 'Project Ham', limitOk: false, filters: currentFilter });
+    } else {
+        res.render('index', { title: 'Project Ham', limitOk: true, filters: currentFilter });
+    }
 });
 
 var overallCount = 0,
@@ -97,6 +120,9 @@ io.sockets.on('connection', function (socket) {
     console.log("Number of Clients: " + clients.length);
 
     socket.on('filter', function(msg) {
+
+        requestCount++; // new filters in the pool
+        console.log('current request count: ' + requestCount);
 
         msg.forEach(function(item, index) {
             msg[index] = escapeString(item);
@@ -121,8 +147,9 @@ io.sockets.on('connection', function (socket) {
             } catch(err) {
                 console.log("Error: ", err);
             }
-        } else {
+        } else if(requestCount <= requestLimit) {
             InitStream();
+            //console.log("Init new stream now.");
         }
     });
 
@@ -144,7 +171,9 @@ io.sockets.on('connection', function (socket) {
                 filters = [];
 
             } else {
+                requestCount++;
                 InitStream();
+                //console.log("Init new stream now.");
             }
 
             socket.disconnect();
