@@ -736,9 +736,8 @@ projectham.GlobeView = Backbone.View.extend({
                 target = {x: pV.x, y: pV.y, z: pV.z, _x: 0, _y: 1, _z: 0};
                 _this._rotateToPlace(target);
             } else {
-                alert("404: Not Found :(");
+                eventBus.trigger('error', 'We couldn\'t find the place you were looking for. Maybe it\'s on another planet?');
             }
-
         });
     },
 

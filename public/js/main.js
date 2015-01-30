@@ -18,7 +18,7 @@ projectham.module = (function($) {
         restart,
         mic,
         fullscreenButton,
-        toolButton,
+        controlsButton,
 
         app_started,
 
@@ -62,8 +62,8 @@ projectham.module = (function($) {
         hideFilter,
         fullscreen,
         exitFullscreen,
-        showTools,
-        hideTools,
+        showControls,
+        hideControls,
         findFilter,
         editFilter,
         deleteFilter,
@@ -173,15 +173,14 @@ projectham.module = (function($) {
                     }
 
                     executeCommand(matched_command);
-                    setMicColor('green');
-                    playSound(0);
                 } else {
+                    console.log('fooooo');
+                    eventBus.trigger('wrongCommand');
                     appView.saveCommand(final_transcript);
-                    setMicColor('red');
-                    playSound(1);
                 }
 
                 final_transcript = '';
+                stopApp();
             }
 
             console.log('s');
@@ -288,9 +287,15 @@ projectham.module = (function($) {
     };
 
     rotate = function(parameters) {
-        var direction = parameters[0];
+        var direction = parameters[0],
+            possibilities = ['right', 'left', 'up', 'app', 'down'];
 
-        cv.rotateGlobe(direction);
+        if(possibilities.indexOf(direction) != -1) {
+            cv.rotateGlobe(direction);
+            eventBus.trigger('correctCommand');
+        } else {
+            eventBus.trigger('wrongCommand');
+        }
     };
 
     goTo = function(parameters) {
@@ -304,16 +309,22 @@ projectham.module = (function($) {
         destination = destination.trim();
 
         cv.goToPlace(destination);
+        eventBus.trigger('correctCommand');
     };
 
     reset = function() {
         cv.resetControls();
+        eventBus.trigger('correctCommand');
     };
 
     zoom = function(parameters) {
         var direction = parameters[0];
-
-        cv.zoom(direction);
+        if(direction == 'in' || direction == 'out') {
+            cv.zoom(direction);
+            eventBus.trigger('correctCommand');
+        } else {
+            eventBus.trigger('wrongCommand');
+        }
     };
 
     filterBy = function(parameters) {
@@ -331,6 +342,7 @@ projectham.module = (function($) {
 
             appView.filterInput.val(filter);
             appView.addFilterButton.trigger('click');
+            eventBus.trigger('correctCommand');
         }
     };
 
@@ -341,26 +353,36 @@ projectham.module = (function($) {
     };*/
 
     startStream = function() {
-        appView.startStream();
-
-        console.log('foo');
-
+        if(appView.state == 0) {
+            appView.startStream();
+            eventBus.trigger('correctCommand');
+        } else {
+            eventBus.trigger('wrongCommand');
+        }
         //gv.initFilters()
     };
 
     stopStream = function() {
         if(appView.state == 1) {
             appView.stopStream();
+            eventBus.trigger('correctCommand');
+        } else {
+            eventBus.trigger('wrongCommand');
         }
     };
 
     addTrend = function(parameters, filterBy) {
-        var trend = parameters[1];
+        var trend = filterBy ? parameters[1] : parameters[Object.keys(parameters)];
 
         trend = convertToInt(trend);
 
         if(trend) {
             $("table#trends tr:nth-child("+trend+") td:last-child").trigger('click');
+            console.log('foo');
+            eventBus.trigger('correctCommand');
+        } else {
+            console.log('foooooooooo');
+            eventBus.trigger('wrongCommand');
         }
     };
 
@@ -396,6 +418,8 @@ projectham.module = (function($) {
 
         convert = parseInt(convert);
 
+        console.log(convert);
+
         if(isInt(convert)) {
             return convert;
         }
@@ -409,6 +433,7 @@ projectham.module = (function($) {
 
     addFilter = function() {
         $(".add-filter").trigger('click');
+        eventBus.trigger('correctCommand');
     };
 
     showAlternativeInfo = function() {
@@ -585,7 +610,7 @@ projectham.module = (function($) {
 
     seperateView = function(parameters) {
         if(appView.state == 1) {
-            if(parameters.length < 1) return;
+            if(parameters.length < 1) eventBus.trigger('wrongCommand');
 
             var filter = parameters[Object.keys(parameters)];
             var filterNo = convertToInt(filter);
@@ -595,6 +620,7 @@ projectham.module = (function($) {
             if(isInt(filterNo)) {
                 DOM_filter = $('#filters .table-cell:nth-child('+filterNo+')');
                 DOM_filter.find('.sv-options .solo').trigger('click');
+                eventBus.trigger('correctCommand');
             } else {
                 var model = appView.filters.find(function(m) {
                     return m.get('filter').toLowerCase() == filter.toLowerCase();
@@ -603,18 +629,24 @@ projectham.module = (function($) {
                 if(model) {
                     DOM_filter = $('#filters .table-cell:nth-child('+(appView.filters.indexOf(model)+1)+')');
                     DOM_filter.find('.sv-options .solo').trigger('click');
+                    eventBus.trigger('correctCommand');
+                } else {
+                    eventBus.trigger('wrongCommand');
                 }
             }
+        } else {
+            eventBus.trigger('wrongCommand');
         }
     };
 
     endSeperateView = function() {
         $('.end-solo').trigger('click');
+        eventBus.trigger('correctCommand');
     };
 
     hideFilter = function(parameters) {
         if(appView.state == 1) {
-            if(parameters.length < 1) return;
+            if(parameters.length < 1) eventBus.trigger('wrongCommand');
 
             var filter = parameters[Object.keys(parameters)];
             var filterNo = convertToInt(filter);
@@ -625,6 +657,7 @@ projectham.module = (function($) {
                 DOM_filter = $('#filters .table-cell:nth-child('+filterNo+')');
                 if(DOM_filter.find('figure').hasClass('visible')) {
                     DOM_filter.find('.sv-options .visibility').trigger('click');
+                    eventBus.trigger('correctCommand');
                 }
             } else {
                 var model = appView.filters.find(function(m) {
@@ -635,67 +668,82 @@ projectham.module = (function($) {
                     DOM_filter = $('#filters .table-cell:nth-child('+(appView.filters.indexOf(model)+1)+')');
                     if(DOM_filter.find('figure').hasClass('visible')) {
                         DOM_filter.find('.sv-options .visibility').trigger('click');
+                        eventBus.trigger('correctCommand');
                     }
+                } else {
+                    eventBus.trigger('wrongCommand');
                 }
             }
+        } else {
+            eventBus.trigger('wrongCommand');
         }
     };
 
     showFilter = function(parameters) {
         if(appView.state == 1) {
-            if(parameters.length < 1) return false;
+            if(parameters.length < 1) eventBus.trigger('wrongCommand');
 
             var filter = parameters[Object.keys(parameters)];
             var DOM_filter = findFilter(filter, '#filters .table-cell', true);
 
             if(!DOM_filter.find('figure').hasClass('visible')) {
                 DOM_filter.find('.sv-options .visibility').trigger('click');
+                eventBus.trigger('correctCommand');
+            } else {
+                eventBus.trigger('wrongCommand');
             }
+        } else {
+            eventBus.trigger('wrongCommand');
         }
     };
 
     editFilter = function(parameters) {
         if(appView.state == 0) {
-            if(parameters.length < 1) return false;
+            if(parameters.length < 1) eventBus.trigger('wrongCommand');
 
             var filter = parameters[Object.keys(parameters)];
             var DOM_filter = findFilter(filter, '#preFilterList li', true);
 
             if(DOM_filter) {
                 DOM_filter.find('button.editbut').trigger('click');
+                eventBus.trigger('correctCommand');
             } else {
-                return false;
+                eventBus.trigger('wrongCommand');
             }
+        } else {
+            eventBus.trigger('wrongCommand');
         }
     };
 
     deleteFilter = function(parameters) {
         if(appView.state == 0) {
-            if(parameters.length < 1) return false;
+            if(parameters.length < 1) eventBus.trigger('wrongCommand');
 
             var filter = parameters[Object.keys(parameters)];
             var DOM_filter = findFilter(filter, '#preFilterList li', true);
 
             if(DOM_filter) {
                 DOM_filter.find('button.delbut').trigger('click');
+                eventBus.trigger('correctCommand');
             } else {
-                return false;
+                eventBus.trigger('wrongCommand');
             }
+        } else {
+            eventBus.trigger('wrongCommand');
         }
     };
 
     chooseFilter = function(parameters) {
-        if(parameters.length < 1) return false;
+        if(parameters.length < 1) eventBus.trigger('wrongCommand');
 
         var filter = parameters[Object.keys(parameters)];
         var DOM_filter = findFilter(filter, '#running-filters li', false);
 
         if(DOM_filter) {
-            console.log(DOM_filter);
-
             DOM_filter.trigger('click');
+            eventBus.trigger('correctCommand');
         } else {
-            return false;
+            eventBus.trigger('wrongCommand');
         }
     };
 
@@ -755,7 +803,19 @@ projectham.module = (function($) {
         } );
 
         fullscreenButton = $('#fullscreen');
-        toolButton = $('#tools');
+        controlsButton = $('#controls');
+
+        eventBus.on('wrongCommand', function() {
+            console.log('wrong');
+            setMicColor('red');
+            playSound(1);
+        });
+
+        eventBus.on('correctCommand', function() {
+            console.log('correct');
+            setMicColor('green');
+            playSound(0);
+        });
 
         //------- benni starts here --------
         gv = new projectham.GlobeView();
@@ -789,24 +849,36 @@ projectham.module = (function($) {
     fullscreen = function() {
         if(appView.fullscreenState == 0) {
             fullscreenButton.trigger('click');
+            eventBus.trigger('correctCommand');
+        } else {
+            eventBus.trigger('wrongCommand');
         }
     };
 
     exitFullscreen = function() {
         if(appView.fullscreenState == 1) {
             fullscreenButton.trigger('click');
+            eventBus.trigger('correctCommand');
+        } else {
+            eventBus.trigger('wrongCommand');
         }
     };
 
-    showTools = function() {
+    showControls = function() {
         if(appView.sidebarState == 1) {
-            toolButton.trigger('click');
+            controlsButton.trigger('click');
+            eventBus.trigger('correctCommand');
+        } else {
+            eventBus.trigger('wrongCommand');
         }
     };
 
-    hideTools = function() {
+    hideControls = function() {
         if(appView.sidebarState == 0) {
-            toolButton.trigger('click');
+            controlsButton.trigger('click');
+            eventBus.trigger('correctCommand');
+        } else {
+            eventBus.trigger('wrongCommand');
         }
     };
 
@@ -862,7 +934,9 @@ projectham.module = (function($) {
             'hate we',
             'hate we be',
             'hate week',
-            'hey crazy'
+            'hey crazy',
+            'hey tweez',
+            'hate weasley'
         ]
     };
 
@@ -1085,24 +1159,24 @@ projectham.module = (function($) {
             ]
         },
 
-        'hide_tools': {
-            'correct': 'hide tools',
-            'function': hideTools,
+        'hide_controls': {
+            'correct': 'hide controls',
+            'function': hideControls,
             'has_parameters': false,
             'possibilities': [
-                'hide tools',
-                'hyde tools',
-                'height tools'
+                'hide controls',
+                'hyde controls',
+                'height controls'
             ]
         },
 
-        'show_tools': {
-            'correct': 'show tools',
-            'function': showTools,
+        'show_controls': {
+            'correct': 'show controls',
+            'function': showControls,
             'has_parameters': false,
             'possibilities': [
-                'show tools',
-                'show tunes'
+                'show controls',
+                'show control'
             ]
         },
 

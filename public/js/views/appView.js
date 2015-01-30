@@ -450,6 +450,7 @@ projectham.AppView = Backbone.View.extend({
                 eventBus.trigger('addFilter', this.filters);
             } else {
                 this.filterErrMsg.html('Please choose a filter that doesn\'t yet exist.');
+                eventBus.trigger('wrongCommand');
             }
         }
     },
