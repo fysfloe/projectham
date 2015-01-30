@@ -61,7 +61,14 @@ projectham.AppView = Backbone.View.extend({
             location.reload();
         },
 
-        'click .tryagain': function() {}
+        'click .tryagain': function() {},
+
+        'click .accordion-heading': function (ev) {
+            !$(ev.target).hasClass('opened') ? $(ev.target).addClass('opened') : $(ev.target).removeClass('opened');
+            $(ev.target).next().slideToggle();
+
+            $('.accordion-heading').not(ev.target).removeClass('opened').next().slideUp();
+        }
     },
 
     initialize: function () {
@@ -166,6 +173,7 @@ projectham.AppView = Backbone.View.extend({
         $('.on-stream-started').hide();
         $('#start-stream').show();
         this.trends.show();
+        this.runningFilters.show();
 
         this.filterInputDiv.show();
         this.runningFiltersHeading.html('Currently Used Filters');
@@ -326,6 +334,7 @@ projectham.AppView = Backbone.View.extend({
             this.showExtendedInfo();
             this.filterBoxH2.html('Filtered by');
             this.state = 1;
+            $('#running-filters-heading').click();
 
             if (this.filterInput.val()) {
                 this.addFilter();
@@ -429,6 +438,9 @@ projectham.AppView = Backbone.View.extend({
                 return m.get('filter').toLowerCase() == saveFilter.toLowerCase();
             });
 
+            console.log(model);
+            console.log(saveFilter);
+
             if(!model && saveFilter) {
                 this.filterErrMsg.html('');
 
@@ -450,7 +462,7 @@ projectham.AppView = Backbone.View.extend({
                 eventBus.trigger('addFilter', this.filters);
             } else {
                 this.filterErrMsg.html('Please choose a filter that doesn\'t yet exist.');
-                eventBus.trigger('wrongCommand');
+                //eventBus.trigger('wrongCommand');
             }
         }
     },

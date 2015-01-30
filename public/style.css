@@ -779,6 +779,7 @@ table#trends, ul#running-filters {
     width: 100%;
     font-size: 0.95em;
     table-layout: fixed;
+    overflow: hidden;
 }
 
 table#trends tr, ul#running-filters li {
@@ -828,16 +829,42 @@ table#trends td:last-child span {
     display: inline-block;
 }
 
+#running-filters-div .accordion {
+    display: none;
+    overflow: hidden;
+    width: 98%;
+}
+
 ul#running-filters {
     list-style: none;
-    max-height: 12em;
-    overflow: scroll;
+    max-height: 10.5em;
+    overflow: auto;
     padding: 0;
+    width: 110%;
 }
 
 ul#running-filters li {
     display: block;
     min-width: 94.5%;
+}
+
+.accordion-heading:hover {
+    cursor: pointer;
+}
+
+.accordion-heading::after {
+    font-family: 'icomoon', sans-serif !important;
+    content: attr(title);
+    float: right;
+    position: relative;
+    top: -0.13em;
+    right: 0.15em;
+
+    transition: transform 0.3s ease;
+}
+
+.accordion-heading.opened::after {
+    transform: rotate(90deg);
 }
 
 #filters .table-cell:not(.add-filter):hover .sv-options {

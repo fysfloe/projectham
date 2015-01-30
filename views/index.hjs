@@ -180,47 +180,51 @@
         <button id="screenshot" class="ui-bg-color">Take screenshot</button>
 
         <div id="trends-div">
-            <h3 id="trends-heading">Current Trends Worldwide</h3>
-            <table id="trends">
-                <tr>
-                    <td>1</td>
-                    <td><span></span></td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td><span></span></td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td><span></span></td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td><span></span></td>
-                </tr>
-                <tr>
-                    <td>5</td>
-                    <td><span></span></td>
-                </tr>
-            </table>
+            <h3 id="trends-heading" class="accordion-heading opened" title="&#xe612;">Current Trends Worldwide</h3>
+            <div class="accordion">
+                <table id="trends">
+                    <tr>
+                        <td>1</td>
+                        <td><span></span></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td><span></span></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td><span></span></td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td><span></span></td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td><span></span></td>
+                    </tr>
+                </table>
+            </div>
         </div>
 
         <div id="running-filters-div">
-            <h3 id="running-filters-heading">Currently Used Filters</h3>
-            <ul id="running-filters">
-                <li>Obama</li>
-                <li>Putin</li>
-                <li>Love</li>
-                <li>Hate</li>
-                <li>War</li>
-                <li>Peace</li>
-                <li>Shit</li>
-                <li>Fuck</li>
-                <li>What</li>
-                <li>Me</li>
-                <li>Yeah</li>
-                <li>Baby</li>
-            </ul>
+            <h3 id="running-filters-heading" class="accordion-heading" title="&#xe612;">Currently Used Filters</h3>
+            <div class="accordion">
+                <ul id="running-filters">
+                    <li>Obama</li>
+                    <li>Putin</li>
+                    <li>Love</li>
+                    <li>Hate</li>
+                    <li>War</li>
+                    <li>Peace</li>
+                    <li>Shit</li>
+                    <li>Fuck</li>
+                    <li>What</li>
+                    <li>Me</li>
+                    <li>Yeah</li>
+                    <li>Baby</li>
+                </ul>
+            </div>
         </div>
 
         <div class="more-info">
