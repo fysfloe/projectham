@@ -124,8 +124,14 @@ io.sockets.on('connection', function (socket) {
         requestCount++; // new filters in the pool
         console.log('current request count: ' + requestCount);
 
+        var needRestart = false;
+        var runningFilters = uniqueArray(filterToString(filters).split(','));
+
         msg.forEach(function(item, index) {
-            msg[index] = escapeString(item);
+            if(indexOf.call(runningFilters, item.toLowerCase()) < 0 && !needRestart) {
+                needRestart = true;
+            }
+            msg[index] = escapeString(item.toLowerCase());
         });
 
         filters[socket.id] = (msg); // assign new filters of current client
@@ -147,7 +153,7 @@ io.sockets.on('connection', function (socket) {
             } catch(err) {
                 console.log("Error: ", err);
             }
-        } else if(requestCount <= requestLimit) {
+        } else if(requestCount <= requestLimit && needRestart == true) {
             InitStream();
             //console.log("Init new stream now.");
         }
@@ -545,6 +551,27 @@ var escapeString = function(html) {
 var containsAlphabeticCharacters = function(str) {
     var regex = /^[0-9.,\s]+$/;
     return !regex.test(str);
+};
+
+var indexOf = function(needle) {
+    if(typeof Array.prototype.indexOf === 'function') {
+        indexOf = Array.prototype.indexOf;
+    } else {
+        indexOf = function(needle) {
+            var i = -1, index = -1;
+
+            for(i = 0; i < this.length; i++) {
+                if(this[i] === needle) {
+                    index = i;
+                    break;
+                }
+            }
+
+            return index;
+        };
+    }
+
+    return indexOf.call(this, needle);
 };
 
 module.exports = router;

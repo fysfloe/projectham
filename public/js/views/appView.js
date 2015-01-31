@@ -448,6 +448,11 @@ projectham.AppView = Backbone.View.extend({
                 this.filterRatioDivs = this.filterRatio.find('div');
 
                 eventBus.trigger('addFilter', this.filters);
+
+                // add filters during stream
+                if(this.socket) { // check if socket connection exists (stream is running)
+                    this.socket.emit('filter', this.prepareFilters());
+                }
             } else {
                 this.filterErrMsg.html('Please choose a filter that doesn\'t yet exist.');
             }
