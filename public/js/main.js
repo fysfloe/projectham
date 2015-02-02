@@ -8,6 +8,7 @@ projectham.module = (function($) {
     var bars,
         appView,
         audioContext,
+        gainNode,
         BUFF_SIZE,
         microphone_stream = null,
         gain_node = null,
@@ -19,6 +20,11 @@ projectham.module = (function($) {
         mic,
         fullscreenButton,
         controlsButton,
+        muteButton,
+        gainFader,
+        muted = false,
+        FADE_TIME = 0.5,
+        gainValue,
 
         app_started,
 
@@ -174,7 +180,6 @@ projectham.module = (function($) {
 
                     executeCommand(matched_command);
                 } else {
-                    console.log('fooooo');
                     eventBus.trigger('wrongCommand');
                     appView.saveCommand(final_transcript);
                 }
@@ -201,7 +206,6 @@ projectham.module = (function($) {
             if(final_transcript) {
                 if(startCommand.possibilities.indexOf(final_transcript.toLowerCase()) != -1) {
                     startCommand.function();
-                    eventBus.trigger('goodToGo', true);
                 }
             }
         };
@@ -288,7 +292,7 @@ projectham.module = (function($) {
 
     rotate = function(parameters) {
         var direction = parameters[0],
-            possibilities = ['right', 'left', 'up', 'app', 'down'];
+            possibilities = ['right', 'left', 'up', 'down'];
 
         if(possibilities.indexOf(direction) != -1) {
             cv.rotateGlobe(direction);
@@ -460,6 +464,13 @@ projectham.module = (function($) {
                     eventBus.trigger('error', 'You didn\'t allow us to use your microphone. Why is that? Click allow at the top of the page and reload afterwards or just go on without using speech recognition.', 'reload');
                 });
 
+            gainNode = audioContext.createGain();
+            gainNode.connect(audioContext.destination);
+
+            muteButton = $('#mute').on('click', mute);
+            gainFader = $('#gainFader').on('input change', fadeGain);
+            gainFader.value = 100;
+
             var twoPi = 2 * Math.PI;
             var objectsCount = 32;
             var radius = 22;
@@ -491,8 +502,9 @@ projectham.module = (function($) {
         bufferLoader = new BufferLoader(
             audioContext,
             [
-                '../sounds/command_correct.wav',
-                '../sounds/buzzer.wav',
+                '../sounds/success.mp3',
+                '../sounds/error.mp3',
+                '../sounds/ambience.mp3',
             ],
             finishedLoading
         );
@@ -500,16 +512,46 @@ projectham.module = (function($) {
         bufferLoader.load();
     };
 
-    playSound = function(i) {
+    playSound = function(i, loop) {
         var source = audioContext.createBufferSource();
         source.buffer = sources[i];
-        source.connect(audioContext.destination);
+        source.loop = loop;
+
+        console.log(source);
+        source.connect(gainNode);
         source.start(0);
     };
 
     function finishedLoading(bufferList) {
         for(var i in bufferList) {
             sources[i] = bufferList[i];
+        }
+
+        playSound(2, true);
+    }
+
+    function fadeGain(element) {
+        if(!muted) {
+            gainNode.gain.linearRampToValueAtTime(1, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(element.target.value / 100, audioContext.currentTime);
+        }
+        gainValue = element.target.value/100;
+    }
+
+    function mute() { // toggle to mute and unmute sound
+        if(!muted) {
+            gainValue = gainNode.gain.value;
+            gainNode.gain.linearRampToValueAtTime(gainValue, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + FADE_TIME);
+            muted = true;
+            muteButton.html('&#xea2a;');
+            muteButton.attr('title', 'Unmute');
+        } else {
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(gainValue, audioContext.currentTime + FADE_TIME);
+            muted = false;
+            muteButton.html('&#xea27;');
+            muteButton.attr('title', 'Mute');
         }
     }
 
@@ -786,6 +828,8 @@ projectham.module = (function($) {
             mic.on('click', toggleAudioFunc);
         } else {
             showAlternativeInfo();
+            $('#mute').hide();
+            $('#gainFader').hide();
         }
 
         document.addEventListener( 'keydown', function( ev ) {
@@ -808,13 +852,13 @@ projectham.module = (function($) {
         eventBus.on('wrongCommand', function() {
             console.log('wrong');
             setMicColor('red');
-            playSound(1);
+            playSound(1, false);
         });
 
         eventBus.on('correctCommand', function() {
             console.log('correct');
             setMicColor('green');
-            playSound(0);
+            playSound(0, false);
         });
 
         //------- benni starts here --------
@@ -963,7 +1007,8 @@ projectham.module = (function($) {
             'has_parameters': true,
             'possibilities': [
                 'rotate',
-                'rot'
+                'rot',
+                'turn'
             ]
         },
 

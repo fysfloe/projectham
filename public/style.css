@@ -178,7 +178,7 @@ header > h1 span {
     font-weight: 300;
 }
 
-#tools button, #help {
+#tools button, #help-volume button {
     background: none;
     border: none;
     font-family: 'icomoon', sans-serif;
@@ -188,18 +188,18 @@ header > h1 span {
     transition: color 0.2s ease;
 }
 
-#help {
+#help-volume {
     position: absolute;
-    top: 2.5em;
+    top: 3em;
     left: 2.3em;
     z-index: 500;
 }
 
-#tools button:hover, #help:hover, #tools button:before, #help:after {
+#tools button:hover, #help-volume button:hover, #tools button:before, #help-volume button:after {
     color: #0084b4;
 }
 
-#tools button:hover:before, #help:hover:after {
+#tools button:hover:before, #help-volume button:hover:after {
     content: attr(title);
     font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
     font-size: 0.7em;
@@ -215,9 +215,9 @@ header > h1 span {
     text-align: right;
 }
 
-#help:hover:after {
+#help-volume button:hover:after {
     text-align: left;
-    left: 3em;
+    left: 13.5em;
 }
 
 #tools {
@@ -225,6 +225,35 @@ header > h1 span {
     top: 3em;
     right: 2.5em;
     z-index: 500;
+}
+
+input[type='range'] {
+    -webkit-appearance: none !important;
+    background-color: rgba(255,255,255,0.4);
+    border: none;
+    /* padding-bottom: 3px; */
+    height: 0.2em;
+    width: 5em;
+    position: relative;
+    top: -0.4em;
+    left: 0.5em;
+}
+
+input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    color: black;
+    border: none;
+    height: 0.8em;
+    width: 0.2em;
+    border-radius: 1px 1px 1px 1px;
+    bottom: 5px;
+
+    z-index: 20;
+
+    box-shadow:
+    inset 0 0 16px #0084b4,
+    inset 16px 0 20px #0084b4;
+
 }
 
 /*************************************************
@@ -846,6 +875,10 @@ ul#running-filters {
 ul#running-filters li {
     display: block;
     min-width: 94.5%;
+}
+
+.accordion-heading {
+    margin: 1em 0 0.5em;
 }
 
 .accordion-heading:hover {

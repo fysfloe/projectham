@@ -49,7 +49,12 @@
 </head>
 <body>
 <header>
-    <button id="help" title="Help">&#xe609;</button>
+    <div id="help-volume">
+        <button id="help" title="Help">&#xe609;</button>
+        <button id="mute" title="Mute">&#xea27;</button>
+        <input id="gainFader" type="range" value="100">
+    </div>
+
     <h1>Tweezee <span>A Twitter Live Stream Web Experience</span></h1>
     <div id="tools">
         <button id="reset" title="Reset Globe">&#xe605;</button>

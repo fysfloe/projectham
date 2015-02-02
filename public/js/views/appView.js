@@ -686,16 +686,22 @@ projectham.AppView = Backbone.View.extend({
         document.addEventListener("fullscreenchange", function () {
             if (!document.fullscreenElement) {
                 _this.fullscreenButton.html('&#xe601;');
+                _this.fullscreenButton.attr('title', 'Fullscreen');
+                _this.fullscreenState = 0;
             }
         }, false);
         document.addEventListener("webkitfullscreenchange", function () {
             if (!document.webkitFullscreenElement) {
                 _this.fullscreenButton.html('&#xe601;');
+                _this.fullscreenButton.attr('title', 'Fullscreen');
+                _this.fullscreenState = 0;
             }
         }, false);
         document.addEventListener("mozfullscreenchange", function () {
             if (!document.mozFullScreenElement) {
                 _this.fullscreenButton.html('&#xe601;');
+                _this.fullscreenButton.attr('title', 'Fullscreen');
+                _this.fullscreenState = 0;
             }
         }, false);
     },
