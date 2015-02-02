@@ -1,0 +1,312 @@
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('../fonts/BebasNeueRegular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('../fonts/BebasNeueBold.otf') format('opentype');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('../fonts/BebasNeueBook.otf') format('opentype');
+    font-weight: 300;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('../fonts/BebasNeueLight.otf') format('opentype');
+    font-weight: 200;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('../fonts/BebasNeueThin.otf') format('opentype');
+    font-weight: 100;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'icomoon';
+    src: url('../fonts/icomoon.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'ui-img';
+    src: url('../fonts/ui-img.ttf') format('truetype');
+}
+
+*{
+    font-family: 'BebasNeue', "Helvetica Neue", Arial, sans-serif;
+}
+
+body{
+    background: url(globe.png) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+#loader{
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+
+}
+
+#bar{
+    width: 0%;
+    height: 20px;
+    border-top: 2px solid #0084B4;
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: -10%;
+    margin-top: -10px;
+    text-align: right;
+    overflow: hidden;
+    transition: width 0.2s ease-in-out, opacity 300ms ease-in-out;
+    opacity: 100;
+    -webkit-transition: opacity 600ms ease-in-out;
+    -moz-transition: opacity 600ms ease-in-out;
+    -ms-transition: opacity 600ms ease-in-out;
+    -o-transition: opacity 600ms ease-in-out;
+    
+    /*-webkit-animation-name: loading;
+    animation-name: loading;
+    -webkit-animation-delay: 1s;
+            animation-delay: 1s;
+    -webkit-animation-direction: normal;
+            animation-direction: normal;
+    -webkit-animation-fill-mode: forwards;
+            animation-fill-mode: forwards;
+    -webkit-animation-iteration-count: 1;
+            animation-iteration-count: 1;
+    -webkit-animation-timing-function: ease-in-out;
+            animation-timing-function: ease-in-out;
+    -webkit-animation-duration: 2s;
+            animation-duration: 2s;*/
+}
+
+@-webkit-keyframes loading {
+  0%   { width: 0%; }
+  100% { width: 110%; }
+}
+
+@keyframes loading{
+  0%   { width: 0%; }
+  100% { width: 110%; }
+}
+
+#bar > span{
+    color: #0084B4;
+    font-weight: 400;
+    font-size: 0.9em;
+    padding: 5px 2px 0 0;
+    display: block;
+    white-space: nowrap
+
+}
+
+#loader > h1 {
+    font-size: 2.3em;
+    font-weight: 500;
+    color: #ffffff;
+    text-align: center;
+    top: 50%;
+    position: absolute;
+    width: 100%;
+    height: 30px;
+    margin: 0;
+    margin-top: -50px;
+    -webkit-animation: fadeIn 0.6s normal forwards 1 ease-in-out 0.6s;
+    -o-animation: fadeIn 0.6s normal forwards 1 ease-in-out 0.6s;
+    animation: fadeIn 0.6s normal forwards 1 ease-in-out 0.6s;
+    opacity: 0;
+    -webkit-transition: margin-top 300ms cubic-bezier(0.6, -0.40, 0.735, 0.045);
+    -moz-transition: margin-top 300ms cubic-bezier(0.6, -0.40, 0.735, 0.045);
+    -ms-transition: margin-top 300ms cubic-bezier(0.6, -0.40, 0.735, 0.045);
+    -o-transition: margin-top 300ms cubic-bezier(0.6, -0.40, 0.735, 0.045);
+    transition: margin-top 300ms cubic-bezier(0.6, -0.40, 0.735, 0.045);
+}
+
+#loader > h1.animate {
+    animation: moveUp 1s normal forwards 1 cubic-bezier(0.785, 0.135, 0.15, 0.86) 0.2s;
+    -webkit-animation: moveUp 1s normal forwards 1 cubic-bezier(0.785, 0.135, 0.15, 0.86)0.2s;
+    opacity: 1 !important;
+}
+
+
+@keyframes moveUp {
+    to {
+        top: 16.7%;
+    }
+}
+
+@-webkit-keyframes moveUp {
+    to {
+        top: 16.7%;
+    }
+}
+
+@-webkit-keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+
+}
+
+@-o-keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+
+}
+
+@-moz-keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+
+}
+
+#curtain{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: -1;
+    overflow: hidden;
+}
+
+#curtain::after, #curtain::before {
+    background-color: black;
+    position: absolute;
+    width: 100%;
+    height: 50%;
+    z-index: 20;
+    display: block;
+    content: "";
+    /* overflow: hidden; */
+    -webkit-transition: all 1200ms cubic-bezier(0.785, 0.135, 0.15, 0.86);
+    -moz-transition: all 1200ms cubic-bezier(0.785, 0.135, 0.15, 0.86);
+    -ms-transition: all 1200ms cubic-bezier(0.785, 0.135, 0.15, 0.86);
+    -o-transition: all 1200ms cubic-bezier(0.785, 0.135, 0.15, 0.86);
+    margin-top: -8px;
+}
+
+#curtain::after{
+    top: 50%;
+    padding-bottom: 200px;
+}
+
+#curtain::before {
+    top: 0;
+}
+
+#curtain.animate::after{
+    top:105%;
+}
+
+#curtain.animate::before{
+    top:-55%;
+}
+
+#curtain.animate ~ div#button {
+    opacity: 0;
+}
+
+
+#loader > h1 span {
+    color: #0084b4;
+    font-weight: 300;
+}
+
+#loader > div#button {
+    height: 54px;
+    top: 50%;
+    position: absolute;
+    width: 324px;
+    position: relative;
+    left: 50%;
+    margin: -37px 0 0 -162px;
+    -webkit-transition: opacity 300ms ease-in-out;
+    -moz-transition: opacity 300ms ease-in-out;
+    -ms-transition: opacity 300ms ease-in-out;
+    -o-transition: opacity 300ms ease-in-out;
+}
+
+#loader button{
+    font-size: 1.6em;
+    background-color: #0084b4;
+    color: white;
+    border: none;
+    -webkit-transition: opacity 300ms ease-in-out;
+    -moz-transition: opacity 300ms ease-in-out;
+    -ms-transition: opacity 300ms ease-in-out;
+    -o-transition: opacity 300ms ease-in-out;
+    opacity: 0;
+    line-height: 2.3em;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    cursor: pointer;
+}
+
+#loader #strokes{
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#strokes > path {
+    stroke-dasharray: 380;
+    stroke-dashoffset: 380;
+}
+
+#strokes.animate > path {
+    animation: dash 800ms cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+    -webkit-animation: dash 800ms cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+#strokes.animate ~ button {
+    -webkit-animation: fadeIn 0.4s normal forwards 1 ease-in-out 0.58s;
+    -o-animation: fadeIn 0.4s normal forwards 1 ease-in-out 0.58s;
+    animation: fadeIn 0.4s normal forwards 1 ease-in-out 0.58s;
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@-webkit-keyframes dash {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
