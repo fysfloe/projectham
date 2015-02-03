@@ -91,12 +91,14 @@ router.get('/', function(req, res) {
     }
 
     var currentFilter = uniqueArray(filterToString(filters).split(','));
+
+    currentFilter.push('Obama'); // todo: delete this before going online
     console.log('Current Filter:', currentFilter);
 
     if(requestCount > requestLimit) {
-        res.render('index', { title: 'Tweezee', limitOk: false, filters: currentFilter });
+        res.render('index', { title: 'Tweezee', limitOk: false, filters: currentFilter, existingFilters: currentFilter.length > 1 });
     } else {
-        res.render('index', { title: 'Tweezee', limitOk: true, filters: currentFilter });
+        res.render('index', { title: 'Tweezee', limitOk: false, filters: currentFilter, existingFilters: currentFilter.length > 1 });
     }
 });
 

@@ -81,8 +81,8 @@
         </div>
         <div class="info-box">
             <img class="arrow" src="img/ui/arrow.png" alt="Arrow">
-            <h2>Use trending topics as filters</h2>
-            <p>The list shows the 5 most trending topics on Twitter worldwide. You can add one of them as your filter by clicking on it.</p>
+            <h2>Use other filters</h2>
+            <p>You can either choose one of the 5 most trending topics on Twitter worldwide or a filter that is already used by another user. You can add one of these to your filter list by clicking on it.</p>
         </div>
         <div class="info-box">
             <img class="arrow" src="img/ui/arrow.png" alt="Arrow">
@@ -216,18 +216,17 @@
             <h3 id="running-filters-heading" class="accordion-heading" title="&#xe612;">Currently Used Filters</h3>
             <div class="accordion">
                 <ul id="running-filters">
-                    <li>Obama</li>
-                    <li>Putin</li>
-                    <li>Love</li>
-                    <li>Hate</li>
-                    <li>War</li>
-                    <li>Peace</li>
-                    <li>Shit</li>
-                    <li>Fuck</li>
-                    <li>What</li>
-                    <li>Me</li>
-                    <li>Yeah</li>
-                    <li>Baby</li>
+
+                    {{# existingFilters }}
+                        {{# filters }}
+                            <li>{{.}}</li>
+                        {{/ filters }}
+                    {{/ existingFilters }}
+                    {{^ existingFilters }}
+                    Currently no filters in use.
+                    {{/ existingFilters }}
+
+
                 </ul>
             </div>
         </div>
@@ -308,6 +307,14 @@
 <script src="js/dialogFx.js"></script>
 <script src="js/views/appView.js"></script>
 <script src="js/main.js"></script>
+
+
+    {{^ limitOk }}
+        <script>
+            eventBus.trigger('noNewFilters');
+        </script>
+    {{/ limitOk }}
+
 
 <!------------------ Custom Shader Code -------------------------->
 <script id="vertexShader" type="x-shader/x-vertex">

@@ -113,7 +113,14 @@ projectham.AppView = Backbone.View.extend({
         this.stats = {};
         this.currentSepFilter = '';
 
-        this.allFilters = ['obama', 'war', 'piece', 'putin', 'love', 'hate', 'yeah', 'fuck']; // todo: get this from julian, lower case required!
+        this.allFilters = []; // lower case required!
+        var _this = this;
+
+        $('#running-filters li').each(function() {
+           _this.allFilters.push($(this).text().toLowerCase());
+        });
+
+        console.log(this.allFilters);
 
         /*************************************************
              DOM elements
@@ -204,7 +211,6 @@ projectham.AppView = Backbone.View.extend({
              eventBus events
          *************************************************/
 
-        var _this = this;
         this.socket = null;
 
         window.onbeforeunload = function () {
@@ -251,6 +257,11 @@ projectham.AppView = Backbone.View.extend({
             }
             _this.errBox.addClass('success');
             _this.errBox.show();
+        });
+
+        eventBus.on('noNewFilters', function() {
+            alert('hu');
+            this.noNewFilters()
         });
 
         console.log('initialized');

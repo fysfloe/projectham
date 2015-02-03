@@ -18,13 +18,12 @@ projectham.module = (function($) {
         ignore_onend,
         restart,
         mic,
-        fullscreenButton,
-        controlsButton,
         muteButton,
         gainFader,
         muted = false,
         FADE_TIME = 0.5,
         gainValue,
+        inChange,
 
         app_started,
 
@@ -73,7 +72,13 @@ projectham.module = (function($) {
         findFilter,
         editFilter,
         deleteFilter,
-        chooseFilter;
+        chooseFilter,
+        openHelp,
+        closeHelp,
+        thankYou,
+        showTrends,
+        showUsedFilters,
+        changeTo;
 
     initRecognition = function() {
         var recognizing = false;
@@ -275,6 +280,7 @@ projectham.module = (function($) {
     }
 
     startApp = function() {
+        playSound(4);
         app_started = true;
         mic.css({opacity: 1});
         console.log('app started');
@@ -505,6 +511,8 @@ projectham.module = (function($) {
                 '../sounds/success.mp3',
                 '../sounds/error.mp3',
                 '../sounds/ambience.mp3',
+                '../sounds/thankyou.mp3',
+                '../sounds/start.mp3'
             ],
             finishedLoading
         );
@@ -749,6 +757,8 @@ projectham.module = (function($) {
             if(DOM_filter) {
                 DOM_filter.find('button.editbut').trigger('click');
                 eventBus.trigger('correctCommand');
+
+                inChange = DOM_filter;
             } else {
                 eventBus.trigger('wrongCommand');
             }
@@ -781,7 +791,7 @@ projectham.module = (function($) {
         var filter = parameters[Object.keys(parameters)];
         var DOM_filter = findFilter(filter, '#running-filters li', false);
 
-        if(DOM_filter) {
+        if(DOM_filter.length > 0) {
             DOM_filter.trigger('click');
             eventBus.trigger('correctCommand');
         } else {
@@ -846,9 +856,6 @@ projectham.module = (function($) {
             }
         } );
 
-        fullscreenButton = $('#fullscreen');
-        controlsButton = $('#controls');
-
         eventBus.on('wrongCommand', function() {
             console.log('wrong');
             setMicColor('red');
@@ -892,7 +899,7 @@ projectham.module = (function($) {
 
     fullscreen = function() {
         if(appView.fullscreenState == 0) {
-            fullscreenButton.trigger('click');
+            appView.fullscreenButton.trigger('click');
             eventBus.trigger('correctCommand');
         } else {
             eventBus.trigger('wrongCommand');
@@ -901,7 +908,7 @@ projectham.module = (function($) {
 
     exitFullscreen = function() {
         if(appView.fullscreenState == 1) {
-            fullscreenButton.trigger('click');
+            appView.fullscreenButton.trigger('click');
             eventBus.trigger('correctCommand');
         } else {
             eventBus.trigger('wrongCommand');
@@ -910,7 +917,7 @@ projectham.module = (function($) {
 
     showControls = function() {
         if(appView.sidebarState == 1) {
-            controlsButton.trigger('click');
+            appView.controlsButton.trigger('click');
             eventBus.trigger('correctCommand');
         } else {
             eventBus.trigger('wrongCommand');
@@ -919,7 +926,56 @@ projectham.module = (function($) {
 
     hideControls = function() {
         if(appView.sidebarState == 0) {
-            controlsButton.trigger('click');
+            appView.controlsButton.trigger('click');
+            eventBus.trigger('correctCommand');
+        } else {
+            eventBus.trigger('wrongCommand');
+        }
+    };
+
+    openHelp = function() {
+        if(appView.helpState == 0) {
+            appView.helpButton.trigger('click');
+            eventBus.trigger('correctCommand');
+        } else {
+            eventBus.trigger('wrongCommand');
+        }
+    };
+
+    closeHelp = function() {
+        if(appView.helpState == 1) {
+            appView.helpButton.trigger('click');
+            eventBus.trigger('correctCommand');
+        } else {
+            eventBus.trigger('wrongCommand');
+        }
+    };
+
+    thankYou = function() {
+        playSound(3, false);
+    };
+
+    showTrends = function() {
+        console.log($('#trends-heading'));
+
+        $('#trends-heading').trigger('click');
+        eventBus.trigger('correctCommand');
+    };
+
+    showUsedFilters = function() {
+        eventBus.trigger('correctCommand');
+        appView.runningFiltersHeading.trigger('click');
+    };
+
+    changeTo = function(parameters) {
+        if(parameters.length < 1) eventBus.trigger('wrongCommand');
+
+        var filter = parameters[Object.keys(parameters)],
+            input = $('#preFilterList li.editing input');
+
+        if(input.length > 0) {
+            input[0].value = filter;
+            input[0].blur();
             eventBus.trigger('correctCommand');
         } else {
             eventBus.trigger('wrongCommand');
@@ -980,7 +1036,12 @@ projectham.module = (function($) {
             'hate week',
             'hey crazy',
             'hey tweez',
-            'hate weasley'
+            'hate weasley',
+            'hate tweety',
+            'I hate weezy',
+            'hey tweety',
+            '80 easy',
+            'a tweety'
         ]
     };
 
@@ -1230,7 +1291,8 @@ projectham.module = (function($) {
             'function': editFilter,
             'has_parameters': true,
             'possibilities': [
-                'edit filter'
+                'edit filter',
+                'edit'
             ]
         },
 
@@ -1253,6 +1315,65 @@ projectham.module = (function($) {
                 'use filter',
                 'choose',
                 'use'
+            ]
+        },
+
+        'open_help': {
+            'correct': 'open help',
+            'function': openHelp,
+            'has_paramters': false,
+            'possibilities': [
+                'open help',
+                'help',
+                'what can i do'
+            ]
+        },
+
+        'close_help': {
+            'correct': 'close help',
+            'function': closeHelp,
+            'has_paramters': false,
+            'possibilities': [
+                'close help',
+                'clothes help',
+                'close'
+            ]
+        },
+
+        'thank_you': {
+            'correct': 'thank you',
+            'function': thankYou,
+            'has_parameters': false,
+            'possibilities': [
+                'thank you',
+                'thanks'
+            ]
+        },
+
+        'show_trends': {
+            'correct': 'show trends',
+            'function': showTrends,
+            'has_parameters': false,
+            'possibilities': [
+                'show trends'
+            ]
+        },
+
+        'show_used_filters': {
+            'correct': 'show used filters',
+            'function': showUsedFilters,
+            'has_parameters': false,
+            'possibilities': [
+                'show used filters'
+            ]
+        },
+
+        'change_to': {
+            'correct': 'change to',
+            'function': changeTo,
+            'has_parameters': true,
+            'possibilities': [
+                'change to'
             ]
         }
     };
