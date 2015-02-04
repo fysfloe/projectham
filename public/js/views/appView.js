@@ -35,6 +35,10 @@ projectham.AppView = Backbone.View.extend({
         'click .visibility': 'toggleVisibility',
         'click .end-solo': 'endSeparateView',
         'click #help': 'toggleHelp',
+        'click #show-possible-commands': function() {
+            console.log('foo');
+            this.possibleCommands.toggle.bind(this.possibleCommands)();
+        },
 
         'click .add-filter': function () {
             this.filterErrMsg.html('');
@@ -168,6 +172,7 @@ projectham.AppView = Backbone.View.extend({
 
         console.log($('#somedialog'));
         this.dlg = new DialogFx( $('#errBox')[0]) ;
+        this.possibleCommands = new DialogFx( $('#possible-commands')[0] );
         this.errMsgText = $('#errMsg');
         this.action = $('#action');
 
@@ -178,6 +183,7 @@ projectham.AppView = Backbone.View.extend({
          *************************************************/
 
         $('.on-stream-started').hide();
+        $('.on-stream-not-started').show();
         $('#start-stream').show();
         this.trends.show();
         this.runningFilters.show();
@@ -436,6 +442,7 @@ projectham.AppView = Backbone.View.extend({
 
     showExtendedInfo: function () {
         $('.on-stream-started').show();
+        $('.on-stream-not-started').hide();
         $('#start-stream').hide();
     },
 

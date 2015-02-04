@@ -1039,6 +1039,7 @@ projectham.module = (function($) {
             'hate weasley',
             'hate tweety',
             'I hate weezy',
+            ' I hate weezy',
             'hey tweety',
             '80 easy',
             'a tweety'
@@ -1325,7 +1326,8 @@ projectham.module = (function($) {
             'possibilities': [
                 'open help',
                 'help',
-                'what can i do'
+                'what can i do',
+                'help me'
             ]
         },
 
@@ -1374,6 +1376,15 @@ projectham.module = (function($) {
             'has_parameters': true,
             'possibilities': [
                 'change to'
+            ]
+        },
+
+        'mute': {
+            'correct': 'mute',
+            'function': mute,
+            'has_parameters': true,
+            'possibilities': [
+                'mute'
             ]
         }
     };

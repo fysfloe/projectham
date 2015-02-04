@@ -363,6 +363,52 @@ button#start-experience {
     font-weight: 400;
 }
 
+div#possible-commands {
+    position: fixed;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 500;
+    width: 100%;
+    height: 100%;
+    top: -7em;
+    left: 0;
+    text-align: left;
+}
+
+div#possible-commands td, div#possible-commands th {
+    padding: 0.4em;
+}
+
+#possible-commands tr {
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+}
+
+tr.trheading td {
+    padding-left: 0.5em !important;
+}
+
+tr.trheading {
+    font-size: 0.8em;
+    color: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.1);
+}
+
+#possible-commands .dialog__content {
+    border: none;
+    width: auto;
+    text-align: left;
+    background: rgba(0,0,0,0.9);
+}
+
+#possible-commands .dialog__overlay {
+    background: none;
+}
+
 /*************************************************
     error-box
  *************************************************/
@@ -1097,7 +1143,7 @@ span.view {
 }
 
 #web-speech-box.hidden-controls .more-info, #web-speech-box.hidden-controls h2, #web-speech-box.hidden-controls #commands {
-    display: none;
+    display: none !important;
 }
 
 /*************************************************
