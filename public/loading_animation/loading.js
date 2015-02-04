@@ -97,7 +97,7 @@ function DecimalToDMS(lat, lng) {
     lngSec = lngD - (lngMin * 60);
 
 
-    return latDeg + "° " + latMin + "' " + myRound(latSec, 2) + "'' " + latDir + ", " + lngDeg + "° " + lngMin + "' " + myRound(lngSec, 2) + "'' " + lngDir;
+    return latDeg + "° " + latMin + "' " + myRound(latSec, 0) + "'' " + latDir + ", " + lngDeg + "° " + lngMin + "' " + myRound(lngSec, 0) + "'' " + lngDir;
 
 
 }

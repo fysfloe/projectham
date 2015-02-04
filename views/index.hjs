@@ -48,6 +48,18 @@
 
 </head>
 <body>
+<div id="loader"><h1>Tweezee <span>A Twitter Live Stream Web Experience</span></h1>
+    <div id="curtain">
+    </div>
+    <div id="bar"><span>47° 16' 14.0880'' N, 11° 23' 12.1920'' E</span></div>
+    <div id="button">
+        <svg version="1.1" id="strokes" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 325 54" enable-background="new 0 0 324 54" xml:space="preserve">
+            <path fill="none" stroke="#0084b4" stroke-width="2" stroke-miterlimit="10" d="M1,26.5 1,53 324,53 324,26.5"></path>
+            <path fill="none" stroke="#0084b4" stroke-width="2" stroke-miterlimit="10" d="M324,26.5 324,1 1,1 1,26.5"></path>
+        </svg>
+        <button>Start the Experience</button>
+    </div>
+</div>
 <header>
     <button id="help" title="Help">&#xe609;</button>
     <h1>Tweezee <span>A Twitter Live Stream Web Experience</span></h1>
@@ -299,6 +311,7 @@
 <script src="js/dialogFx.js"></script>
 <script src="js/views/appView.js"></script>
 <script src="js/main.js"></script>
+<script src="js/loading.js"></script>
 
 <!------------------ Custom Shader Code -------------------------->
 <script id="vertexShader" type="x-shader/x-vertex">

@@ -8,8 +8,6 @@ projectham.GlobeView = Backbone.View.extend({
      INIT
      */
     initialize: function () {
-        this.isLineAnim = false;
-        this.lineVar = 3;
         _.bindAll(this, 'render', '_updateScene', 'latLongToVector3', 'buildAxes', 'displayTweet');
         this.filters = {};
     },
@@ -20,7 +18,19 @@ projectham.GlobeView = Backbone.View.extend({
      */
 
     render: function (options) {
-        var _this = this;
+
+        //local variables
+        var globe,
+            innerGlow,
+            outerGlow,
+            outerSpace,
+            globeMainMaterial,
+            innerGlowMaterial,
+            outerGlowMaterial,
+            ambientLight,
+            spaceTexture;
+
+        //global variables
         this.width = options.width || 500;
         this.height = options.height || 500;
         this.distance = options.distance || 15;
@@ -30,81 +40,38 @@ projectham.GlobeView = Backbone.View.extend({
         this.specularColor = options.specularColor || 'white';
         this.shininessInt = options.shininessInt || 4;
 
-        this.manager = new THREE.LoadingManager();
-        this.manager.onProgress = function (item, loaded, total) {
-
-            console.log(item, loaded, total);
-
-        };
-
         this.scene = new THREE.Scene();
 
+        // INIT CAMERA
         this.camera = new THREE.PerspectiveCamera(50, this.width / this.height, 0.1, 1000);
         this.camera.position.z = this.distance;
-        //this.camera.lookAt(new THREE.Vector3(10.443329520636075, 10.010497358953545, 4.0173981090580995));
         this.camera.position.set(10.443329520636075, 10.010497358953545, -4.0173981090580995);
 
-        //this.ambientLight = new THREE.AmbientLight(0x090c10);
-        this.ambientLight = new THREE.AmbientLight(0x1a232f); // TODO Mac Display
-
-        this.scene.add(this.ambientLight);
-
+        // ADD LIGHTS
+        ambientLight = new THREE.AmbientLight(0x1a232f); // TODO Mac Display
         this.spotLight = new THREE.SpotLight(0xffffff, 7);
+
+        this.scene.add(ambientLight);
         this.scene.add(this.spotLight);
 
-        //this.scene.add(new THREE.DirectionalLight(0xffffff, 1));
-
-        this.globeMaterialWire = new THREE.MeshLambertMaterial({
-            color: 0xff0000,
-            //map: THREE.ImageUtils.loadTexture(this.mapSrc),
-            // specularMap: THREE.ImageUtils.loadTexture(this.specularMapSrc),
-            // specular: new THREE.Color(this.specularColor),
-            //alphaMap: THREE.ImageUtils.loadTexture('img/world_map_alpha.png'),
-            //shininess: 4
-            transparent: true,
-            opacity: .4,
-            side: THREE.DoubleSide,
-            wireframe: false
-        });
-
-        this.globeMaterialFront = new THREE.MeshPhongMaterial({
+        // GLOBE MATERIALS SETUP
+        globeMainMaterial = new THREE.MeshPhongMaterial({
             color: 0x000407,
-            //color: 0x070707,
             map: THREE.ImageUtils.loadTexture('img/world_map_semi_details.png'),
-            //map: THREE.ImageUtils.loadTexture(this.mapSrc),
             bumpMap: THREE.ImageUtils.loadTexture('img/world_map_alpha.png'),
             specularMap: THREE.ImageUtils.loadTexture('img/world_map_semi_details.png'),
             bumpScale: .03,
-            //alphaMap: THREE.ImageUtils.loadTexture('img/world_map_semi.png'),
-            // specular: 0x00050a,
             specular: 0x0a0a0a,
             shininess: 2,
-            transparent: false,
             opacity: 1,
-            side: THREE.FrontSide,
-            wireframe: false
+            side: THREE.FrontSide
         });
 
-        //Initialize Globe
-        this.globeWire = new THREE.Mesh(
-            new THREE.SphereGeometry(5, 50, 50),
-            this.globeMaterialWire
-        );
-
-        this.globeFront = new THREE.Mesh(
-            new THREE.SphereGeometry(5.0, 50, 50),
-            this.globeMaterialFront
-        );
-
-        this.scene.add(this.globeFront);
-        //this.scene.add(this.globeWire);
-
-        var customMaterial = new THREE.ShaderMaterial(
+        outerGlowMaterial = new THREE.ShaderMaterial(
             {
                 uniforms: {
                     "c": {type: "f", value: 0.4},
                     "p": {type: "f", value: 6.0},
-                    //  glowColor: {type: "c", value: new THREE.Color(0x5ea9e6)},
                     glowColor: {type: "c", value: new THREE.Color(0x68bbff)}, // TODO Mac Display
                     viewVector: {type: "v3", value: this.camera.position}
                 },
@@ -115,12 +82,11 @@ projectham.GlobeView = Backbone.View.extend({
                 transparent: true
             });
 
-        var customMaterial2 = new THREE.ShaderMaterial(
+        innerGlowMaterial = new THREE.ShaderMaterial(
             {
                 uniforms: {
                     "c": {type: "f", value: 1.0},
                     "p": {type: "f", value: 3.5},
-                    //  glowColor: {type: "c", value: new THREE.Color(0x5ea9e6)},
                     glowColor: {type: "c", value: new THREE.Color(0x68bbff)}, // TODO Mac Display
                     viewVector: {type: "v3", value: this.camera.position}
                 },
@@ -132,36 +98,46 @@ projectham.GlobeView = Backbone.View.extend({
 
             });
 
-        var ballGeometry = new THREE.SphereGeometry(6, 32, 16);
-        var ballGeometry2 = new THREE.SphereGeometry(5.03, 50, 50);
-        var ball = new THREE.Mesh(ballGeometry, customMaterial);
-        var ball2 = new THREE.Mesh(ballGeometry2, customMaterial2);
+
+        //Initialize Globe
+        globe = new THREE.Mesh(
+            new THREE.SphereGeometry(5.0, 50, 50),
+            globeMainMaterial
+        );
+
+        outerGlow = new THREE.Mesh(
+            new THREE.SphereGeometry(6, 32, 16),
+            outerGlowMaterial
+        );
+
+        innerGlow = new THREE.Mesh(
+            new THREE.SphereGeometry(5.03, 50, 50),
+            innerGlowMaterial
+        );
 
 
-        this.scene.add(ball2);
-        this.scene.add(ball);
+        this.scene.add(globe);
+        this.scene.add(innerGlow);
+        this.scene.add(outerGlow);
 
         //Initialize Background ("Space")
-        this.BGtexture = THREE.ImageUtils.loadTexture(this.bgSrc);
-        this.BGtexture.wrapS = this.BGtexture.wrapT = THREE.RepeatWrapping;
-        this.BGtexture.repeat.set(1, 1);
+        spaceTexture = THREE.ImageUtils.loadTexture(this.bgSrc);
+        spaceTexture.wrapS = spaceTexture.wrapT = THREE.RepeatWrapping;
+        spaceTexture.repeat.set(1, 1);
 
-        this.spaceSphere = new THREE.Mesh(
+        outerSpace = new THREE.Mesh(
             new THREE.SphereGeometry(1000, 64, 64),
             new THREE.MeshBasicMaterial({
-                // color: 0x333333,
                 color: 0x555555,
-                map: this.BGtexture,
+                map: spaceTexture,
                 side: THREE.BackSide,
                 transparent: false,
                 opacity: 1
             })
         );
-        this.scene.add(this.spaceSphere);
 
 
-        //this.scene.add(this.buildAxes(1000));
-
+        this.scene.add(outerSpace);
 
         // Fallback WebGL to Canvas Renderer
         if (window.WebGlRenderingContext || document.createElement('canvas').getContext('experimental-webgl')) {
@@ -173,15 +149,16 @@ projectham.GlobeView = Backbone.View.extend({
         } else {
             this.renderer = new THREE.CanvasRenderer();
         }
+
         this.renderer.setSize(this.width, this.height);
 
         this.$el.html(this.renderer.domElement);
 
-        // Enable Trackball
+        // ENABLE TRACKBALL CONTROLS
         this.controls = options.enableTrackball ? new THREE.TrackballControls(this.camera, this.renderer.domElement, this) : null;
 
 
-        var windowResize = THREEx.WindowResize(this.renderer, this.camera);
+        THREEx.WindowResize(this.renderer, this.camera);
         this._updateScene();
         this._eventHandler();
 
@@ -190,31 +167,11 @@ projectham.GlobeView = Backbone.View.extend({
     },
 
     _updateScene: function () {
-
-        var updateScene = this._updateScene;
-        requestAnimationFrame(updateScene);
+        requestAnimationFrame(this._updateScene);
         TWEEN.update();
-        /* if (this.isLineAnim) {
-         if(this.lineVar == 2){
-         this.scene.add(this.lines);
-         }
-
-         this.lines.geometry.verticesNeedUpdate = true;
-         this.lines.geometry.vertices.push(this.lineVertices[this.lineVar]);
-         this.lines.geometry.verticesNeedUpdate = true;
-         console.log(this.lines);
-
-         this.lineVar++;
-         if (this.lineVar >= 100) {
-         this.lineVar = 2;
-         this.isLineAnim = false;
-         }
-         }*/
         this.controls ? this.controls.update() : null;
-        var controls = this.controls;
         this.spotLight.position.copy(this.camera.position);
         this.renderer.render(this.scene, this.camera);
-        //this.composer.render();
 
     },
 
@@ -231,7 +188,6 @@ projectham.GlobeView = Backbone.View.extend({
         var _this = this,
             filter,
             position,
-            mesh,
             cube,
             value;
 
@@ -525,7 +481,7 @@ projectham.GlobeView = Backbone.View.extend({
 
         $.post( 'save-image/' + filename, {
             base64: canvas.toDataURL('image/png')
-        }, function(success) {
+        }, function() {
             eventBus.trigger('success', 'Awesome! Your screenshot has been saved.', 'share');
         }).fail(function() {
             eventBus.trigger('error', 'We couldn\'t save your screenshot. Why not try it again?', 'tryagain');
@@ -569,78 +525,6 @@ projectham.GlobeView = Backbone.View.extend({
 
         });
 
-        eventBus.on("scale", function () {
-            var tweet1 = {
-                id: 12125512,
-                text: 'Project Ham is the yellow from the egg #obama',
-                parent_id: null,
-                type: 'reply',
-                location: {
-                    lat: 48.3669367,
-                    lng: 14.5172742,
-                    type: 'user_location'
-                },
-                user: {
-                    name: 'hans',
-                    followers: 200550,
-                    lang: 'de'
-                },
-                hashtags: null,
-                filter: {
-                    text: 'obama',
-                    id: 0
-                }
-            };
-
-            var tweet2 = {
-                id: 12125512,
-                text: 'Project Ham is NOT the yellow from the egg #putin',
-                parent_id: null,
-                type: 'retweet',
-                location: {
-                    lat: 45.3669367,
-                    lng: 14.5172742,
-                    type: 'user_location'
-                },
-                user: {
-                    name: 'hans',
-                    followers: 200550,
-                    lang: 'de'
-                },
-                hashtags: null,
-                filter: {
-                    text: 'merkel',
-                    id: 1
-                }
-            };
-
-            _this.displayTweet(tweet1);
-            _this.displayTweet(tweet2);
-            _this.fadeOutFilter(0);
-
-        });
-
-        eventBus.on("draw", function () {
-            var connection = {
-                filter: {
-                    text: 'merkel',
-                    id: 0
-                },
-                parent: {
-                    lat: 36,
-                    lng: 138,
-                    type: 'user_location'
-                },
-                child: {
-                    lat: -33,
-                    lng: -71.5,
-                    type: 'user_location'
-                }
-            }
-
-            _this.displayConnection(connection)
-
-        });
 
         eventBus.on("soloMode", function (id) {
             var filter = _this.getFilter(id);
@@ -816,8 +700,6 @@ projectham.GlobeView = Backbone.View.extend({
 
     rotateCameraCon: function (speed) {
         var _this = this;
-        var vector = this.controls.target.clone();
-        var l = (new THREE.Vector3()).subVectors(this.camera.position, vector).length();
         var up = this.camera.up.clone();
         var quaternion = new THREE.Quaternion();
 
@@ -832,61 +714,16 @@ projectham.GlobeView = Backbone.View.extend({
         this.rotationTween.chain(this.rotationTween);
     },
 
-    animateCube: function (cube, filter) {
-        this.scene.add(cube);
-
-        var _this = this;
-        var position = {i: 0.1};
-        var target = {i: 1};
-        var cubeGeom = new THREE.Geometry();
-        var scaleTween = new TWEEN.Tween(position).to(target, 200).onUpdate(function () {
-            cube.scale.z = position.i;
-        });
-
-        scaleTween.onComplete(function () {
-            //cube.scale.z = target.i;
-
-
-            cube.updateMatrix();
-            _this.geom.merge(cube.geometry, cube.matrix);
-
-
-            _this.scene.remove(cube);
-
-            _this.scene.remove(_this.total);
-            //_this.renderer.deallocateObject(_this.total);
-
-            var geom = new THREE.Geometry();
-            geom.merge(_this.geom);
-
-            _this.total = new THREE.Mesh(geom, _this.material);
-            _this.scene.add(_this.total);
-            TWEEN.remove(this);
-
-
-            if (filter == 1) {
-                _this.cc++;
-                _this.cubes.children[_this.cc] && _this.animateCube(_this.cubes.children[_this.cc], 1);
-            } else if (filter == 2) {
-                _this.cc2++;
-                _this.cubes2.children[_this.cc2] && _this.animateCube(_this.cubes2.children[_this.cc2], 2);
-            }
-        });
-        scaleTween.start();
-    },
 
     animateLine: function (filter, curveGeo, tempGeom, curvedLine, i, j, callback) {
 
 
         var _this = this;
-        var filter = filter;
-        var curveGeo = curveGeo;
+
         var tempGeom2 = tempGeom;
-        var tempGeom = new THREE.Geometry();
+        tempGeom = new THREE.Geometry();
         var curvedLine2;
 
-        var i = i;
-        var j = j;
 
         var v1 = curveGeo.vertices[i];
         var v2 = curveGeo.vertices[j];
@@ -927,12 +764,10 @@ projectham.GlobeView = Backbone.View.extend({
     },
 
     startCameraRotation: function () {
-        this.isTween = true;
         (!(this.rotationTween.isPlaying())) ? this.rotationTween.start() : ((this.rotationTween.isPaused())) ? this.rotationTween.play() : null;
     },
 
     pauseCameraRotation: function () {
-        this.isTween = false;
         (this.rotationTween.isPlaying()) ? this.rotationTween.pause() : null;
 
     },
@@ -1067,7 +902,7 @@ projectham.GlobeView = Backbone.View.extend({
 
             };
 
-            var changeTween = new TWEEN.Tween(position).to(target, 200);
+            changeTween = new TWEEN.Tween(position).to(target, 200);
 
             changeTween.onUpdate(function () {
                 filter.setTweetColor(position.r1, position.g1, position.b1);
@@ -1124,27 +959,12 @@ projectham.GlobeView = Backbone.View.extend({
 
         geom.vertices.push(src.clone());
         geom.vertices.push(dst.clone());
-        geom.computeLineDistances(); // This one is SUPER important, otherwise dashed lines will appear as simple plain lines
+        geom.computeLineDistances();
 
-        var axis = new THREE.Line(geom, mat, THREE.LinePieces);
 
-        return axis;
 
-    },
+        return new THREE.Line(geom, mat, THREE.LinePieces);
 
-    scaleSize: function (maxW, maxH, currW, currH) {
-
-        var ratio = currH / currW;
-
-        if (currW >= maxW && ratio <= 1) {
-            currW = maxW;
-            currH = currW * ratio;
-        } else if (currH >= maxH) {
-            currH = maxH;
-            currW = currH / ratio;
-        }
-
-        return [currW, currH];
     },
 
 
@@ -1159,36 +979,6 @@ projectham.GlobeView = Backbone.View.extend({
 
 
         return new THREE.Vector3(x, y, z);
-    },
-
-    calculateMidPoint: function (lat1, lon1, lat2, lon2, height) {
-        var lat1 = (lat1) * Math.PI / 180;
-        var lon1 = (lon1) * Math.PI / 180;
-        var lat2 = (lat2) * Math.PI / 180;
-        var lon2 = (lon2) * Math.PI / 180;
-
-        var x1 = Math.cos(lat1) * Math.cos(lon1);
-        var y1 = Math.cos(lat1) * Math.sin(lon1);
-        var z1 = Math.sin(lat1);
-
-        var x2 = Math.cos(lat2) * Math.cos(lon2);
-        var y2 = Math.cos(lat2) * Math.sin(lon2);
-        var z2 = Math.sin(lat2);
-
-        var x = (x1 + x2) / 2;
-        var y = (y1 + y2) / 2;
-        var z = (z1 + z2) / 2;
-
-        var lon = Math.atan2(x, y);
-        var hyp = Math.sqrt(x * x + y * y);
-        var lat = Math.atan2(hyp, z);
-
-        var LAT = lat * (180 / Math.PI);
-        var LON = lon * (180 / Math.PI);
-
-        return this.latLongToVector3(LAT, LON, height);
-
-
     },
 
     calculateCP: function (factor, x1, y1, x2, y2, inverse) {
@@ -1234,9 +1024,10 @@ projectham.GlobeView = Backbone.View.extend({
 });
 
 String.prototype.hashCode = function() {
-    var hash = 0;
+    var hash = 0,
+        char;
     if (this.length == 0) return hash;
-    for (i = 0; i < this.length; i++) {
+    for (var i = 0; i < this.length; i++) {
         char = this.charCodeAt(i);
         hash = ((hash << 5) - hash) + char;
         hash = hash & hash; // Convert to 32bit integer
