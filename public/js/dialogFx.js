@@ -78,6 +78,7 @@
 		var self = this;
 
 		if( this.isOpen ) {
+
 			classie.remove( this.el, 'dialog--open' );
 			classie.add( self.el, 'dialog--close' );
 			
@@ -89,6 +90,7 @@
 			this.options.onCloseDialog( this );
 		}
 		else {
+
 			classie.add( this.el, 'dialog--open' );
 
 			// callback on open

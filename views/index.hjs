@@ -216,13 +216,7 @@
         </div>
     </div>
     <div id="fb-root"></div>
-    <script>(function(d, s, id) {
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) return;
-        js = d.createElement(s); js.id = id;
-        js.src = "//connect.facebook.net/de_DE/sdk.js#xfbml=1&appId=675085619278231&version=v2.0";
-        fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));</script>
+    <script></script>
 
     <div id="errBox" class="with-action dialog">
         <div class="dialog__overlay"></div>
@@ -230,6 +224,7 @@
             <div>
                 <h2>Oh no...</h2>
                 <p id="errMsg">This is a custom error message.</p>
+                <div class="fb-share-button" data-href="" data-layout="button"></div>
             </div>
             <div id="action">
                 <p>Reload<span class="icon">&#xe606;</span></p>
@@ -307,7 +302,10 @@
         </div>
 
         <button id="stop-stream" class="ui-bg-color on-stream-started">Stop Stream</button>
-        <button id="screenshot" class="ui-bg-color">Take screenshot</button>
+
+        <p id="screenshot-text">Thanks for using Tweezee! You can now choose a fancy position and take a picture of your globe!</p>
+
+        <button id="screenshot" class="ui-bg-color">Take picture</button>
 
         <div id="trends-div">
             <h3 id="trends-heading" class="accordion-heading opened" title="&#xe612;">Current Trends Worldwide</h3>

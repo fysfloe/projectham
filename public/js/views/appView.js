@@ -135,6 +135,10 @@ projectham.AppView = Backbone.View.extend({
         this.controlsButton = $('#controls');
         this.helpOverlay = $('#helpOverlay');
         this.helpButton = $('#help');
+        this.screenshotButton = $('#screenshot');
+        this.stopStreamButton = $('#stop-stream');
+        this.screenshotText = $('#screenshot-text');
+        this.fbButton = $('.fb-share-button');
 
         // filter-box
         this.filterBox = $('#filter-box');
@@ -199,6 +203,7 @@ projectham.AppView = Backbone.View.extend({
         this.preFilterList.show();
 
         this.helpOverlay.hide();
+        this.fbButton.hide();
 
         this.filterDiv.html('');
         this.filterRatio.html('');
@@ -254,14 +259,24 @@ projectham.AppView = Backbone.View.extend({
             //_this.errBox.show();
         });
 
-        eventBus.on('success', function (m, action) {
+        eventBus.on('success', function (m, action, filename) {
+            _this.dlg.toggle.bind(_this.dlg)();
             _this.errMsgText.html(m);
             _this.errBox.removeClass('with-action');
             _this.errBox.find('h2').html('Yiha!');
             if(action == 'share') {
-                _this.errMsgText.append(' <div class="fb-share-button" data-href="https://developers.facebook.com/docs/plugins/" data-layout="button"></div>')
+                _this.fbButton.show();
+                _this.fbButton.attr('data-href', 'http://127.0.0.1:3000/uploads/'+filename);
+                (function(d, s, id) {
+                    var js, fjs = d.getElementsByTagName(s)[0];
+                    if (d.getElementById(id)) return;
+                    js = d.createElement(s); js.id = id;
+                    js.src = "//connect.facebook.net/de_DE/sdk.js#xfbml=1&appId=675085619278231&version=v2.0";
+                    fjs.parentNode.insertBefore(js, fjs);
+                }(document, 'script', 'facebook-jssdk'));
             }
             _this.errBox.addClass('success');
+            _this.errBox.find('.dialog__content').removeClass('reload tryagain startstream');
             _this.errBox.show();
         });
 
@@ -433,11 +448,14 @@ projectham.AppView = Backbone.View.extend({
     },
 
     stopStream: function () {
-        this.filterBoxH2.html('Filtered by');
         this.socket.emit('close');
         this.socket = null;
 
-        this.initialize();
+        this.stopStreamButton.hide();
+        this.screenshotButton.show();
+        this.screenshotText.show();
+
+        //this.initialize();
     },
 
     showExtendedInfo: function () {

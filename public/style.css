@@ -722,7 +722,7 @@ tr.trheading {
     z-index: 11;
 }
 
-#errBox.success {
+#errBox.success .dialog__content {
     border: 1px solid green;
 }
 
@@ -1018,10 +1018,6 @@ button#b-add-filter:hover, button#b-add-filter2:hover {
     opacity: 1;
 }
 
-button#screenshot {
-    display: none;
-}
-
 div#filterErrMsg {
     font-size: 0.8em;
     color: rgba(255,0,0,0.9);
@@ -1029,17 +1025,32 @@ div#filterErrMsg {
     top: 0.5em;
 }
 
-button#start-stream, button#stop-stream {
+button#start-stream, button#stop-stream, button#screenshot {
     display: block;
     border: none;
     background: #0084b4;
     color: white;
     width: 100%;
     margin: 1em 0;
-    padding: 0.5em 0;
+    padding: 0.6em 0;
     font-size: 1.2em;
     clear: both;
     font-family: 'BebasNeue', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    height: 2em;
+}
+
+button#screenshot {
+    background: #5E9F3A;
+    display: none;
+}
+
+p#screenshot-text {
+    margin-top: 2em;
+    display: none;
+}
+
+.fb-share-button {
+    margin-top: 1em;
 }
 
 div#counts {
