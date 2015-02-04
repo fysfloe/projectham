@@ -469,11 +469,11 @@ projectham.GlobeView = Backbone.View.extend({
         context.fillStyle = "white";
         context.textAlign="start";
         context.font = "normal normal 600 37px 'Bebas Neue'";
-        context.fillText("Project Ham", 221, 64);
+        context.fillText("Tweezee", 245, 64);
 
         context.fillStyle = "#0084B4";
         context.font = "normal normal 300 37px 'Bebas Neue'";
-        context.fillText("My Twitter Live Stream Experience", 388, 64);
+        context.fillText("My Twitter Live Stream Experience", 355, 64);
 
         this.controls.enabled = true;
 
@@ -484,7 +484,7 @@ projectham.GlobeView = Backbone.View.extend({
         }, function() {
 
             console.log('screenshot');
-            eventBus.trigger('success', 'Awesome! Your screenshot has been saved.', 'share', filename);
+            eventBus.trigger('success', 'Awesome! Your screenshot has been <a href="http://127.0.0.1:3000/uploads/'+filename+'" download>saved'+'</a>.', 'share', filename);
         }).fail(function() {
             eventBus.trigger('error', 'We couldn\'t save your screenshot. Why not try it again?', 'tryagain');
         });
