@@ -875,7 +875,10 @@ projectham.module = (function($) {
         var renderContainer = '#globe';
 
         THREE.DefaultLoadingManager.onProgress = function (item, loaded, total) {
-            console.log(item, loaded, total);
+            eventBus.trigger("loading", loaded);
+            if(loaded == 4){
+                toolButton.trigger('click');
+            }
         };
 
         $(renderContainer).prepend(gv.render({
