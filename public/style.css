@@ -1200,6 +1200,10 @@ table#trends td:last-child:after, ul#running-filters li:after {
     transition: opacity 0.2s ease;
 }
 
+ul#running-filters li:after {
+    margin-right: 1.3em;
+}
+
 table#trends td:last-child span, ul#running-filters li {
     max-width: 11em;
     overflow: hidden;
