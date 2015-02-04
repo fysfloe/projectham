@@ -13,6 +13,7 @@ function init() {
     var head = $("#loader > h1");
     var strokes = $("#strokes");
     var button = $("#button > button");
+    var p = $('#loader > p');
 
 
     loadingTween = new TWEEN.Tween(start).to(target, 1500);
@@ -30,7 +31,7 @@ function init() {
         } else if (loaded == 4) {
             bar.width(110 + "%");
             setTimeout(function () {
-                head.css("marginTop", "-100px");
+                head.css("marginTop", "-140px");
 
                 setTimeout(function () {
                     strokes.attr("class", "animate");
@@ -43,7 +44,11 @@ function init() {
                         setTimeout(function(){
                             $("#loader").fadeOut();
                         }, 1500);
+
+                        p.hide();
                     });
+
+                    p.css('opacity', 1);
                 }, 100);
 
                 setTimeout(function () {

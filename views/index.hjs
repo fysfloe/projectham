@@ -48,7 +48,9 @@
 
 </head>
 <body>
-<div id="loader"><h1>Tweezee <span>A Twitter Live Stream Web Experience</span></h1>
+<div id="loader">
+    <h1>Tweezee <span>A Twitter Live Stream Web Experience</span></h1>
+    <p>This experience uses sound feedback and speech recognition. <br>Please make sure your microphone is turned on and your speakers are at a moderate volume.</p>
     <div id="curtain">
     </div>
     <div id="bar"><span>47° 16' 14.0880'' N, 11° 23' 12.1920'' E</span></div>

@@ -592,6 +592,17 @@ button#start-experience {
     height: 100%;
 }
 
+#loader > p {
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    width: 100%;
+    margin-top: -6.5em;
+    opacity: 0;
+
+    transition: opacity 1s ease;
+}
+
 #strokes > path {
     stroke-dasharray: 380;
     stroke-dashoffset: 380;
