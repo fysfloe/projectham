@@ -9,7 +9,7 @@ function init() {
     var start = {lat: -180, lng: -90};
     var targets = {lat: 180, lng: 90};
     var target = targets[3];
-    var bar = $("#bar");
+    bar = $("#bar");
     var head = $("#loader > h1");
     var strokes = $("#strokes");
     var button = $("#button > button");
