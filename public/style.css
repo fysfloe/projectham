@@ -178,7 +178,7 @@ header > h1 span {
     font-weight: 300;
 }
 
-#tools button, #help {
+#tools button, #help-volume button {
     background: none;
     border: none;
     font-family: 'icomoon', sans-serif;
@@ -188,18 +188,18 @@ header > h1 span {
     transition: color 0.2s ease;
 }
 
-#help {
+#help-volume {
     position: absolute;
-    top: 2.5em;
+    top: 3em;
     left: 2.3em;
     z-index: 500;
 }
 
-#tools button:hover, #help:hover, #tools button:before, #help:after {
+#tools button:hover, #help-volume button:hover, #tools button:before, #help-volume button:after {
     color: #0084b4;
 }
 
-#tools button:hover:before, #help:hover:after {
+#tools button:hover:before, #help-volume button:hover:after {
     content: attr(title);
     font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
     font-size: 0.7em;
@@ -215,9 +215,9 @@ header > h1 span {
     text-align: right;
 }
 
-#help:hover:after {
+#help-volume button:hover:after {
     text-align: left;
-    left: 3em;
+    left: 13.5em;
 }
 
 #tools {
@@ -225,6 +225,35 @@ header > h1 span {
     top: 3em;
     right: 2.5em;
     z-index: 500;
+}
+
+input[type='range'] {
+    -webkit-appearance: none !important;
+    background-color: rgba(255,255,255,0.4);
+    border: none;
+    /* padding-bottom: 3px; */
+    height: 0.2em;
+    width: 5em;
+    position: relative;
+    top: -0.4em;
+    left: 0.5em;
+}
+
+input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    color: black;
+    border: none;
+    height: 0.8em;
+    width: 0.2em;
+    border-radius: 1px 1px 1px 1px;
+    bottom: 5px;
+
+    z-index: 20;
+
+    box-shadow:
+    inset 0 0 16px #0084b4,
+    inset 16px 0 20px #0084b4;
+
 }
 
 /*************************************************
@@ -332,6 +361,52 @@ button#start-experience {
     font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
     text-transform: uppercase;
     font-weight: 400;
+}
+
+div#possible-commands {
+    position: fixed;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 500;
+    width: 100%;
+    height: 100%;
+    top: -7em;
+    left: 0;
+    text-align: left;
+}
+
+div#possible-commands td, div#possible-commands th {
+    padding: 0.4em;
+}
+
+#possible-commands tr {
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+}
+
+tr.trheading td {
+    padding-left: 0.5em !important;
+}
+
+tr.trheading {
+    font-size: 0.8em;
+    color: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.1);
+}
+
+#possible-commands .dialog__content {
+    border: none;
+    width: auto;
+    text-align: left;
+    background: rgba(0,0,0,0.9);
+}
+
+#possible-commands .dialog__overlay {
+    background: none;
 }
 
 /*************************************************
@@ -779,6 +854,7 @@ table#trends, ul#running-filters {
     width: 100%;
     font-size: 0.95em;
     table-layout: fixed;
+    overflow: hidden;
 }
 
 table#trends tr, ul#running-filters li {
@@ -828,16 +904,46 @@ table#trends td:last-child span {
     display: inline-block;
 }
 
+#running-filters-div .accordion {
+    display: none;
+    overflow: hidden;
+    width: 98%;
+}
+
 ul#running-filters {
     list-style: none;
-    max-height: 12em;
-    overflow: scroll;
+    max-height: 10.5em;
+    overflow: auto;
     padding: 0;
+    width: 110%;
 }
 
 ul#running-filters li {
     display: block;
     min-width: 94.5%;
+}
+
+.accordion-heading {
+    margin: 1em 0 0.5em;
+}
+
+.accordion-heading:hover {
+    cursor: pointer;
+}
+
+.accordion-heading::after {
+    font-family: 'icomoon', sans-serif !important;
+    content: attr(title);
+    float: right;
+    position: relative;
+    top: -0.13em;
+    right: 0.15em;
+
+    transition: transform 0.3s ease;
+}
+
+.accordion-heading.opened::after {
+    transform: rotate(90deg);
 }
 
 #filters .table-cell:not(.add-filter):hover .sv-options {
@@ -1037,7 +1143,7 @@ span.view {
 }
 
 #web-speech-box.hidden-controls .more-info, #web-speech-box.hidden-controls h2, #web-speech-box.hidden-controls #commands {
-    display: none;
+    display: none !important;
 }
 
 /*************************************************

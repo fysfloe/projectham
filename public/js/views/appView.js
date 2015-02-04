@@ -35,6 +35,10 @@ projectham.AppView = Backbone.View.extend({
         'click .visibility': 'toggleVisibility',
         'click .end-solo': 'endSeparateView',
         'click #help': 'toggleHelp',
+        'click #show-possible-commands': function() {
+            console.log('foo');
+            this.possibleCommands.toggle.bind(this.possibleCommands)();
+        },
 
         'click .add-filter': function () {
             this.filterErrMsg.html('');
@@ -61,7 +65,14 @@ projectham.AppView = Backbone.View.extend({
             location.reload();
         },
 
-        'click .tryagain': function() {}
+        'click .tryagain': function() {},
+
+        'click .accordion-heading': function (ev) {
+            !$(ev.target).hasClass('opened') ? $(ev.target).addClass('opened') : $(ev.target).removeClass('opened');
+            $(ev.target).next().slideToggle();
+
+            $('.accordion-heading').not(ev.target).removeClass('opened').next().slideUp();
+        }
     },
 
     initialize: function () {
@@ -106,7 +117,14 @@ projectham.AppView = Backbone.View.extend({
         this.stats = {};
         this.currentSepFilter = '';
 
-        this.allFilters = ['obama', 'war', 'piece', 'putin', 'love', 'hate', 'yeah', 'fuck']; // todo: get this from julian, lower case required!
+        this.allFilters = []; // lower case required!
+        var _this = this;
+
+        $('#running-filters li').each(function() {
+           _this.allFilters.push($(this).text().toLowerCase());
+        });
+
+        console.log(this.allFilters);
 
         /*************************************************
              DOM elements
@@ -154,6 +172,7 @@ projectham.AppView = Backbone.View.extend({
 
         console.log($('#somedialog'));
         this.dlg = new DialogFx( $('#errBox')[0]) ;
+        this.possibleCommands = new DialogFx( $('#possible-commands')[0] );
         this.errMsgText = $('#errMsg');
         this.action = $('#action');
 
@@ -164,8 +183,10 @@ projectham.AppView = Backbone.View.extend({
          *************************************************/
 
         $('.on-stream-started').hide();
+        $('.on-stream-not-started').show();
         $('#start-stream').show();
         this.trends.show();
+        this.runningFilters.show();
 
         this.filterInputDiv.show();
         this.runningFiltersHeading.html('Currently Used Filters');
@@ -196,7 +217,6 @@ projectham.AppView = Backbone.View.extend({
              eventBus events
          *************************************************/
 
-        var _this = this;
         this.socket = null;
 
         window.onbeforeunload = function () {
@@ -243,6 +263,11 @@ projectham.AppView = Backbone.View.extend({
             }
             _this.errBox.addClass('success');
             _this.errBox.show();
+        });
+
+        eventBus.on('noNewFilters', function() {
+            alert('hu');
+            this.noNewFilters()
         });
 
         console.log('initialized');
@@ -326,6 +351,7 @@ projectham.AppView = Backbone.View.extend({
             this.showExtendedInfo();
             this.filterBoxH2.html('Filtered by');
             this.state = 1;
+            $('#running-filters-heading').click();
 
             if (this.filterInput.val()) {
                 this.addFilter();
@@ -416,6 +442,7 @@ projectham.AppView = Backbone.View.extend({
 
     showExtendedInfo: function () {
         $('.on-stream-started').show();
+        $('.on-stream-not-started').hide();
         $('#start-stream').hide();
     },
 
@@ -428,6 +455,9 @@ projectham.AppView = Backbone.View.extend({
             var model = this.filters.find(function(m) {
                 return m.get('filter').toLowerCase() == saveFilter.toLowerCase();
             });
+
+            console.log(model);
+            console.log(saveFilter);
 
             if(!model && saveFilter) {
                 this.filterErrMsg.html('');
@@ -455,6 +485,7 @@ projectham.AppView = Backbone.View.extend({
                 }
             } else {
                 this.filterErrMsg.html('Please choose a filter that doesn\'t yet exist.');
+                //eventBus.trigger('wrongCommand');
             }
         }
     },
@@ -678,16 +709,22 @@ projectham.AppView = Backbone.View.extend({
         document.addEventListener("fullscreenchange", function () {
             if (!document.fullscreenElement) {
                 _this.fullscreenButton.html('&#xe601;');
+                _this.fullscreenButton.attr('title', 'Fullscreen');
+                _this.fullscreenState = 0;
             }
         }, false);
         document.addEventListener("webkitfullscreenchange", function () {
             if (!document.webkitFullscreenElement) {
                 _this.fullscreenButton.html('&#xe601;');
+                _this.fullscreenButton.attr('title', 'Fullscreen');
+                _this.fullscreenState = 0;
             }
         }, false);
         document.addEventListener("mozfullscreenchange", function () {
             if (!document.mozFullScreenElement) {
                 _this.fullscreenButton.html('&#xe601;');
+                _this.fullscreenButton.attr('title', 'Fullscreen');
+                _this.fullscreenState = 0;
             }
         }, false);
     },
