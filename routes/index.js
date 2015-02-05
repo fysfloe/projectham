@@ -92,9 +92,7 @@ router.get('/', function(req, res) {
 
     var currentFilter = uniqueArray(filterToString(filters).split(','));
 
-    currentFilter.push('Obama', 'Putin', 'Love', 'Hate', 'War', 'Peace', 'Fuck', 'Yeah'); // todo: delete this before going online
     currentFilter.splice(0, 1); // todo: delete this before going online
-    console.log('Current Filter:', currentFilter);
 
     if(requestCount > requestLimit) {
         res.render('index', { title: 'Tweezee', limitOk: false, filters: currentFilter, existingFilters: currentFilter.length > 0 });
