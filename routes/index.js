@@ -157,7 +157,7 @@ io.sockets.on('connection', function (socket) {
                 console.log("Error: ", err);
             }
         } else if(requestCount <= requestLimit && needRestart == true) {
-            //InitStream();
+            InitStream();
             //console.log("Init new stream now.");
         }
     });
@@ -181,7 +181,7 @@ io.sockets.on('connection', function (socket) {
 
             } else {
                 requestCount++;
-                //InitStream();
+                InitStream();
                 //console.log("Init new stream now.");
             }
 
