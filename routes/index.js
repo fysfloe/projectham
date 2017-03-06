@@ -11,7 +11,7 @@ var express = require('express'),
     path = require('path');
 
 var io = require('socket.io').listen(server);
-server.listen(process.env.PORT || 3000);
+server.listen(process.env.PORT || 64720);
 //var io = require('socket.io').listen(64720, {log: false}); todo: use for production on uberspace
 
 var twit,
