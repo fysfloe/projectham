@@ -3,8 +3,8 @@
 <head>
     <title>{{ title }}</title>
     <meta charset="utf-8">
-    <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,100,500,700,400italic' rel='stylesheet' type='text/css'>
-    <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:400,300,700' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,300,100,500,700,400italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Roboto+Condensed:400,300,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="normalize.css" type="text/css">
     <link rel="stylesheet" href="style.css" type="text/css">
 
@@ -414,7 +414,7 @@
 <script src="js/models/filter.js"></script>
 <script src="js/collections/filterList.js"></script>
 <script src="js/views/filterView.js"></script>
-<script src="js/views/prefilterView.js"></script>
+<script src="js/views/preFilterView.js"></script>
 
 <!-- Julian -->
 <script src="js/models/tweet.js"></script>

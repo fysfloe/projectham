@@ -193,13 +193,13 @@ projectham.module = (function($) {
                 stopApp();
             }
 
-            console.log('s');
+            //console.log('s');
         }
     };
 
     onresultWhenNotStarted = function() {
         recognition.onresult = function(event) {
-            console.log(event);
+            //console.log(event);
 
             var final_transcript = '';
             for(var i = event.resultIndex; i < event.results.length; ++i) {
@@ -388,10 +388,10 @@ projectham.module = (function($) {
 
         if(trend) {
             $("table#trends tr:nth-child("+trend+") td:last-child").trigger('click');
-            console.log('foo');
+            //console.log('foo');
             eventBus.trigger('correctCommand');
         } else {
-            console.log('foooooooooo');
+            //console.log('foooooooooo');
             eventBus.trigger('wrongCommand');
         }
     };
@@ -428,7 +428,7 @@ projectham.module = (function($) {
 
         convert = parseInt(convert);
 
-        console.log(convert);
+        //console.log(convert);
 
         if(isInt(convert)) {
             return convert;
@@ -525,7 +525,7 @@ projectham.module = (function($) {
         source.buffer = sources[i];
         source.loop = loop;
 
-        console.log(source);
+        //console.log(source);
         source.connect(gainNode);
         source.start(0);
     };
@@ -829,7 +829,7 @@ projectham.module = (function($) {
 
         appView = new projectham.AppView();
 
-        console.log(appView);
+        //console.log(appView);
 
         if(/chrome/.test(navigator.userAgent.toLowerCase())) {
             initRecognition();
@@ -857,13 +857,13 @@ projectham.module = (function($) {
         } );
 
         eventBus.on('wrongCommand', function() {
-            console.log('wrong');
+            //console.log('wrong');
             setMicColor('red');
             playSound(1, false);
         });
 
         eventBus.on('correctCommand', function() {
-            console.log('correct');
+            //console.log('correct');
             setMicColor('green');
             playSound(0, false);
         });
@@ -956,7 +956,7 @@ projectham.module = (function($) {
     };
 
     showTrends = function() {
-        console.log($('#trends-heading'));
+        //console.log($('#trends-heading'));
 
         $('#trends-heading').trigger('click');
         eventBus.trigger('correctCommand');
