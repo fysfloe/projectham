@@ -1,4 +1,6 @@
 var express = require('express'),
+    app = express(),
+    server = require('http').createServer(app),
     router = express.Router(),
     twitter = require('twitter'),
     request = require("request"),
@@ -8,7 +10,8 @@ var express = require('express'),
     sys = require('sys'),
     path = require('path');
 
-var io = require('socket.io').listen(3000, {log: false});
+var io = require('socket.io').listen(server);
+server.listen(process.env.PORT || 3000);
 //var io = require('socket.io').listen(64720, {log: false}); todo: use for production on uberspace
 
 var twit,
