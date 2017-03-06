@@ -8,7 +8,7 @@ var express = require('express'),
     sys = require('sys'),
     path = require('path');
 
-var io = require('socket.io').listen(3001, {log: false});
+var io = require('socket.io').listen(3000, {log: false});
 //var io = require('socket.io').listen(64720, {log: false}); todo: use for production on uberspace
 
 var twit,
@@ -379,7 +379,7 @@ var InitStream = function() {
     authenticateToTwitter();
 
     destroyStream();
-	
+
 	// 1. make string from filter object (filterToString)
 	// 2. convert to array (split)
 	// 3. delete duplicates (uniqueArray)
@@ -392,7 +392,7 @@ var InitStream = function() {
 
     var parent_id = null,
         parent_tweet = null;
-	
+
     twit.stream(
         'statuses/filter',
 
