@@ -23,7 +23,8 @@ var trends = require('./routes/trends');
 // DB
 var monk = require('monk');
 //var db = monk('localhost:27017/projectham');
-var db = monk('mongodb://heroku_m7sfw76k:8HZzBUAdS2k7@ds119220.mlab.com:19220/heroku_m7sfw76k')
+
+var db = monk('mongodb://heroku_m7sfw76k:ss3h6j7vg1hrdc9mg9bohbsetb@ds119220.mlab.com:19220/heroku_m7sfw76k')
 //var db = monk('mongodb://projham_mongoadmin:twacoosDo@localhost:20870/projectham?authSource=admin'); todo: use for production on uberspace
 
 var trendsCollection = db.get('trendslist'); // get trends collection
