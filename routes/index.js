@@ -9,7 +9,7 @@ var express = require('express'),
     sys = require('util'),
     path = require('path');
 
-var io = require('socket.io').listen(server);
+var io = require('socket.io').listen(3001);
 //var io = require('socket.io').listen(64720, {log: false}); todo: use for production on uberspace
 
 var twit,
