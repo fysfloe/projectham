@@ -1,5 +1,5 @@
 var express = require('express'),
-    app = express(),
+    app = require('../app'),
     router = express.Router(),
     twitter = require('twitter'),
     request = require("request"),
@@ -7,13 +7,17 @@ var express = require('express'),
     debug = require('debug')('project_ham'),
     fs = require('fs'),
     sys = require('util'),
-    path = require('path');
+    path = require('path'),
+    socketIO = require('socket.io')
+    http = require('http');
 
+//var server = http.createServer(app).listen(3000);
+//var io = socketIO(app);
 var io = require('socket.io').listen(3001);
-io.configure(function () {
+/*io.configure(function () {
   io.set("transports", ["xhr-polling"]);
   io.set("polling duration", 10);
-});
+});*/
 //var io = require('socket.io').listen(64720, {log: false}); todo: use for production on uberspace
 
 var twit,

@@ -380,8 +380,8 @@ projectham.AppView = Backbone.View.extend({
             this.filterInputDiv.hide();
 
             if (!this.socket) {
-                this.socket = io.connect('https://tweezee.herokuapp.com:3001/', {'force new connection': true});
-                //this.socket = io.connect('localhost:3001', {'force new connection': true});
+                this.socket = io('https://tweezee.herokuapp.com:3001/') //, {'force new connection': true});
+                //this.socket = io('http://localhost:3001'); //, {'force new connection': true});
                 //this.socket = io.connect('http://185.26.156.28:64720/', {'force new connection': true}); todo: use for production on uberspace
                 window.socket = this.socket;
             }
