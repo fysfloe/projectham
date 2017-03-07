@@ -12,8 +12,8 @@ var express = require('express'),
     http = require('http');
 
 //var server = http.createServer(app).listen(3000);
-//var io = socketIO(app);
-var io = require('socket.io').listen(3001);
+var io = socketIO(app);
+//var io = require('socket.io').listen(3001);
 /*io.configure(function () {
   io.set("transports", ["xhr-polling"]);
   io.set("polling duration", 10);
