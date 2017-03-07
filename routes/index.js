@@ -10,6 +10,10 @@ var express = require('express'),
     path = require('path');
 
 var io = require('socket.io').listen(3001);
+io.configure(function () {
+  io.set("transports", ["xhr-polling"]);
+  io.set("polling duration", 10);
+});
 //var io = require('socket.io').listen(64720, {log: false}); todo: use for production on uberspace
 
 var twit,
