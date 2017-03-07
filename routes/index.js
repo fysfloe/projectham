@@ -1,17 +1,15 @@
 var express = require('express'),
     app = express(),
-    server = require('http').createServer(app),
     router = express.Router(),
     twitter = require('twitter'),
     request = require("request"),
     geocoder = require("node-geocoder"),
     debug = require('debug')('project_ham'),
     fs = require('fs'),
-    sys = require('sys'),
+    sys = require('util'),
     path = require('path');
 
 var io = require('socket.io').listen(server);
-server.listen(process.env.PORT || 64720);
 //var io = require('socket.io').listen(64720, {log: false}); todo: use for production on uberspace
 
 var twit,

@@ -4,12 +4,12 @@
  *
  * Licensed under the MIT license.
  * http://www.opensource.org/licenses/mit-license.php
- * 
+ *
  * Copyright 2014, Codrops
  * http://www.codrops.com
  */
 ;( function( window ) {
-	
+
 	'use strict';
 
 	var support = { animations : Modernizr.cssanimations },
@@ -32,7 +32,7 @@
 		};
 
 	function extend( a, b ) {
-		for( var key in b ) { 
+		for( var key in b ) {
 			if( b.hasOwnProperty( key ) ) {
 				a[key] = b[key];
 			}
@@ -69,7 +69,7 @@
 			}
 		} );
 
-		console.log(this);
+		//console.log(this);
 
 		this.el.querySelector( '.dialog__overlay' ).addEventListener( 'click', this.toggle.bind(this) );
 	}
@@ -81,7 +81,7 @@
 
 			classie.remove( this.el, 'dialog--open' );
 			classie.add( self.el, 'dialog--close' );
-			
+
 			onEndAnimation( this.el.querySelector( '.dialog__content' ), function() {
 				classie.remove( self.el, 'dialog--close' );
 			} );
